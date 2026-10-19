@@ -1,0 +1,44 @@
+{
+  "detector": {
+    "ignoreRules": [],
+    "ignoreFiles": [],
+    "ignoreValues": [
+      {
+        "rule": "cramped-padding",
+        "value": "*",
+        "files": [
+          ".impeccable/mocks/decision/model-pick.html"
+        ],
+        "createdAt": "2026-10-19T11:18:10.766Z",
+        "reason": "Claude: unchosen decision-round sketch (spent hand), not shipped UI"
+      },
+      {
+        "rule": "design-system-font",
+        "value": "*",
+        "files": [
+          ".impeccable/mocks/decision/assigned.html"
+        ],
+        "createdAt": "2026-10-19T11:26:48.464Z",
+        "reason": "Claude: decision-round sketch, not shipped UI; written before DESIGN.md existed"
+      },
+      {
+        "rule": "design-system-font",
+        "value": "*",
+        "files": [
+          ".impeccable/mocks/decision/model-pick.html"
+        ],
+        "createdAt": "2026-10-19T11:26:48.760Z",
+        "reason": "Claude: decision-round sketch, not shipped UI; written before DESIGN.md existed"
+      },
+      {
+        "rule": "design-system-font",
+        "value": "*",
+        "files": [
+          ".impeccable/mocks/decision/canon.html"
+        ],
+        "createdAt": "2026-10-19T11:26:49.036Z",
+        "reason": "Claude: decision-round sketch, not shipped UI; written before DESIGN.md existed"
+      }
+    ]
+  }
+}

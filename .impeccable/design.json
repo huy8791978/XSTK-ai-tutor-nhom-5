@@ -1,0 +1,172 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-10-19T18:30:00+07:00",
+  "title": "Design System: XSTK·AI",
+  "extensions": {
+    "colorMeta": {
+      "ultra": { "role": "primary", "displayName": "Ticket Ultramarine", "canonical": "#1B2A8C", "tonalRamp": ["#0C1340", "#15216F", "#1F2F9E", "#283ECD", "#5466DE", "#8794E8", "#BBC2F2", "#EAECFB"] },
+      "ultra-2": { "role": "primary", "displayName": "Pressed Ultramarine", "canonical": "#2637A8", "tonalRamp": ["#0E143E", "#18236C", "#23329A", "#2D41C8", "#5969D9", "#8B96E5", "#BCC3F0", "#EAECFA"] },
+      "ultra-ink": { "role": "primary", "displayName": "Rail Ink", "canonical": "#EEF1FF", "tonalRamp": ["#041049", "#071C7E", "#0927B3", "#0C33E9", "#3D5EF5", "#778EF8", "#B1BEFB", "#E7EBFE"] },
+      "ultra-dim": { "role": "primary", "displayName": "Rail Dim", "canonical": "#AEB9F2", "tonalRamp": ["#0B1442", "#122272", "#1A30A3", "#223FD3", "#4F67E3", "#8495EB", "#B9C2F4", "#E9ECFB"] },
+      "ultra-wash": { "role": "primary", "displayName": "Ultramarine Wash", "canonical": "#E9ECFA", "tonalRamp": ["#0E173E", "#19276C", "#23389A", "#2D49C7", "#596FD9", "#8B9BE5", "#BDC6F0", "#EAEDFA"] },
+      "red": { "role": "secondary", "displayName": "Special-Prize Red", "canonical": "#D7263D", "tonalRamp": ["#410B12", "#711420", "#A01C2D", "#D0253B", "#E05264", "#EA8693", "#F3BAC1", "#FBE9EC"] },
+      "red-ink": { "role": "secondary", "displayName": "Red Ink", "canonical": "#AE1B2F", "tonalRamp": ["#420A12", "#73121F", "#A3192C", "#D42139", "#E44E63", "#EC8392", "#F4B8C0", "#FCE9EB"] },
+      "red-wash": { "role": "secondary", "displayName": "Red Wash", "canonical": "#FDECEE", "tonalRamp": ["#45070F", "#780D19", "#AB1224", "#DD172F", "#EC465A", "#F17E8B", "#F7B5BD", "#FDE8EA"] },
+      "gold": { "role": "tertiary", "displayName": "Serial Gold", "canonical": "#F2B705", "tonalRamp": ["#493804", "#7E6007", "#B38909", "#E9B20C", "#F5C73D", "#F8D877", "#FBE9B1", "#FEF8E7"] },
+      "gold-ink": { "role": "tertiary", "displayName": "Serial Gold Ink", "canonical": "#7A5A00", "tonalRamp": ["#493704", "#7E5F07", "#B38709", "#E9AF0C", "#F5C53D", "#F8D677", "#FBE8B1", "#FEF8E7"] },
+      "gold-wash": { "role": "tertiary", "displayName": "Gold Wash", "canonical": "#FFF5D1", "tonalRamp": ["#493804", "#7E6007", "#B38909", "#E9B20C", "#F5C73D", "#F8D877", "#FBE9B1", "#FEF8E7"] },
+      "green": { "role": "tertiary", "displayName": "Correct Green", "canonical": "#0E9F6E", "tonalRamp": ["#064631", "#0B7A54", "#0FAD78", "#14E19C", "#44EEB5", "#7CF3CB", "#B4F8E1", "#E8FDF6"] },
+      "green-ink": { "role": "tertiary", "displayName": "Green Ink", "canonical": "#08704D", "tonalRamp": ["#054731", "#097C55", "#0DB079", "#10E49D", "#41F1B6", "#7AF5CC", "#B3FAE2", "#E7FDF6"] },
+      "green-wash": { "role": "tertiary", "displayName": "Green Wash", "canonical": "#E2F5EC", "tonalRamp": ["#143927", "#226344", "#308C61", "#3FB67E", "#67CB9C", "#95DAB9", "#C2EAD7", "#ECF8F3"] },
+      "ink": { "role": "neutral", "displayName": "Board Ink", "canonical": "#141833", "tonalRamp": ["#161A37", "#252D5F", "#354088", "#4553B0", "#6C78C6", "#98A0D7", "#C4C9E8", "#EDEEF8"] },
+      "ink-2": { "role": "neutral", "displayName": "Second Ink", "canonical": "#3E4570", "tonalRamp": ["#1B1E31", "#2F3555", "#434B79", "#57619E", "#7C84B6", "#A3A9CC", "#CACEE2", "#EFF0F6"] },
+      "ink-3": { "role": "neutral", "displayName": "Third Ink", "canonical": "#5A6185", "tonalRamp": ["#1F212E", "#363A4F", "#4C5271", "#636A92", "#858CAD", "#AAAEC5", "#CED1DE", "#F0F1F5"] },
+      "paper": { "role": "neutral", "displayName": "Cool Paper", "canonical": "#F4F6FB", "tonalRamp": ["#141F38", "#233561", "#324B8A", "#4162B4", "#6985C9", "#96A9D9", "#C3CEE9", "#ECF0F8"] },
+      "sheet": { "role": "neutral", "displayName": "Sheet White", "canonical": "#FFFFFF", "tonalRamp": ["#262626", "#424242", "#5E5E5E", "#7A7A7A", "#999999", "#B8B8B8", "#D6D6D6", "#F2F2F2"] },
+      "rule": { "role": "neutral", "displayName": "Hairline", "canonical": "#DCE1F2", "tonalRamp": ["#151D38", "#243261", "#33478A", "#425CB2", "#6A7FC8", "#97A6D8", "#C4CCE9", "#ECEFF8"] },
+      "rule-2": { "role": "neutral", "displayName": "Hairline Strong", "canonical": "#C2C9E6", "tonalRamp": ["#161C36", "#27315E", "#374686", "#475BAE", "#6E7FC4", "#9AA5D5", "#C5CCE7", "#EDEFF8"] },
+      "row-rule": { "role": "neutral", "displayName": "Row Rule", "canonical": "#EEF0F8", "tonalRamp": ["#161D36", "#27325E", "#374786", "#475CAD", "#6E7FC4", "#9AA6D5", "#C5CCE7", "#EDEFF8"] }
+    },
+    "typographyMeta": {
+      "display": { "displayName": "Display", "purpose": "The score odometer only; red, tabular figures." },
+      "headline": { "displayName": "Headline", "purpose": "Uppercase condensed page title; 28px on mobile." },
+      "title": { "displayName": "Title", "purpose": "Panel headings." },
+      "section": { "displayName": "Section", "purpose": "Uppercase ultramarine headings inside panels and step headers." },
+      "numeral": { "displayName": "Numeral", "purpose": "Result-board row values and other result numbers." },
+      "body": { "displayName": "Body", "purpose": "All reading, including AI explanations (1.7 leading in rich text)." },
+      "label": { "displayName": "Label", "purpose": "Form field labels." },
+      "tier": { "displayName": "Tier", "purpose": "Result-board tier labels and math toolbar group labels." },
+      "serial": { "displayName": "Serial", "purpose": "Rail serial, ticket serial, session serial tags." }
+    },
+    "shadows": [
+      { "name": "bottom-bar-lift", "value": "0 -8px 24px -12px rgba(18, 29, 102, .5)", "purpose": "The fixed mobile tab bar only." },
+      { "name": "toast-lift", "value": "0 12px 32px -8px rgba(20, 24, 51, .45)", "purpose": "The status toast only." },
+      { "name": "focus-halo", "value": "0 0 0 3px rgba(242, 183, 5, .45)", "purpose": "Text fields on focus, with an ultramarine border." },
+      { "name": "current-dot", "value": "inset 0 -3px 0 #1B2A8C", "purpose": "The current practice pager dot." }
+    ],
+    "motion": [
+      { "name": "ease", "value": "cubic-bezier(.16, 1, .3, 1)", "purpose": "House ease for every transition and entrance." },
+      { "name": "odometer-roll", "value": "transform 1.4s cubic-bezier(.16, 1, .3, 1); 120ms stagger per digit", "purpose": "The signature motion: score digits roll into place like a draw cage." },
+      { "name": "state", "value": ".2s", "purpose": "Hover, border and fill changes on controls." },
+      { "name": "view-rise", "value": ".5s translateY(8px) to 0", "purpose": "View entrance." },
+      { "name": "chart-grow", "value": ".9s scale from baseline; curves draw on in 1.2s", "purpose": "Chart bars, heat bars and distribution curves." },
+      { "name": "rosette-drift", "value": "continuous, 26s phase period", "purpose": "Guilloche rosette on the rail; reseeds per section, stops under reduced motion or a hidden tab." }
+    ],
+    "breakpoints": [
+      { "name": "stack", "value": "1100px" },
+      { "name": "mobile", "value": "860px" },
+      { "name": "narrow", "value": "420px" }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "The one filled ultramarine action per group, e.g. Chấm điểm.",
+      "html": "<button class=\"ds-btn-primary\">Chấm điểm</button>",
+      "css": ".ds-btn-primary { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 44px; padding: 10px 16px; border-radius: var(--r); border: 1.5px solid var(--ultra); background: var(--ultra); color: #fff; font: 600 14.5px/1.2 var(--body); cursor: pointer; transition: background .2s var(--ease), transform .2s var(--ease); } .ds-btn-primary:hover { background: var(--ultra-2); } .ds-btn-primary:active { transform: translateY(1px); } .ds-btn-primary:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }"
+    },
+    {
+      "name": "Outline Button",
+      "kind": "button",
+      "refersTo": "button-outline",
+      "description": "Default secondary action: sheet with an ultramarine border.",
+      "html": "<button class=\"ds-btn\">Gợi ý chiến lược</button>",
+      "css": ".ds-btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 44px; padding: 10px 16px; border-radius: var(--r); border: 1.5px solid var(--ultra); background: var(--sheet); color: var(--ultra); font: 600 14.5px/1.2 var(--body); cursor: pointer; transition: background .2s var(--ease), transform .2s var(--ease); } .ds-btn:hover { background: var(--ultra-wash); } .ds-btn:active { transform: translateY(1px); } .ds-btn:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }"
+    },
+    {
+      "name": "Ghost Button",
+      "kind": "button",
+      "refersTo": "button-ghost",
+      "description": "Quiet tertiary action; takes ultramarine on hover.",
+      "html": "<button class=\"ds-btn-ghost\">Vừa khung</button>",
+      "css": ".ds-btn-ghost { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 44px; padding: 10px 16px; border-radius: var(--r); border: 1.5px solid var(--rule-2); background: transparent; color: var(--ink-2); font: 600 14.5px/1.2 var(--body); cursor: pointer; transition: background .2s var(--ease), color .2s var(--ease), border-color .2s var(--ease); } .ds-btn-ghost:hover { border-color: var(--ultra); color: var(--ultra); background: var(--sheet); } .ds-btn-ghost:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }"
+    },
+    {
+      "name": "Text Field",
+      "kind": "input",
+      "refersTo": "input",
+      "description": "Sheet field with a 1.5px hairline; ultramarine border and gold halo on focus.",
+      "html": "<label class=\"ds-field\"><span>Đề bài</span><input class=\"ds-input\" type=\"text\" placeholder=\"Nhập đề bài…\"></label>",
+      "css": ".ds-field { display: grid; gap: 8px; font: 400 15.5px/1.6 var(--body); color: var(--ink); } .ds-field > span { font-weight: 600; font-size: 14px; color: var(--ink-2); } .ds-input { width: 100%; font: inherit; border: 1.5px solid var(--rule-2); border-radius: var(--r); background: var(--sheet); padding: 12px 14px; min-height: 46px; caret-color: var(--ultra); transition: border-color .2s, box-shadow .2s; } .ds-input::placeholder { color: #6E7598; } .ds-input:focus { outline: none; border-color: var(--ultra); box-shadow: 0 0 0 3px rgba(242, 183, 5, .45); }"
+    },
+    {
+      "name": "Rail Navigation",
+      "kind": "nav",
+      "refersTo": "rail",
+      "description": "Ultramarine shell rail: wordmark, nav items with stroke icons, gold serial at the foot.",
+      "html": "<nav class=\"ds-rail\"><a class=\"ds-brand\" href=\"#\">XSTK·AI<small>Gia sư Xác suất Thống kê</small></a><a class=\"ds-nav\" href=\"#\" aria-current=\"page\"><svg viewBox=\"0 0 24 24\"><path d=\"M4 5h11M4 10h8M4 15h6\"/><path d=\"m13 17 3 3 6-7\"/></svg>Gia sư chấm bài</a><a class=\"ds-nav\" href=\"#\"><svg viewBox=\"0 0 24 24\"><path d=\"M4 5h16v10H9l-5 4z\"/><path d=\"M8 9h8M8 12h5\"/></svg>Vấn đáp</a><p class=\"ds-serial\">SERI 4F7-2K9</p></nav>",
+      "css": ".ds-rail { width: 248px; background: var(--ultra); color: var(--ultra-ink); padding: 28px 18px 24px; display: flex; flex-direction: column; gap: 2px; font: 500 15px/1.4 var(--body); } .ds-brand { color: #fff; text-decoration: none; font: 800 34px/.95 var(--display); letter-spacing: .01em; padding: 0 8px; margin-bottom: 40px; } .ds-brand small { display: block; margin-top: 8px; font: 600 11px/1.4 var(--body); letter-spacing: .08em; text-transform: uppercase; color: var(--ultra-dim); } .ds-nav { display: flex; align-items: center; gap: 12px; padding: 11px 12px; border-radius: var(--r); color: var(--ultra-ink); text-decoration: none; transition: background .25s var(--ease), color .25s var(--ease); } .ds-nav svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; } .ds-nav:hover { background: rgba(255, 255, 255, .09); } .ds-nav[aria-current='page'] { background: var(--paper); color: var(--ultra); font-weight: 600; } .ds-nav:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; } .ds-serial { margin: 32px 0 0; padding: 0 8px; font: 700 13px/1.4 var(--display); letter-spacing: .2em; color: var(--gold); }"
+    },
+    {
+      "name": "Tags",
+      "kind": "chip",
+      "refersTo": "tag-mistake",
+      "description": "Wash-filled tags (mistake, topic, correct) beside a session serial tag.",
+      "html": "<div class=\"ds-tags\"><span class=\"ds-tag\">Sai công thức</span><span class=\"ds-tag ds-topic\">Biến ngẫu nhiên</span><span class=\"ds-tag ds-ok\">Đúng</span><span class=\"ds-serialtag\">S-0427</span></div>",
+      "css": ".ds-tags { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; } .ds-tag { display: inline-flex; font: 600 12.5px/1.2 var(--body); padding: 4px 9px; border-radius: var(--r); background: var(--red-wash); color: var(--red-ink); } .ds-topic { background: var(--ultra-wash); color: var(--ultra); } .ds-ok { background: var(--green-wash); color: var(--green-ink); } .ds-serialtag { font: 700 12.5px var(--display); letter-spacing: .18em; color: var(--gold-ink); }"
+    },
+    {
+      "name": "Panel",
+      "kind": "card",
+      "refersTo": "panel",
+      "description": "Flat sheet with a 1px hairline and no shadow.",
+      "html": "<section class=\"ds-panel\"><h2>Bài làm của bạn</h2><h3>Tìm hiểu đề</h3><p>Xác định biến ngẫu nhiên và phân phối của nó trước khi tính.</p></section>",
+      "css": ".ds-panel { background: var(--sheet); border: 1px solid var(--rule-2); border-radius: var(--r); padding: clamp(18px, 2vw, 26px); font: 400 15.5px/1.6 var(--body); color: var(--ink); } .ds-panel h2 { margin: 0; font: 700 24px/1.1 var(--display); letter-spacing: .01em; } .ds-panel h3 { margin: 20px 0 8px; font: 700 18px/1.2 var(--display); letter-spacing: .02em; text-transform: uppercase; color: var(--ultra); } .ds-panel p { margin: 0; }"
+    },
+    {
+      "name": "Ticket Result Board",
+      "kind": "custom",
+      "refersTo": "score-odometer",
+      "description": "A graded result printed as a lottery ticket: wave security band, gold serial, prize-tier rows, red score.",
+      "html": "<div class=\"ds-ticket\"><span class=\"ds-tserial\">S-0427</span><div class=\"ds-row ds-top\"><b>Điểm</b><span>Lập luận đúng hướng, sai ở bước chuẩn hoá.</span><em class=\"ds-odo\">7,5<small>/10</small></em></div><div class=\"ds-row\"><b>Bước 2</b><span>Thiếu điều kiện độc lập.</span><em>1,0</em></div><div class=\"ds-row\"><b>Bước 3</b><span>Tra bảng đúng.</span><em>2,0</em></div></div>",
+      "css": ".ds-ticket { position: relative; padding-top: 22px; font: 400 15.5px/1.6 var(--body); color: var(--ink); } .ds-ticket::before { content: ''; position: absolute; left: 0; right: 0; top: 0; height: 10px; background: url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='10'%3E%3Cpath d='M0 5 C6 0 6 10 12 5 S18 0 24 5' fill='none' stroke='%231B2A8C' stroke-opacity='.55' stroke-width='1'/%3E%3Cpath d='M0 5 C6 10 6 0 12 5 S18 10 24 5' fill='none' stroke='%23F2B705' stroke-width='1'/%3E%3C/svg%3E\") 0 0 / 24px 10px repeat-x; } .ds-tserial { position: absolute; top: 16px; right: 0; font: 700 12.5px var(--display); letter-spacing: .2em; color: var(--gold-ink); } .ds-row { display: grid; grid-template-columns: 112px minmax(0, 1fr) auto; gap: 14px; align-items: baseline; padding: 12px 0; border-bottom: 1px solid #EEF0F8; } .ds-row:last-child { border-bottom: 0; } .ds-row > b { font: 700 13.5px/1.3 var(--display); letter-spacing: .14em; text-transform: uppercase; color: var(--ink-3); } .ds-row > em { font: 800 24px/1 var(--display); font-style: normal; font-variant-numeric: tabular-nums; color: var(--ink); } .ds-top { align-items: center; padding: 16px 0; border-bottom-color: var(--rule-2); } .ds-row > em.ds-odo { font-size: 64px; color: var(--red); letter-spacing: -.01em; } .ds-odo small { font-size: .32em; color: var(--ink-3); margin-left: .3em; }"
+    },
+    {
+      "name": "Detent Rail",
+      "kind": "custom",
+      "refersTo": "",
+      "description": "Polya stage rail between two hairlines: square detents, done ultramarine, current gold.",
+      "html": "<ol class=\"ds-detents\"><li data-state=\"done\"><b>1</b>Tìm hiểu đề</li><li data-state=\"current\"><b>2</b>Xây dựng chương trình</li><li><b>3</b>Trình bày</li><li><b>4</b>Kiểm tra</li></ol>",
+      "css": ".ds-detents { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(4, 1fr); border-top: 1px solid var(--rule-2); border-bottom: 1px solid var(--rule-2); font: 600 13.5px/1.3 var(--body); } .ds-detents li { display: flex; align-items: center; gap: 10px; padding: 11px 10px 11px 0; color: var(--ink-3); } .ds-detents li::before { content: ''; width: 13px; height: 13px; border: 1.5px solid var(--ultra); flex: none; outline: 2px solid transparent; outline-offset: 2px; transition: background .3s var(--ease); } .ds-detents li[data-state='done'] { color: var(--ink-2); } .ds-detents li[data-state='done']::before { background: var(--ultra); } .ds-detents li[data-state='current'] { color: var(--ink); } .ds-detents li[data-state='current']::before { background: var(--gold); border-color: var(--ink); outline-color: var(--gold); } .ds-detents b { font: 800 15px var(--display); color: var(--ultra); }"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Lottery Ticket",
+    "overview": "The tutor speaks the visual language of Vietnam's xổ số kiến thiết, the probability every Vietnamese already reads daily: guilloche security rosettes, printed serial numbers, prize-tier result boards. A committed ultramarine rail carries a live hypotrochoid rosette; the working area is cool paper with white sheets ruled in 1px hairlines. Scores are not badges, they are drawn: digits roll into place like a draw-cage odometer and land in special-prize red.\n\nDensity is that of a printed result board: condensed heavy numerals and uppercase labels, tight tiered rows, tabular figures, generous body leading for long Vietnamese math explanations. Surfaces are flat and square-shouldered (4px), separated by rules rather than shadows. The color world is four inks on paper: ultramarine for structure and action, red for scores and errors, gold for focus and serials, green for correct.\n\nThe world rejects the white-sidebar edtech card grid: no soft floating cards, no pastel gradients, no rounded pill dashboards.",
+    "keyCharacteristics": [
+      "Ultramarine shell rail (248px) with a live guilloche rosette that reseeds per section.",
+      "Prize-tier result board rows: tracked uppercase tier label, value, condensed numeral.",
+      "Graded results printed as a ticket: wave security band on top, gold serial in the corner.",
+      "One signature motion: the score odometer.",
+      "Hairline 1px rules, 4px corners, no panel shadows.",
+      "Barlow Condensed for headings and numerals, Be Vietnam Pro for every word of reading."
+    ],
+    "rules": [
+      { "name": "The Four Inks Rule", "body": "Every mark is ultramarine, red, gold or green on paper, plus the ink neutrals. Charts, canvases and the mind map draw from the same inks; the mind map's branch palette is exactly ultra, red, green, gold-ink, cycled.", "section": "colors" },
+      { "name": "The Red Is Earned Rule", "body": "Red marks a score or a mistake, never decoration or a generic call to action. The primary action is ultramarine.", "section": "colors" },
+      { "name": "The Gold Is Focus Rule", "body": "Gold signals where you are (focus ring, current detent, selection) and what was printed (serials). Gold text on paper always uses gold-ink, never raw gold.", "section": "colors" },
+      { "name": "The Condensed Numbers Rule", "body": "Every number that is a result (score, tier value, question number, step number, heatbar count) is set in Barlow Condensed 700-800 with tabular figures. Prose numbers stay in body.", "section": "typography" },
+      { "name": "The Reading Is Vietnamese Rule", "body": "Anything a student reads at length is Be Vietnam Pro. Barlow Condensed never sets a sentence.", "section": "typography" },
+      { "name": "The Hairline Not Shadow Rule", "body": "A surface is separated by a 1px rule (rule-2 for panels, row-rule between rows), never by a drop shadow. Shadows belong only to fixed or transient overlays.", "section": "elevation" }
+    ],
+    "dos": [
+      "**Do** separate surfaces with 1px hairlines (rule-2 for panels, row-rule between rows) at a 4px radius.",
+      "**Do** present any outcome as a result-board row, and wrap graded results in the ticket frame with their serial.",
+      "**Do** set every result number in Barlow Condensed 700-800 with tabular figures; scores land through the odometer in red.",
+      "**Do** use gold for focus (2px outline, 2px offset) and gold-ink for serial text.",
+      "**Do** keep charts, canvases and the mind map in the four inks (ultra, red, green, gold-ink).",
+      "**Do** make page titles uppercase condensed 800.",
+      "**Do** honor reduced motion: odometer settles instantly, rosette stops, entrance animations collapse."
+    ],
+    "donts": [
+      "**Don't** put drop shadows on panels, cards, rows or messages; shadows are for the fixed mobile bar and the toast only.",
+      "**Don't** add a second signature motion; the odometer is the one moment that animates for meaning.",
+      "**Don't** use red for decoration or primary actions; it is the score and the error.",
+      "**Don't** set sentences in Barlow Condensed or numbers-as-results in Be Vietnam Pro.",
+      "**Don't** round surfaces beyond 4px or fall back to the white-sidebar edtech card grid.",
+      "**Don't** introduce hues outside the four inks and their washes."
+    ]
+  }
+}

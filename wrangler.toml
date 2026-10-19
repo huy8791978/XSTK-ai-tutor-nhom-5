@@ -1,0 +1,24 @@
+name = "xstk-ai"
+main = "worker/index.js"
+compatibility_date = "2025-09-01"
+
+[assets]
+directory = "./public"
+binding = "ASSETS"
+
+[[durable_objects.bindings]]
+name = "LIMITER"
+class_name = "Limiter"
+
+[[migrations]]
+tag = "v1"
+new_sqlite_classes = ["Limiter"]
+
+# Non-secret settings. Set limits ~10% below your Google AI Studio quota for this model.
+# GEMINI_API_KEY is a secret: pushed from GitHub Secrets by the deploy workflow, never here.
+[vars]
+GEMINI_MODEL = "gemini-3.5-flash-lite"
+LIMIT_RPM = "14"
+LIMIT_TPM = "225000"
+LIMIT_RPD = "900"
+LIMIT_PER_IP_RPM = "6"

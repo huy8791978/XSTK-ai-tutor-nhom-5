@@ -1,0 +1,96 @@
+{
+  "title": "Chọn thế giới thị giác cho XSTK AI",
+  "question": "Hướng được gieo: Vé số kiến thiết. Giữ, chọn phương án khác, hoặc gieo lại.",
+  "options": [
+    {
+      "id": "assigned",
+      "kind": "assigned",
+      "label": "Vé số kiến thiết",
+      "kicker": "THE ROLL",
+      "lineage": "Vé số & bảng kết quả xổ số kiến thiết Việt Nam",
+      "thesis": "Xác suất ai cũng gặp hằng ngày: hoa văn guilloche, số seri và bảng giải biến thành ngôn ngữ của một gia sư.",
+      "palette": ["#1B2A8C", "#F4F6FB", "#D7263D", "#F2B705", "#0E9F6E"],
+      "materials": ["hoa văn guilloche vẽ bằng đường cong tham số", "số in đậm hẹp, seri đánh số"],
+      "viewport": "Rail xanh ultramarine có hoa văn guilloche sống; vùng làm việc trắng lạnh; điểm số lăn số như lồng cầu quay khi chấm.",
+      "risk": "Liên tưởng cờ bạc nếu dùng hình ảnh vé quá nguyên văn; giữ ở mức hoa văn, seri và bảng giải.",
+      "raised": [
+        {"from": "challenger-centre-rail", "raise": "Các bước Polya / Trải nghiệm→Vận dụng hiện thành dải nấc: nét mảnh khi chờ, tô đầy khi xong, ngoặc khi focus."},
+        {"from": "challenger-vertical-feed", "raise": "Luyện tập: mỗi câu chiếm trọn khung, câu kế tiếp đã nạp sẵn một lần vuốt."},
+        {"from": "challenger-saville", "raise": "Mỗi phiên học mang một số seri, hồ sơ đọc như danh mục được đánh số."}
+      ],
+      "html": ".impeccable/mocks/decision/assigned.html"
+    },
+    {
+      "id": "model-pick",
+      "kind": "pick",
+      "label": "Vở ô li mực tím",
+      "kicker": "IMPECCABLE’S PICK",
+      "lineage": "Vở kẻ ô, mực tím học trò, bút đỏ chấm bài",
+      "thesis": "Bài làm viết bằng mực tím, gia sư chấm bằng bút đỏ ngay trên trang.",
+      "palette": ["#F7F8FC", "#5B3FA8", "#D62839", "#BFC8E6"],
+      "materials": ["lưới ô li", "nét bút đỏ phê"],
+      "viewport": "Vùng làm việc trên nền lưới ô li mờ, nhận xét chấm đỏ đè lên bài.",
+      "risk": "Quen thuộc: nhiều sản phẩm giáo dục dùng hình ảnh vở; dễ thành trang trí.",
+      "html": ".impeccable/mocks/decision/model-pick.html"
+    },
+    {
+      "id": "challenger-centre-rail",
+      "kind": "challenger",
+      "catalogId": "rw-centre-rail-reference-setting",
+      "label": "Centre-rail edition",
+      "verdict": "declined",
+      "lineage": "Ấn bản chú giải lề rộng",
+      "thesis": "Hai cột chữ quanh một dải phím đỏ son.",
+      "palette": ["#1A1A1A", "#EFE8DA", "#C2381F"],
+      "materials": ["nét kẻ 1 pixel", "giấy xương"],
+      "viewport": "Hai cột lời giải quanh dải bước.",
+      "case": "Thua cả hai trục: sinh viên VN không nhận ra thế giới này, bố cục đọc cản công cụ tải bài và hội thoại.",
+      "risk": "Rơi vào cụm mặc định kem + serif + đỏ.",
+      "kept": "Dải nấc trạng thái (detent) cho các bước giải."
+    },
+    {
+      "id": "challenger-vertical-feed",
+      "kind": "challenger",
+      "catalogId": "pop-culture-shelf-vertical-video-feed-surface",
+      "label": "Vertical feed",
+      "verdict": "declined",
+      "lineage": "Bảng tin video dọc",
+      "thesis": "Một mục chiếm trọn màn hình.",
+      "palette": ["#000000", "#FFFFFF"],
+      "materials": ["full-bleed", "scroll-snap"],
+      "viewport": "Câu hỏi toàn màn hình, nút xếp dọc bên phải.",
+      "case": "Thua cả hai trục: học XSTK cần đọc kĩ và viết, không lướt.",
+      "risk": "Khuyến khích lướt nhanh thay vì suy nghĩ.",
+      "kept": "Một câu một khung, câu kế đã nạp sẵn."
+    },
+    {
+      "id": "challenger-saville",
+      "kind": "challenger",
+      "catalogId": "brand-identity-canon-saville-catalog-sleeve",
+      "label": "Catalog sleeve",
+      "verdict": "declined",
+      "lineage": "Bìa đĩa đánh số FAC",
+      "thesis": "Mọi thứ là một mục có số danh mục.",
+      "palette": ["#0B0B0B", "#FFFFFF"],
+      "materials": ["đen mờ", "đồ thị vạch trắng"],
+      "viewport": "Một đồ thị xung trên nền đen.",
+      "case": "Thua cả hai trục: mã màu thay chữ làm khó người học.",
+      "risk": "Khó đọc, thiếu nhãn.",
+      "kept": "Đánh số seri cho từng phiên học."
+    }
+  ],
+  "reroll": {"registers": ["safer", "bolder"]},
+  "buildPath": {"value": "code"},
+  "canon": true,
+  "canonCard": {
+    "kind": "canon",
+    "label": "Chuẩn của ngành edtech",
+    "thesis": "Ứng dụng học tập sạch: nền trắng, xanh chàm, thẻ bo góc.",
+    "palette": ["#FFFFFF", "#111827", "#4F46E5"],
+    "materials": ["lưới sạch", "thẻ bo góc"],
+    "viewport": "Sidebar trắng, các thẻ tính năng, khung chat.",
+    "risk": "Không khác gì đối thủ.",
+    "html": ".impeccable/mocks/decision/canon.html"
+  },
+  "steer": true
+}

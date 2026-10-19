@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>XSTK·AI — Gia sư Xác suất Thống kê</title>
+<meta name="description" content="Gia sư AI môn Xác suất Thống kê: chấm bài từ ảnh/PDF, luyện tập, vấn đáp, bản đồ tư duy và hồ sơ học tập.">
+<meta name="theme-color" content="#1B2A8C">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=Be+Vietnam+Pro:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css" crossorigin="anonymous">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js" crossorigin="anonymous"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js" crossorigin="anonymous"></script>
+<link rel="stylesheet" href="css/app.css">
+<script type="module" src="js/app.js"></script>
+</head>
+<body>
+<a class="skip" href="#main">Bỏ qua tới nội dung</a>
+<div class="app">
+  <aside class="rail" aria-label="Điều hướng chính">
+    <canvas class="rosette" aria-hidden="true"></canvas>
+    <a class="brand" href="#cham-bai">XSTK·AI<small>Gia sư Xác suất Thống kê</small></a>
+    <nav class="nav">
+      <a href="#cham-bai" data-route="cham-bai"><svg class="ic"><use href="#i-check"/></svg><span class="full">Gia sư chấm bài</span><span class="short" aria-hidden="true">Chấm bài</span></a>
+      <a href="#luyen-tap" data-route="luyen-tap"><svg class="ic"><use href="#i-stack"/></svg>Luyện tập</a>
+      <a href="#van-dap" data-route="van-dap"><svg class="ic"><use href="#i-talk"/></svg>Vấn đáp</a>
+      <a href="#ban-do" data-route="ban-do"><svg class="ic"><use href="#i-map"/></svg><span class="full">Bản đồ tư duy</span><span class="short" aria-hidden="true">Tư duy</span></a>
+      <a href="#ho-so" data-route="ho-so"><svg class="ic"><use href="#i-card"/></svg><span class="full">Hồ sơ học tập</span><span class="short" aria-hidden="true">Hồ sơ</span></a>
+    </nav>
+    <p class="serial" data-serial></p>
+  </aside>
+
+  <main id="main" tabindex="-1">
+    <header class="top">
+      <div class="top-titles">
+        <h1 data-title></h1>
+        <p class="lede" data-lede></p>
+      </div>
+      <a class="btn btn-ghost profile-btn" href="#ho-so"><svg class="ic"><use href="#i-card"/></svg><span>Hồ sơ của tôi</span></a>
+    </header>
+    <div class="view" data-view aria-live="polite"></div>
+  </main>
+</div>
+
+<div class="toast" role="status" aria-live="assertive" hidden></div>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <symbol id="i-check" viewBox="0 0 24 24"><path d="M4 5h11M4 10h8M4 15h6" /><path d="m13 17 3 3 6-7" /></symbol>
+    <symbol id="i-stack" viewBox="0 0 24 24"><rect x="4" y="4" width="11" height="11" rx="2"/><path d="M9 20h9a2 2 0 0 0 2-2V9"/><circle cx="7.5" cy="7.5" r=".6"/><circle cx="11.5" cy="11.5" r=".6"/></symbol>
+    <symbol id="i-talk" viewBox="0 0 24 24"><path d="M4 5h16v10H9l-5 4z"/><path d="M8 9h8M8 12h5"/></symbol>
+    <symbol id="i-map" viewBox="0 0 24 24"><circle cx="12" cy="12" r="2.5"/><circle cx="4.5" cy="6" r="1.8"/><circle cx="19.5" cy="6" r="1.8"/><circle cx="4.5" cy="18" r="1.8"/><circle cx="19.5" cy="18" r="1.8"/><path d="m6 7 4 3.5M18 7l-4 3.5M6 17l4-3.5M18 17l-4-3.5"/></symbol>
+    <symbol id="i-card" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="11" r="2.3"/><path d="M5.5 16.5c.8-1.8 2-2.6 3.5-2.6s2.7.8 3.5 2.6M15 10h3.5M15 13.5h3.5"/></symbol>
+    <symbol id="i-upload" viewBox="0 0 24 24"><path d="M12 15V4M7.5 8.5 12 4l4.5 4.5"/><path d="M4 14v4a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-4"/></symbol>
+    <symbol id="i-down" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></symbol>
+    <symbol id="i-x" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></symbol>
+    <symbol id="i-left" viewBox="0 0 24 24"><path d="m15 5-7 7 7 7"/></symbol>
+    <symbol id="i-right" viewBox="0 0 24 24"><path d="m9 5 7 7-7 7"/></symbol>
+    <symbol id="i-file" viewBox="0 0 24 24"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M9 13h6M9 17h4"/></symbol>
+  </defs>
+</svg>
+<noscript><p class="noscript">Trang cần bật JavaScript để hoạt động.</p></noscript>
+</body>
+</html>

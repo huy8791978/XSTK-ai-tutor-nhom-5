@@ -1,0 +1,13 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>Unit tests (browser)</title>
+<!-- Runs the node:test suites in a browser when Node isn't installed: serve the repo root and open /tests/browser.html -->
+<script type="importmap">{ "imports": { "node:test": "./shim/node-test.js", "node:assert/strict": "./shim/node-assert.js" } }</script>
+<pre id="out">running…</pre>
+<script type="module">
+  import { results } from './shim/node-test.js';
+  await import('./worker.test.mjs');
+  await import('./client.test.mjs');
+  const r = await results();
+  document.getElementById('out').textContent = r.map((x) => `${x.ok ? 'ok  ' : 'FAIL'} ${x.name}${x.err ? `\n     ${x.err}` : ''}`).join('\n') + `\n\n${r.filter((x) => x.ok).length}/${r.length} passed`;
+</script>

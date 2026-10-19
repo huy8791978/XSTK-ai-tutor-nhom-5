@@ -1,0 +1,39 @@
+<!doctype html><html lang="vi"><head><meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;700;800&family=Be+Vietnam+Pro:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0}body{width:1440px;height:900px;overflow:hidden;display:grid;grid-template-columns:248px 1fr;font:15px/1.55 "Be Vietnam Pro",sans-serif;color:#141833;background:#F4F6FB}
+.rail{background:#1B2A8C;color:#E8ECFF;padding:28px 20px;position:relative;overflow:hidden}
+.rail svg{position:absolute;right:-90px;top:-60px;opacity:.35}
+.brand{font:800 30px/1 "Barlow Condensed";letter-spacing:.02em;position:relative}.brand small{display:block;font:500 12px "Be Vietnam Pro";opacity:.7;margin-top:6px;letter-spacing:.08em}
+nav{margin-top:56px;display:grid;gap:4px;position:relative}nav a{padding:11px 12px;border-radius:8px;color:#C9D1FF;text-decoration:none;font-weight:500}nav a.on{background:#F4F6FB;color:#1B2A8C}
+.serial{position:absolute;bottom:24px;left:20px;font:700 13px "Barlow Condensed";letter-spacing:.18em;color:#F2B705}
+main{padding:28px 40px;display:grid;grid-template-rows:auto auto 1fr;gap:22px}
+header{display:flex;justify-content:space-between;align-items:end}h1{font:800 46px/1 "Barlow Condensed";letter-spacing:-.01em}
+.prof{border:1.5px solid #1B2A8C;color:#1B2A8C;padding:10px 16px;border-radius:999px;font-weight:600}
+.steps{display:flex;gap:0;border-top:1px solid #C7CDE6;border-bottom:1px solid #C7CDE6}.steps div{flex:1;padding:10px 0;font:600 13px "Be Vietnam Pro";color:#5A6185;display:flex;gap:8px;align-items:center}
+.steps i{width:14px;height:14px;border:1.5px solid #1B2A8C;display:inline-block}.steps .done i{background:#1B2A8C}.steps .cur{color:#141833}.steps .cur i{outline:2px solid #F2B705;outline-offset:2px}
+.work{display:grid;grid-template-columns:1.1fr 1fr;gap:24px}
+.card{background:#fff;border:1px solid #DCE1F2;border-radius:14px;padding:22px}
+.drop{height:250px;border:1.5px dashed #9AA4D6;border-radius:10px;display:grid;place-items:center;color:#5A6185;background:repeating-linear-gradient(135deg,#F7F8FD 0 10px,#fff 10px 20px)}
+.btns{display:flex;gap:10px;margin-top:16px}.b{padding:11px 16px;border-radius:9px;font-weight:600;border:1.5px solid #1B2A8C;color:#1B2A8C}.b.p{background:#1B2A8C;color:#fff}
+.board{display:grid;gap:0}.row{display:grid;grid-template-columns:120px 1fr 80px;align-items:center;border-bottom:1px solid #EEF0F8;padding:11px 0}
+.row b{font:700 14px "Barlow Condensed";letter-spacing:.12em;color:#5A6185}.row span{font-size:14px}.row em{font:800 26px "Barlow Condensed";font-style:normal;text-align:right}
+.row.sp em{color:#D7263D;font-size:56px;line-height:1}.score{display:flex;align-items:baseline;gap:10px}
+.tag{display:inline-block;font:600 12px "Be Vietnam Pro";padding:3px 8px;border-radius:5px;background:#FDECEE;color:#B01D31;margin-right:6px}
+</style></head><body>
+<aside class="rail"><svg width="360" height="360" viewBox="-180 -180 360 360"><g fill="none" stroke="#9FB0FF" stroke-width=".7">
+<circle r="160"/><circle r="140"/><circle r="120"/><circle r="100"/><circle r="80"/><ellipse rx="160" ry="60"/><ellipse rx="160" ry="60" transform="rotate(30)"/><ellipse rx="160" ry="60" transform="rotate(60)"/><ellipse rx="160" ry="60" transform="rotate(90)"/><ellipse rx="160" ry="60" transform="rotate(120)"/><ellipse rx="160" ry="60" transform="rotate(150)"/></g></svg>
+<div class="brand">XSTK·AI<small>GIA SƯ XÁC SUẤT THỐNG KÊ</small></div>
+<nav><a class="on">Gia sư chấm bài</a><a>Luyện tập</a><a>Vấn đáp</a><a>Bản đồ tư duy</a><a>Hồ sơ học tập</a></nav>
+<div class="serial">SERI 07·XS·0142</div></aside>
+<main><header><div><p style="color:#5A6185;font-weight:600">Bài 3 · Xác suất có điều kiện</p><h1>Chấm bài làm của bạn</h1></div><span class="prof">Hồ sơ của tôi</span></header>
+<div class="steps"><div class="done"><i></i>1 Tìm hiểu đề</div><div class="done"><i></i>2 Chương trình giải</div><div class="cur"><i></i>3 Trình bày</div><div><i></i>4 Kiểm tra</div></div>
+<div class="work"><section class="card"><div class="drop">Kéo ảnh hoặc PDF bài làm vào đây</div>
+<div class="btns"><span class="b">Chiến lược giải</span><span class="b p">Chấm điểm</span><span class="b">Lời giải chi tiết</span></div></section>
+<section class="card"><div class="board">
+<div class="row sp"><b>ĐIỂM</b><span>Bài làm 3 trang, nhận dạng OCR</span><em>7.5</em></div>
+<div class="row"><b>BƯỚC 1</b><span>Xác định đúng biến cố A, B</span><em>2/2</em></div>
+<div class="row"><b>BƯỚC 2</b><span>Chọn công thức Bayes</span><em>2/2</em></div>
+<div class="row"><b>BƯỚC 3</b><span><i class="tag">Sai tính toán</i>P(B) = 0,38 thay vì 0,34</span><em>2/4</em></div>
+<div class="row"><b>BƯỚC 4</b><span>Chưa kiểm tra tổng xác suất</span><em>1.5/2</em></div></div></section></div></main>
+</body></html>
