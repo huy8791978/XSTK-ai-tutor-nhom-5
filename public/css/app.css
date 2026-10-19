@@ -217,21 +217,23 @@ details.more[open] { padding-bottom: 14px; }
 @keyframes roll { to { transform: translateY(-10em); } }
 .error { display: flex; gap: 10px; align-items: flex-start; padding: 14px 16px; border-radius: var(--r); background: var(--red-wash); color: var(--red-ink); font-weight: 500; }
 
-/* Math input */
-.mathbox { display: grid; gap: 0; }
-.mathbar { display: flex; gap: 6px; overflow-x: auto; padding: 8px; border: 1.5px solid var(--rule-2); border-bottom: 0; border-radius: var(--r) var(--r) 0 0; background: var(--paper); scrollbar-width: none; }
-.mathbar::-webkit-scrollbar { display: none; }
-.mathbar + textarea { border-radius: 0 0 var(--r) var(--r); }
-.mathbar button {
-  flex: none; min-width: 40px; height: 36px; padding: 0 9px; border: 1px solid var(--rule-2); background: var(--sheet); border-radius: 3px;
-  cursor: pointer; font-size: 15px; color: var(--ink); display: grid; place-items: center;
+/* Math input: textarea + visual formula editor (MathLive) */
+.field-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
+.math-open { min-height: 38px; padding: 6px 12px; font-size: 13.5px; }
+.math-open[aria-expanded="true"] { border-color: var(--ultra); color: var(--ultra); background: var(--ultra-wash); }
+.mathpad { display: grid; gap: 10px; padding: 14px; border: 1.5px solid var(--ultra); border-radius: var(--r); background: var(--ultra-wash); }
+.mathpad-hint { font-size: 13px; color: var(--ink-2); }
+math-field {
+  display: block; width: 100%; min-height: 56px; padding: 10px 12px; font-size: 22px; border-radius: var(--r);
+  border: 1.5px solid var(--rule-2); background: var(--sheet); color: var(--ink);
+  --caret-color: var(--ultra); --selection-background-color: var(--gold-wash); --contains-highlight-background-color: var(--ultra-wash);
+  --placeholder-color: var(--ultra); --smart-fence-color: var(--ultra);
 }
-.mathbar button:hover { border-color: var(--ultra); color: var(--ultra); }
-.mathbar .grp { flex: none; align-self: center; font: 700 11px var(--display); letter-spacing: .14em; text-transform: uppercase; color: var(--ink-3); padding: 0 4px 0 8px; }
-.mathbar .grp:first-child { padding-left: 2px; }
+math-field:focus-within { outline: none; border-color: var(--ultra); box-shadow: 0 0 0 3px rgba(242, 183, 5, .45); }
+math-field::part(virtual-keyboard-toggle), math-field::part(menu-toggle) { color: var(--ultra); }
+body { --keyboard-accent-color: #1B2A8C; --keyboard-toolbar-text-active: #1B2A8C; --keycap-font-size: 20px; }
 .preview { margin-top: 8px; padding: 10px 14px; border-radius: var(--r); background: var(--paper); border: 1px dashed var(--rule-2); min-height: 44px; font-size: 15px; }
 .preview:empty::before { content: "Xem trước công thức sẽ hiện ở đây"; color: #7A80A0; }
-.mathhint { font-size: 12.5px; color: var(--ink-3); margin-top: 6px; }
 
 /* Practice pager */
 .toolbar { display: flex; flex-wrap: wrap; gap: 14px; align-items: flex-end; margin-bottom: 22px; }
@@ -325,8 +327,8 @@ details.more[open] { padding-bottom: 14px; }
   .rosette { opacity: .35; }
   .nav .short { display: inline; }
   .nav .full { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
-  .nav { margin: 0; width: 100%; grid-template-columns: repeat(5, 1fr); gap: 2px; }
-  .nav a { flex-direction: column; gap: 3px; padding: 7px 2px; font-size: 11px; line-height: 1.2; text-align: center; border-radius: var(--r); }
+  .nav { margin: 0; width: 100%; grid-template-columns: repeat(7, 1fr); gap: 1px; }
+  .nav a { flex-direction: column; gap: 3px; padding: 7px 0; font-size: 11px; letter-spacing: -.02em; white-space: nowrap; line-height: 1.2; text-align: center; border-radius: var(--r); }
   main { padding: 0 16px calc(96px + env(safe-area-inset-bottom)); }
   .top {
     position: sticky; top: 0; z-index: 20; margin: 0 -16px 20px; padding: calc(12px + env(safe-area-inset-top)) 16px 14px;
@@ -364,3 +366,33 @@ details.more[open] { padding-bottom: 14px; }
 .ticket .board { margin-top: 10px; }
 .odo.sm { font-size: 40px; }
 .row .odo { justify-self: end; }
+
+/* CASIO fx-580VN X key steps: keycaps as printed on the calculator */
+.casio { margin-top: 18px; padding: 14px 16px; border: 1px solid var(--rule-2); border-radius: var(--r); background: var(--paper); }
+.casio h3 { margin-top: 0; }
+.casio ol { padding-left: 1.4em; display: grid; gap: 10px; }
+.casio li { display: grid; gap: 4px; }
+.keys { display: flex; flex-wrap: wrap; gap: 5px; }
+kbd.key {
+  display: inline-grid; place-items: center; min-width: 34px; height: 30px; padding: 0 8px; border-radius: 4px;
+  font: 700 13px/1 var(--body); color: #fff; background: var(--ink); white-space: nowrap;
+}
+kbd.key.shift { background: var(--gold); color: var(--ink); }
+kbd.key.alpha { background: var(--red); }
+
+/* Theory lesson */
+.chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.chip { min-height: 36px; padding: 6px 12px; border: 1px solid var(--rule-2); border-radius: var(--r); background: var(--sheet); color: var(--ink-2); cursor: pointer; font-size: 13.5px; }
+.chip:hover { border-color: var(--ultra); color: var(--ultra); }
+.stage-nav { display: flex; justify-content: space-between; gap: 10px; margin-top: 20px; flex-wrap: wrap; }
+.definition { margin-top: 14px; padding: 16px 18px; border: 1.5px solid var(--ultra); border-radius: var(--r); background: var(--ultra-wash); font-size: 16.5px; }
+.definition > b { display: block; font: 700 13px var(--display); letter-spacing: .16em; text-transform: uppercase; color: var(--ultra); margin-bottom: 6px; }
+.split { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.split > div { padding: 14px 16px; border: 1px solid var(--rule-2); border-radius: var(--r); }
+.terms { display: grid; grid-template-columns: auto 1fr; gap: 6px 16px; align-items: baseline; }
+.terms dt { font-weight: 600; } .terms dd { margin: 0; }
+.lesson-list { display: grid; gap: 18px; }
+@media (max-width: 860px) { .split { grid-template-columns: 1fr; } }
+.panel .q.panel { border: 0; border-top: 1px solid var(--rule-2); border-radius: 0; padding: 18px 0 0; }
+.foot { max-width: 1320px; margin-top: 48px; padding-top: 16px; border-top: 1px solid var(--rule-2); font-size: 13.5px; color: var(--ink-3); }
+.foot strong { color: var(--ink-2); }

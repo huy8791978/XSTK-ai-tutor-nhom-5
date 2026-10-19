@@ -1,71 +1,95 @@
-// Math symbol toolbar + live KaTeX preview for any textarea.
+// Text field + visual formula editor (MathLive): press a template (fraction, P(A|B), Cₙᵏ…), then just type the values into its boxes.
 import { md, typeset } from './md.js';
+import { h, icon, toast } from './ui.js';
 
-const GROUPS = [
-  ['Cơ bản', [
-    ['a⁄b', '\\frac{▢}{▢}', 'Phân số'], ['xⁿ', '^{▢}', 'Lũy thừa'], ['xᵢ', '_{▢}', 'Chỉ số dưới'], ['√', '\\sqrt{▢}', 'Căn bậc hai'],
-    ['±', '\\pm ', 'Cộng trừ'], ['×', '\\times ', 'Nhân'], ['·', '\\cdot ', 'Chấm nhân'], ['≤', '\\le ', 'Nhỏ hơn hoặc bằng'],
-    ['≥', '\\ge ', 'Lớn hơn hoặc bằng'], ['≠', '\\ne ', 'Khác'], ['≈', '\\approx ', 'Xấp xỉ'], ['∞', '\\infty ', 'Vô cùng'],
-  ]],
-  ['Xác suất', [
-    ['P(A)', 'P(▢)', 'Xác suất'], ['P(A|B)', 'P(▢ \\mid ▢)', 'Xác suất có điều kiện'], ['E(X)', 'E(▢)', 'Kì vọng'],
-    ['D(X)', 'D(▢)', 'Phương sai'], ['Cₙᵏ', 'C_{▢}^{▢}', 'Tổ hợp'], ['Aₙᵏ', 'A_{▢}^{▢}', 'Chỉnh hợp'], ['n!', '▢!', 'Giai thừa'],
-    ['x̄', '\\bar{▢}', 'Trung bình mẫu'], ['p̂', '\\hat{▢}', 'Ước lượng'], ['∑', '\\sum_{i=1}^{n} ', 'Tổng'],
-    ['∫', '\\int_{▢}^{▢} ', 'Tích phân'], ['Φ', '\\Phi(▢)', 'Hàm Laplace / phân phối chuẩn'],
-  ]],
-  ['Tập hợp', [
-    ['∩', '\\cap ', 'Giao'], ['∪', '\\cup ', 'Hợp'], ['Ā', '\\overline{▢}', 'Biến cố đối'], ['∅', '\\varnothing ', 'Rỗng'],
-    ['Ω', '\\Omega ', 'Không gian mẫu'], ['∈', '\\in ', 'Thuộc'], ['⊂', '\\subset ', 'Tập con'],
-  ]],
-  ['Hy Lạp', [
-    ['α', '\\alpha ', 'alpha'], ['β', '\\beta ', 'beta'], ['λ', '\\lambda ', 'lambda'], ['μ', '\\mu ', 'mu'], ['σ', '\\sigma ', 'sigma'],
-    ['σ²', '\\sigma^2 ', 'sigma bình phương'], ['θ', '\\theta ', 'theta'], ['ρ', '\\rho ', 'rho'], ['χ²', '\\chi^2 ', 'khi bình phương'], ['ε', '\\varepsilon ', 'epsilon'],
-  ]],
-];
+const ML = 'https://cdn.jsdelivr.net/npm/mathlive@0.109.2';
+
+/** XSTK keyboard page: every key is a template whose ■ boxes the student fills in. */
+const XSTK_LAYOUT = {
+  label: 'XSTK', tooltip: 'Kí hiệu Xác suất Thống kê',
+  rows: [
+    [{ latex: 'P(#?)' }, { latex: 'P(#?\\mid #?)' }, { latex: 'E(#?)' }, { latex: 'D(#?)' }, { latex: '\\mathrm{C}_{#?}^{#?}' }, { latex: '\\mathrm{A}_{#?}^{#?}' }, { latex: '#@!' }, { latex: '\\Phi(#?)' }],
+    ['\\cap', '\\cup', { latex: '\\overline{#@}' }, '\\varnothing', '\\Omega', '\\in', '\\subset', '\\mid'],
+    [{ latex: '\\bar{#@}' }, { latex: '\\hat{#@}' }, '\\mu', '\\sigma', { latex: '\\sigma^2' }, '\\lambda', '\\alpha', { latex: '\\chi^2' }],
+    [{ latex: '\\frac{#@}{#?}' }, { latex: '#@^{#?}' }, { latex: '#@_{#?}' }, { latex: '\\sqrt{#@}' }, { latex: '\\sum_{#?}^{#?}' }, { latex: '\\int_{#?}^{#?}' }, '\\le', '\\ge'],
+    ['\\ne', '\\approx', '\\infty', '\\pm', '\\times', '\\cdot', { latex: '\\left(#?\\right)' }, '[backspace]'],
+  ],
+};
+
+let ready;
+/** Load MathLive once, on first use (keeps the first page load light). */
+function loadMathLive() {
+  return (ready ??= import(`${ML}/+esm`).then(({ MathfieldElement }) => {
+    MathfieldElement.fontsDirectory = `${ML}/fonts/`;
+    MathfieldElement.soundsDirectory = null;
+    const kb = window.mathVirtualKeyboard;
+    kb.layouts = [XSTK_LAYOUT, 'numeric', 'symbols', 'greek', 'alphabetic'];
+    // Keep page content reachable above the on-screen keyboard.
+    kb.addEventListener('geometrychange', () => { document.body.style.paddingBottom = kb.visible ? `${kb.boundingRect.height}px` : ''; });
+    return MathfieldElement;
+  }).catch((e) => { ready = null; throw e; }));
+}
 
 /**
- * Insert a LaTeX snippet at the selection. "▢" marks slots: the selection fills the first slot,
- * the caret lands on the next empty one. Wraps in $…$ unless the caret is already inside math.
+ * Insert LaTeX at the selection, wrapped in $…$ unless the caret is already inside math.
+ * Returns the new value and the caret position after the insert.
  */
-export function insertSnippet(value, start, end, snippet) {
-  const before = value.slice(0, start), sel = value.slice(start, end), after = value.slice(end);
+export function insertLatex(value, start, end, latex) {
+  const before = value.slice(0, start), after = value.slice(end);
   const inMath = ((before.match(/(?<!\\)\$/g) || []).length % 2) === 1;
-  let body = sel ? snippet.replace('▢', sel) : snippet;
-  if (!inMath) body = `$${body.trimEnd()}$`;
-  const slot = body.indexOf('▢');
-  const clean = body.replace(/▢/g, '');
-  return { value: before + clean + after, cursor: start + (slot >= 0 ? slot : clean.length) };
+  const body = inMath ? latex : `$${latex}$`;
+  const pad = !inMath && before && !/\s$/.test(before) ? ' ' : '';
+  return { value: before + pad + body + after, cursor: start + pad.length + body.length };
 }
 
 const hasMath = (s) => /\$|\\\(|\\\[/.test(s);
 
-/** Build a labelled math-enabled textarea. Returns the wrapper; the textarea is `.querySelector('textarea')`. */
+/** Build a labelled textarea with a "Nhập công thức" editor. The textarea is `.querySelector('textarea')`. */
 export function mathField({ label, name, placeholder = '', rows = 4, value = '' }) {
   const id = `f-${name}-${Math.random().toString(36).slice(2, 7)}`;
-  const wrap = document.createElement('div');
-  wrap.className = 'field';
-  wrap.innerHTML = `<label class="label" for="${id}">${label}</label>
-    <div class="mathbox"><div class="mathbar" role="toolbar" aria-label="Chèn kí hiệu toán học"></div>
-    <textarea id="${id}" name="${name}" rows="${rows}" spellcheck="false"></textarea></div>
-    <div class="preview rich" aria-live="polite" hidden></div>
-    <p class="mathhint">Gõ công thức giữa hai dấu $…$ (ví dụ $P(A\\mid B)$) hoặc bấm các nút kí hiệu.</p>`;
-  const bar = wrap.querySelector('.mathbar'), ta = wrap.querySelector('textarea'), pv = wrap.querySelector('.preview');
-  ta.placeholder = placeholder; ta.value = value;
+  const ta = h('textarea', { id, name, rows, spellcheck: 'false', placeholder });
+  ta.value = value;
+  const pv = h('div.preview.rich', { 'aria-live': 'polite', hidden: true });
+  const pad = h('div.mathpad', { hidden: true });
+  const open = h('button.btn.btn-ghost.math-open', { type: 'button', 'aria-expanded': 'false' }, icon('sigma'), 'Nhập công thức');
+  let sel = [0, 0], mf;
 
-  for (const [g, items] of GROUPS) {
-    const lab = document.createElement('span'); lab.className = 'grp'; lab.textContent = g; bar.append(lab);
-    for (const [text, snip, aria] of items) {
-      const b = document.createElement('button');
-      b.type = 'button'; b.textContent = text; b.title = aria; b.setAttribute('aria-label', aria); b.dataset.snip = snip;
-      bar.append(b);
-    }
-  }
-  bar.addEventListener('mousedown', (e) => e.preventDefault()); // keep textarea selection on desktop
-  bar.addEventListener('click', (e) => {
-    const b = e.target.closest('button'); if (!b) return;
-    const r = insertSnippet(ta.value, ta.selectionStart, ta.selectionEnd, b.dataset.snip);
-    ta.value = r.value; ta.focus(); ta.setSelectionRange(r.cursor, r.cursor);
+  const close = () => { pad.hidden = true; open.setAttribute('aria-expanded', 'false'); window.mathVirtualKeyboard?.hide(); ta.focus(); };
+  const insert = () => {
+    const latex = mf.getValue('latex').trim();
+    if (!latex) return toast('Công thức đang trống.');
+    const r = insertLatex(ta.value, sel[0], sel[1], latex);
+    ta.value = r.value; mf.value = '';
+    close(); ta.setSelectionRange(r.cursor, r.cursor);
     ta.dispatchEvent(new Event('input', { bubbles: true }));
+  };
+
+  open.addEventListener('click', async () => {
+    if (!pad.hidden) return close();
+    sel = [ta.selectionStart, ta.selectionEnd];
+    try {
+      open.setAttribute('aria-busy', 'true');
+      const MathfieldElement = await loadMathLive().finally(() => open.removeAttribute('aria-busy'));
+      if (!mf) {
+        mf = new MathfieldElement();
+        mf.mathVirtualKeyboardPolicy = 'manual';
+        mf.setAttribute('aria-label', 'Ô soạn công thức');
+        mf.addEventListener('focusin', () => window.mathVirtualKeyboard.show());
+        mf.addEventListener('keydown', (e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); insert(); } if (e.key === 'Escape') close(); });
+        pad.append(
+          h('p.mathpad-hint', {}, 'Bấm một mẫu trên bàn phím (phân số, P(A|B), tổ hợp…) rồi điền giá trị vào các ô. Có thể gõ trực tiếp: 1/2 thành phân số, ^ là mũ, _ là chỉ số.'),
+          mf,
+          h('div.btn-row', {}, h('button.btn.btn-primary', { type: 'button', onclick: insert }, 'Chèn vào bài'), h('button.btn.btn-ghost', { type: 'button', onclick: close }, 'Đóng')));
+      }
+      pad.hidden = false; open.setAttribute('aria-expanded', 'true');
+      mf.focus(); window.mathVirtualKeyboard.show();
+      setTimeout(() => { // keep the editor above the on-screen keyboard
+        const over = pad.getBoundingClientRect().bottom - (innerHeight - window.mathVirtualKeyboard.boundingRect.height) + 16;
+        if (over > 0) scrollBy({ top: over, behavior: 'smooth' });
+      }, 300);
+    } catch {
+      toast('Không tải được bộ soạn công thức. Kiểm tra mạng, hoặc gõ công thức giữa hai dấu $…$.');
+    }
   });
 
   let t;
@@ -77,5 +101,8 @@ export function mathField({ label, name, placeholder = '', rows = 4, value = '' 
       if (show) { pv.innerHTML = md(ta.value); typeset(pv); }
     }, 180);
   });
-  return wrap;
+
+  return h('div.field', {},
+    h('div.field-head', {}, h('label.label', { for: id }, label), open),
+    ta, pad, pv);
 }

@@ -7,12 +7,14 @@ Web tĩnh (HTML/CSS/JS, không cần build) chạy trên **Cloudflare Workers (m
 | Màn hình | Nội dung |
 |---|---|
 | **Gia sư chấm bài** | Tải ảnh/PDF bài làm (Gemini đọc chữ – OCR). Nút **Chiến lược giải** (không lộ đáp án), **Chấm điểm** (chỉ chấm bài của bạn, theo từng bước), **Lời giải chi tiết** (4 bước Polya). |
+| **Học lí thuyết** | Học một khái niệm theo 4 bước: Trải nghiệm → Hình thành định nghĩa (dấu hiệu bản chất, thuật ngữ, kí hiệu) → Củng cố (câu hỏi nhận diện, có chấm) → Vận dụng (bài thực tế có chấm). |
+| **Học định lí** | Trải nghiệm để dự đoán → Hình thành định lí (giả thiết, kết luận, luận cứ, chứng minh, cấu trúc logic) → Củng cố → Vận dụng. |
 | **Luyện tập** | Nút **Tạo 5 câu trắc nghiệm** / **Tạo 5 câu tự luận** theo chủ đề và mức độ. Mỗi câu có **Chiến lược**, **Chấm bài**, **Xem lời giải**. |
 | **Vấn đáp** | AI hỏi lí thuyết theo Trải nghiệm → Hình thành → Củng cố → Vận dụng, chấm từng câu trả lời, tổng kết lỗ hổng kiến thức và sai lầm. |
 | **Bản đồ tư duy** | Bản đồ toàn môn có sẵn + AI vẽ bản đồ theo chủ đề. Bấm nút để thu/mở nhánh, kéo, phóng to. Hiển thị đầy đủ dấu tiếng Việt và công thức. |
 | **Hồ sơ học tập** | Nút **Hồ sơ của tôi** ở mọi trang. Thống kê điểm, loại lỗi, chủ đề yếu; AI phân tích lỗi lặp lại và đề xuất lộ trình 2 tuần. Xuất/nhập hồ sơ để mang sang máy khác. |
 
-Mọi ô nhập văn bản đều có **thanh kí hiệu toán học** (phân số, tổ hợp, $P(A\mid B)$, $\bar x$, chữ Hy Lạp…) và xem trước công thức bằng KaTeX. Các ví dụ có **biểu đồ minh hoạ** (nhị thức, Poisson, chuẩn có tô vùng, Venn, biểu đồ cột) và **bảng Galton** động.
+Mọi ô nhập văn bản đều có nút **Nhập công thức**: mở bàn phím toán (MathLive) với trang **XSTK** gồm các mẫu P(A|B), E(X), D(X), tổ hợp, chỉnh hợp, phân số, mũ, căn, tổng, tích phân, x̄, chữ Hy Lạp…; bấm mẫu rồi chỉ cần điền giá trị vào các ô, bấm **Chèn vào bài**. Lời giải có thêm khung **Bấm máy CASIO fx-580VN X** từng bước. Chân trang luôn nhắc: nội dung do AI tạo, cần đối chiếu đề cương hoặc hỏi giáo viên. Các ví dụ có **biểu đồ minh hoạ** (nhị thức, Poisson, chuẩn có tô vùng, Venn, biểu đồ cột) và **bảng Galton** động.
 
 ## Triển khai (khoảng 10 phút)
 

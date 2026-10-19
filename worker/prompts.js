@@ -17,7 +17,13 @@ Khi có ví dụ minh hoạ được bằng biểu đồ, thêm trường "viz" 
 {"type":"binomial","n":10,"p":0.3,"caption":"..."} | {"type":"poisson","lambda":3,"caption":"..."} |
 {"type":"normal","mu":0,"sigma":1,"a":-1,"b":1,"caption":"..."} (a,b tuỳ chọn để tô vùng) |
 {"type":"bars","labels":["..."],"values":[...],"caption":"..."} | {"type":"venn","pA":0.5,"pB":0.4,"pAB":0.2,"caption":"..."}.
-Nếu không phù hợp thì đặt "viz": null. Chỉ trả về JSON hợp lệ đúng cấu trúc được yêu cầu.`;
+Nếu không phù hợp thì đặt "viz": null.
+Khi lời giải có phép tính, thêm trường "casio": hướng dẫn bấm máy tính CASIO fx-580VN X từng bước, dạng
+[{"keys": ["MENU","7"], "note": "Vào chế độ Phân phối"}, {"keys": ["SHIFT","÷"], "note": "nCr"}].
+Mỗi phần tử "keys" là tên phím in trên máy (MENU, SHIFT, ALPHA, OPTN, CALC, SOLVE, =, AC, DEL, ▲, ▼, ◀, ▶, x², √, ÷, ×, +, −, (, ), x10ˣ, Ans, chữ số…) hoặc ô nhập giá trị. Dùng đúng chế độ của fx-580VN X (Tính toán, Thống kê, Phân phối, Bảng, Phương trình…), ghi kết quả máy hiện ở "note" của bước cuối. Không dùng máy tính thì "casio": [].
+Chỉ trả về JSON hợp lệ đúng cấu trúc được yêu cầu.`;
+
+const CASIO = '"casio": [{"keys": ["..."], "note": "..."}]';
 
 const MISTAKE = `{"topic": "<chủ đề hợp lệ>", "type": "<loại lỗi hợp lệ>", "detail": "<mô tả ngắn>"}`;
 
@@ -36,11 +42,11 @@ Trả JSON: {"transcript": "<bài làm đã nhận dạng, dùng LaTeX>", "score
   solve: (p) => ({
     text: `Đề bài (có thể kèm ảnh/PDF):\n${p.problem || '(xem tệp đính kèm)'}\n
 Viết lời giải chi tiết đủ 4 bước Polya.
-Trả JSON: {"topic": "<chủ đề>", "understand": "<bước 1, markdown>", "plan": "<bước 2>", "solution": "<bước 3, lời giải chi tiết từng dòng>", "check": "<bước 4: kiểm tra, phương pháp rút ra, cách khác>", "similar": ["2 bài tương tự/khái quát hoá"], "viz": <viz hoặc null>}`,
+Trả JSON: {"topic": "<chủ đề>", "understand": "<bước 1, markdown>", "plan": "<bước 2>", "solution": "<bước 3, lời giải chi tiết từng dòng>", "check": "<bước 4: kiểm tra, phương pháp rút ra, cách khác>", "similar": ["2 bài tương tự/khái quát hoá"], ${CASIO}, "viz": <viz hoặc null>}`,
   }),
   practice: (p) => ({
     text: `Tạo đúng 5 bài ${p.kind === 'mcq' ? 'TRẮC NGHIỆM 4 phương án (chỉ 1 đúng)' : 'TỰ LUẬN'} mới, khác nhau, về chủ đề "${p.topic}", mức độ ${p.level || 'trung bình'}, gắn với tình huống thực tế Việt Nam khi có thể.
-Trả JSON: {"questions": [{"prompt": "...", ${p.kind === 'mcq' ? '"options": ["A","B","C","D"], "answer": <chỉ số 0-3>, ' : ''}"topic": "<chủ đề>", "strategy": ["gợi ý dẫn dắt, KHÔNG lộ đáp án"], "solution": "<lời giải chi tiết 4 bước Polya, markdown>", "viz": <viz hoặc null>}]}`,
+Trả JSON: {"questions": [{"prompt": "...", ${p.kind === 'mcq' ? '"options": ["A","B","C","D"], "answer": <chỉ số 0-3>, ' : ''}"topic": "<chủ đề>", "strategy": ["gợi ý dẫn dắt, KHÔNG lộ đáp án"], "solution": "<lời giải chi tiết 4 bước Polya, markdown>", ${CASIO}, "viz": <viz hoặc null>}]}`,
   }),
   practiceGrade: (p) => ({
     text: `Đề: ${p.question}\nLời giải tham khảo (để chấm, KHÔNG chép lại cho sinh viên): ${p.reference}\nBài làm sinh viên: ${p.answer || '(xem tệp đính kèm)'}\n
@@ -56,6 +62,23 @@ ${p.history?.length ? 'Đánh giá câu trả lời gần nhất của sinh viê
 Mỗi lần chỉ hỏi MỘT câu, không tự trả lời hộ.
 Trả JSON: {"stage": "Trải nghiệm|Hình thành|Củng cố|Vận dụng", "feedback": "<nhận xét câu trả lời trước hoặc rỗng>", "score": <0-10 hoặc null>, "mistakes": [${MISTAKE}], "question": "...", "viz": <viz hoặc null>}`,
   }),
+  lesson: (p) => {
+    const theorem = p.kind === 'theorem';
+    const formation = theorem
+      ? `"formation": {"prediction": "<câu hỏi gợi ý sinh viên tự dự đoán định lí>", "statement": "<phát biểu định lí, LaTeX>", "hypothesis": ["giả thiết"], "conclusion": ["kết luận"], "grounds": ["luận cứ: định nghĩa/tiên đề/định lí đã biết làm cơ sở chứng minh"], "proof": "<cách chứng minh, từng bước, markdown>", "logic": "<cấu trúc logic: dạng 'nếu… thì…', mệnh đề đảo có đúng không, điều kiện cần/đủ>"}`
+      : `"formation": {"signs": ["dấu hiệu bản chất rút ra nhờ phân tích, so sánh, trừu tượng hoá, khái quát hoá"], "terms": [{"term": "thuật ngữ", "symbol": "<kí hiệu LaTeX>"}], "definition": "<phát biểu định nghĩa chính xác, LaTeX>", "related": ["liên hệ logic với khái niệm khác"]}`;
+    return {
+      text: `Soạn bài học ${theorem ? 'ĐỊNH LÍ' : 'KHÁI NIỆM'} "${p.name}" (chủ đề "${p.topic}") theo đúng 4 bước: Trải nghiệm → ${theorem ? 'Hình thành định lí' : 'Hình thành định nghĩa khái niệm'} → Củng cố → Vận dụng.
+- Trải nghiệm: tình huống thực tiễn hoặc nội bộ môn toán gần gũi với sinh viên Việt Nam, ${theorem ? 'cho sinh viên tiếp cận giả thiết và kết luận, khơi gợi nhu cầu chứng minh/kiểm chứng' : 'giúp cảm nhận dấu hiệu bản chất của khái niệm'}; kết thúc bằng một câu hỏi để sinh viên suy nghĩ.
+- Củng cố: 3 câu trắc nghiệm nhận diện/vận dụng trực tiếp trong trường hợp đơn giản, đặc trưng${theorem ? '' : ', và thể hiện khái niệm trong ngữ cảnh khác'}.
+- Vận dụng: 1 bài toán thực tiễn/phức hợp hơn, có chiến lược (không lộ đáp án) và lời giải 4 bước Polya.
+Trả JSON: {"name": "...", "topic": "<chủ đề>",
+"experience": {"situation": "<tình huống, markdown>", "question": "<câu hỏi cho sinh viên>", "insight": "<điều rút ra sau trải nghiệm>", "viz": <viz hoặc null>},
+${formation},
+"consolidate": [{"prompt": "...", "options": ["A","B","C","D"], "answer": <0-3>, "topic": "<chủ đề>", "strategy": ["gợi ý"], "solution": "<giải thích>", "viz": null}],
+"apply": {"prompt": "...", "topic": "<chủ đề>", "strategy": ["gợi ý, KHÔNG lộ đáp án"], "solution": "<lời giải 4 bước Polya>", ${CASIO}, "viz": <viz hoặc null>}}`,
+    };
+  },
   mindmap: (p) => ({
     text: `Lập bản đồ tư duy cho chủ đề "${p.topic}" trong môn XSTK. Dạng markdown: một dòng "# tiêu đề", các nhánh "## ...", "### ...", lá là "- ...". 3-4 tầng, 5-7 nhánh chính, mỗi nút ngắn gọn, có công thức LaTeX khi cần.
 Trả JSON: {"markdown": "..."}`,

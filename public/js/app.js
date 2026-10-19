@@ -2,12 +2,13 @@
 import { rosette } from './viz.js';
 import { load } from './profile.js';
 import * as tutor from './views/tutor.js';
+import { concept, theorem } from './views/lesson.js';
 import * as practice from './views/practice.js';
 import * as oral from './views/oral.js';
 import * as mindmap from './views/mindmap.js';
 import * as profile from './views/profile.js';
 
-const ROUTES = { 'cham-bai': tutor, 'luyen-tap': practice, 'van-dap': oral, 'ban-do': mindmap, 'ho-so': profile };
+const ROUTES = { 'cham-bai': tutor, 'ly-thuyet': concept, 'dinh-li': theorem, 'luyen-tap': practice, 'van-dap': oral, 'ban-do': mindmap, 'ho-so': profile };
 const ORDER = Object.keys(ROUTES);
 const view = document.querySelector('[data-view]');
 const title = document.querySelector('[data-title]');

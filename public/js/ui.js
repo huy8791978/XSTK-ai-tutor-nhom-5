@@ -80,3 +80,15 @@ export function detents(labels, states) {
 }
 export const POLYA = ['Tìm hiểu đề', 'Chương trình giải', 'Trình bày', 'Kiểm tra'];
 export const STAGES = ['Trải nghiệm', 'Hình thành', 'Củng cố', 'Vận dụng'];
+
+/** CASIO fx-580VN X key sequence: steps = [{ keys: ['MENU', '7'], note }]. Returns null when there is nothing to press. */
+export function casio(steps) {
+  const ok = (steps || []).filter((s) => s && (s.keys?.length || s.note));
+  if (!ok.length) return null;
+  const cls = (k) => (k === 'SHIFT' ? 'key.shift' : k === 'ALPHA' ? 'key.alpha' : 'key');
+  return h('section.casio', { 'aria-label': 'Cách bấm máy CASIO fx-580VN X' },
+    h('h3', {}, 'Bấm máy CASIO fx-580VN X'),
+    h('ol', {}, ok.map((s) => h('li', {},
+      h('span.keys', {}, (s.keys || []).map((k) => h(`kbd.${cls(String(k))}`, {}, String(k)))),
+      s.note ? rich(s.note, 'span') : null))));
+}

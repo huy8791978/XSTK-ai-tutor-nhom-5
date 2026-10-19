@@ -2,7 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { md, esc } from '../public/js/md.js';
 import { summarize, fmtScore, newSerial, insightPayload } from '../public/js/stats.js';
-import { insertSnippet } from '../public/js/mathinput.js';
+import { insertLatex } from '../public/js/mathinput.js';
 
 test('md escapes HTML and keeps math untouched', () => {
   const out = md('<img src=x onerror=alert(1)> và $a*b*c$ **đậm**');
@@ -18,15 +18,14 @@ test('md builds lists, headings and paragraphs', () => {
 
 test('esc handles null', () => assert.equal(esc(null), ''));
 
-test('insertSnippet wraps in $ outside math and puts caret in first slot', () => {
-  const r = insertSnippet('Tính ', 5, 5, '\\frac{▢}{▢}');
-  assert.equal(r.value, 'Tính $\\frac{}{}$');
-  assert.equal(r.cursor, 5 + '$\\frac{'.length);
+test('insertLatex wraps in $ outside math, with a space before', () => {
+  const r = insertLatex('Tính', 4, 4, '\\frac{1}{2}');
+  assert.equal(r.value, 'Tính $\\frac{1}{2}$');
+  assert.equal(r.cursor, r.value.length);
 });
 
-test('insertSnippet inside math does not add $ and fills selection', () => {
-  const v = '$x + y$';
-  const r = insertSnippet(v, 1, 2, '\\sqrt{▢}');
+test('insertLatex inside math adds no $ and replaces the selection', () => {
+  const r = insertLatex('$x + y$', 1, 2, '\\sqrt{x}');
   assert.equal(r.value, '$\\sqrt{x} + y$');
   assert.equal(r.cursor, 1 + '\\sqrt{x}'.length);
 });

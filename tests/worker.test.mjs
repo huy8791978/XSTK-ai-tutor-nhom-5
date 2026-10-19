@@ -66,3 +66,17 @@ test('extractJson tolerates fences and prose', () => {
   assert.deepEqual(extractJson('Đây: {"b":[1,2]} xong'), { b: [1, 2] });
   assert.throws(() => extractJson('không có json'), /định dạng/);
 });
+
+test('lesson prompt follows the concept and theorem workflows', () => {
+  const c = buildRequest('lesson', { kind: 'concept', name: 'Biến cố độc lập', topic: 'x' }).body.contents[0].parts[0].text;
+  assert.match(c, /Hình thành định nghĩa khái niệm/);
+  assert.match(c, /"signs"/);
+  const t = buildRequest('lesson', { kind: 'theorem', name: 'Bayes', topic: 'x' }).body.contents[0].parts[0].text;
+  assert.match(t, /"hypothesis"/);
+  assert.match(t, /"proof"/);
+});
+
+test('solutions ask for CASIO fx-580VN X key steps', () => {
+  assert.match(buildRequest('solve', { problem: 'x' }).body.contents[0].parts[0].text, /"casio"/);
+  assert.match(buildRequest('solve', { problem: 'x' }).body.systemInstruction.parts[0].text, /fx-580VN X/);
+});

@@ -1,5 +1,5 @@
 // AI Tutor: upload work (image/PDF, OCR by Gemini) → strategy / grade / detailed solution.
-import { h, icon, rich, list, run, detents, POLYA, toast } from '../ui.js';
+import { h, icon, rich, list, run, detents, POLYA, toast, casio } from '../ui.js';
 import { ai } from '../api.js';
 import { readFiles } from '../files.js';
 import { mathField } from '../mathinput.js';
@@ -107,6 +107,7 @@ export function solveView(d) {
     h('h2', { style: 'margin-bottom:14px' }, 'Lời giải chi tiết'),
     ...steps.filter((s) => s[2]).map(([n, t, body]) => h('div.step', {}, h('div.step-h', {}, h('span.n', {}, n), h('h3', {}, t)), rich(body))),
     chart(d.viz),
+    casio(d.casio),
     d.similar?.length ? [h('h3', {}, 'Bài tương tự để tự luyện'), list(d.similar, true)] : null);
 }
 

@@ -1,5 +1,5 @@
 // Practice: 5 MCQ or 5 essay problems, one per frame. Strategy / grade / solution per question.
-import { h, icon, rich, list, run, toast } from '../ui.js';
+import { h, icon, rich, list, run, toast, casio } from '../ui.js';
 import { ai } from '../api.js';
 import { readFiles } from '../files.js';
 import { mathField } from '../mathinput.js';
@@ -77,11 +77,11 @@ function toggles(q, reveal) {
   const show = (title, node) => { reveal.replaceChildren(h('div.reveal', {}, h('h3', {}, title), node)); };
   return [
     h('button.btn', { type: 'button', onclick: () => show('Chiến lược giải', list(q.strategy?.length ? q.strategy : ['Xác định cái đã cho, cái cần tìm và mô hình xác suất phù hợp.'], true)) }, 'Chiến lược'),
-    h('button.btn.btn-ghost', { type: 'button', onclick: () => show('Lời giải', rich(q.solution || 'Không có lời giải.')) }, 'Xem lời giải'),
+    h('button.btn.btn-ghost', { type: 'button', onclick: () => show('Lời giải', h('div', {}, rich(q.solution || 'Không có lời giải.'), casio(q.casio))) }, 'Xem lời giải'),
   ];
 }
 
-function mcq(q, i, onDone) {
+export function mcq(q, i, onDone) {
   const name = `q${i}-${Math.random().toString(36).slice(2, 6)}`;
   const opts = (q.options || []).slice(0, 4).map((o, k) => h('label.opt', {},
     h('input', { type: 'radio', name, value: k }), h('span.k', {}, 'ABCD'[k]), rich(String(o).replace(/^[A-D][.)]\s*/, ''), 'span')));
@@ -101,7 +101,7 @@ function mcq(q, i, onDone) {
   return shell(q, i, h('div.options', { role: 'radiogroup', 'aria-label': 'Phương án' }, opts), [bGrade, ...toggles(q, reveal)], reveal);
 }
 
-function essay(q, i, onDone) {
+export function essay(q, i, onDone) {
   const field = mathField({ label: 'Bài làm của bạn', name: `a${i}`, rows: 6, placeholder: 'Trình bày lời giải theo từng bước…' });
   let files = [];
   const pick = h('input', { type: 'file', accept: 'image/*,application/pdf', hidden: true });
