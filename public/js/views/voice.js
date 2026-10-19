@@ -7,7 +7,7 @@ import { boardToggle } from '../board.js';
 import { chart } from '../viz.js';
 import { listen, speak, stopSpeaking, unclear, canListen, fallbackText } from '../voice.js';
 
-export const meta = { title: 'Hỏi đáp giọng nói', lede: 'Bấm micro và hỏi bằng giọng nói về Xác suất Thống kê. Bài toán nhiều công thức thì viết lên bảng (iPad). AI trả lời bằng chữ và đọc thành tiếng.' };
+export const meta = { title: 'Hỏi đáp giọng nói', lede: 'Bấm micro và hỏi bằng giọng nói về Xác suất Thống kê.\nBài toán nhiều công thức thì viết lên bảng (iPad). AI trả lời bằng chữ và đọc thành tiếng.' };
 
 export function render(root) {
   const history = [];

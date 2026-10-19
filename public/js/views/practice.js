@@ -12,8 +12,8 @@ import { mistakes } from './tutor.js';
 import { TOPICS } from '../topics.js';
 
 const KINDS = {
-  essay: { title: 'Bài tập tự luận', lede: 'AI tạo ngẫu nhiên 5 bài tự luận tương tự để bạn tự luyện. Mỗi bài đi qua đủ 4 bước giải toán, có chiến lược (không lộ đáp án), chấm bài và lời giải.', button: 'Tạo 5 bài tự luận', feature: 'practice-essay' },
-  mcq: { title: 'Bài tập trắc nghiệm', lede: 'AI tạo 5 câu trắc nghiệm, chấm ngay khi bạn chọn. Mỗi câu đi qua 4 bước giải toán; bấm "Hỏi AI: vì sao?" để hỏi lại đáp án.', button: 'Tạo 5 câu trắc nghiệm', feature: 'practice-mcq' },
+  essay: { title: 'Bài tập tự luận', lede: 'AI tạo ngẫu nhiên 5 bài tự luận tương tự để bạn tự luyện.\nMỗi bài đi qua đủ 4 bước giải toán, có chiến lược (không lộ đáp án), chấm bài và lời giải.', button: 'Tạo 5 bài tự luận', feature: 'practice-essay' },
+  mcq: { title: 'Bài tập trắc nghiệm', lede: 'AI tạo 5 câu trắc nghiệm, chấm ngay khi bạn chọn.\nMỗi câu đi qua 4 bước giải toán; bấm "Hỏi AI: vì sao?" để hỏi lại đáp án.', button: 'Tạo 5 câu trắc nghiệm', feature: 'practice-mcq' },
 };
 
 function make(kind) {

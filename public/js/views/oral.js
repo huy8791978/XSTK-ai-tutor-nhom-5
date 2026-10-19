@@ -7,7 +7,7 @@ import { addSession } from '../profile.js';
 import { mistakes as mistakeList } from './tutor.js';
 import { TOPICS } from '../topics.js';
 
-export const meta = { title: 'Vấn đáp lí thuyết', lede: 'AI hỏi từng câu như thầy cô vấn đáp, chấm từng câu trả lời, rồi tổng kết lỗ hổng kiến thức và sai lầm của bạn.' };
+export const meta = { title: 'Vấn đáp lí thuyết', lede: 'AI hỏi từng câu như thầy cô vấn đáp, chấm từng câu trả lời,\nrồi tổng kết lỗ hổng kiến thức và sai lầm của bạn.' };
 
 export function render(root) {
   const topic = h('select', { id: 'o-topic' }, TOPICS.map((t) => h('option', {}, t)));

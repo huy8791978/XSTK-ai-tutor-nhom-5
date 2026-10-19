@@ -5,7 +5,7 @@ import { load, setInsight, exportFile, importFile, reset } from '../profile.js';
 import { summarize, insightPayload, fmtScore, FEATURES } from '../stats.js';
 import { chart, odometer } from '../viz.js';
 
-export const meta = { title: 'Hồ sơ học tập', lede: 'Mọi bài chấm, bộ luyện tập và buổi vấn đáp đều được ghi lại trên trình duyệt này. AI đọc hồ sơ để tìm lỗi lặp lại và đề xuất lộ trình.' };
+export const meta = { title: 'Hồ sơ học tập', lede: 'Mọi bài chấm, bộ luyện tập và buổi vấn đáp đều được ghi lại trên trình duyệt này.\nAI đọc hồ sơ để tìm lỗi lặp lại và đề xuất lộ trình.' };
 
 const date = (t) => new Date(t).toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit' });
 

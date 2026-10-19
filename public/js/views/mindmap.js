@@ -2,7 +2,7 @@
 import { h, run, loading } from '../ui.js';
 import { ai } from '../api.js';
 
-export const meta = { title: 'Bản đồ tư duy', lede: 'Bấm vào một nút để thu gọn hoặc mở rộng, kéo để di chuyển, cuộn hoặc chụm hai ngón để phóng to. AI có thể vẽ bản đồ cho bất kì chủ đề nào.' };
+export const meta = { title: 'Bản đồ tư duy', lede: 'Bấm vào một nút để thu gọn hoặc mở rộng, kéo để di chuyển, cuộn hoặc chụm hai ngón để phóng to.\nAI có thể vẽ bản đồ cho bất kì chủ đề nào.' };
 
 const COURSE = `# Xác suất Thống kê
 ## Biến cố & xác suất

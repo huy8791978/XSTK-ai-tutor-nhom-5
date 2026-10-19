@@ -154,6 +154,8 @@ export function t(s) {
   const k = String(s).trim();
   if (!k) return s;
   if (DICT[k]) return s.replace(k, DICT[k]);
+  const flat = k.replace(/\s*\n\s*/g, ' '); // page ledes carry a line break; the dictionary keys do not
+  if (DICT[flat]) return DICT[flat];
   for (const [re, to] of RULES) if (re.test(k)) return s.replace(k, k.replace(re, to));
   return s;
 }

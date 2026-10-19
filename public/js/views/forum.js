@@ -2,7 +2,7 @@
 import { h, rich, run, toast } from '../ui.js';
 import { mathField } from '../mathinput.js';
 
-export const meta = { title: 'Diễn đàn XSTK', lede: 'Nơi người học trao đổi về Xác suất Thống kê: đặt câu hỏi, chia sẻ cách giải, thảo luận đề thi. Hãy lịch sự và không đăng thông tin cá nhân.' };
+export const meta = { title: 'Diễn đàn XSTK', lede: 'Nơi người học trao đổi về Xác suất Thống kê: đặt câu hỏi, chia sẻ cách giải, thảo luận đề thi.\nHãy lịch sự và không đăng thông tin cá nhân.' };
 
 const NAME_KEY = 'xstk.forum.name', TOKENS_KEY = 'xstk.forum.tokens';
 const store = {

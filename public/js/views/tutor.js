@@ -7,7 +7,7 @@ import { chart, odometer, galton } from '../viz.js';
 import { addSession } from '../profile.js';
 import { boardToggle } from '../board.js';
 
-export const meta = { title: 'Gia sư chấm bài', lede: 'Tải ảnh hoặc PDF bài làm. AI gợi ý chiến lược (không lộ đáp án), chấm điểm từng bước và chỉ hiện lời giải khi bạn yêu cầu.' };
+export const meta = { title: 'Gia sư chấm bài', lede: 'Tải ảnh hoặc PDF bài làm.\nAI gợi ý chiến lược (không lộ đáp án), chấm điểm từng bước và chỉ hiện lời giải khi bạn yêu cầu.' };
 
 export function render(root) {
   let files = [];

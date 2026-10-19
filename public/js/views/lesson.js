@@ -9,13 +9,13 @@ import { TOPICS } from '../topics.js';
 
 const KINDS = {
   concept: {
-    meta: { title: 'Học lí thuyết', lede: 'Học một khái niệm qua 4 bước: trải nghiệm tình huống, tự rút ra dấu hiệu bản chất và định nghĩa, củng cố bằng câu hỏi nhận diện, rồi vận dụng vào bài toán thực tế.' },
+    meta: { title: 'Học lí thuyết', lede: 'Học một khái niệm qua 4 bước: trải nghiệm tình huống, tự rút ra dấu hiệu bản chất và định nghĩa,\ncủng cố bằng câu hỏi nhận diện, rồi vận dụng vào bài toán thực tế.' },
     label: 'Khái niệm cần học', placeholder: 'Ví dụ: Biến cố độc lập',
     stages: ['Trải nghiệm', 'Hình thành định nghĩa', 'Củng cố', 'Vận dụng'],
     examples: ['Biến cố độc lập', 'Xác suất có điều kiện', 'Biến ngẫu nhiên', 'Kì vọng', 'Phương sai', 'Hàm mật độ', 'Khoảng tin cậy', 'Mức ý nghĩa'],
   },
   theorem: {
-    meta: { title: 'Học định lí', lede: 'Học một định lí qua 4 bước: trải nghiệm để dự đoán, tách giả thiết – kết luận, nắm luận cứ và cách chứng minh, củng cố rồi vận dụng.' },
+    meta: { title: 'Học định lí', lede: 'Học một định lí qua 4 bước: trải nghiệm để dự đoán, tách giả thiết – kết luận,\nnắm luận cứ và cách chứng minh, củng cố rồi vận dụng.' },
     label: 'Định lí / công thức cần học', placeholder: 'Ví dụ: Công thức Bayes',
     stages: ['Trải nghiệm', 'Hình thành định lí', 'Củng cố', 'Vận dụng'],
     examples: ['Công thức cộng xác suất', 'Công thức xác suất đầy đủ', 'Công thức Bayes', 'Công thức Bernoulli', 'Bất đẳng thức Chebyshev', 'Luật số lớn', 'Định lí giới hạn trung tâm', 'Định lí Moivre – Laplace'],

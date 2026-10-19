@@ -5,7 +5,7 @@ import { load, setInsight } from '../profile.js';
 import { summarize, byFeature, insightPayload, fmtScore, FEATURES } from '../stats.js';
 import { insightView, hbar } from './profile.js';
 
-export const meta = { title: 'Thống kê lỗi sai', lede: 'Thống kê các câu sai trong vấn đáp, trắc nghiệm, tự luận và chấm bài. AI đưa ra nhận định chung về lỗi sai và hướng khắc phục.' };
+export const meta = { title: 'Thống kê lỗi sai', lede: 'Thống kê các câu sai trong vấn đáp, trắc nghiệm, tự luận và chấm bài.\nAI đưa ra nhận định chung về lỗi sai và hướng khắc phục.' };
 
 export function render(root) {
   const p = load(), s = summarize(p.sessions), rows = byFeature(p.sessions);
