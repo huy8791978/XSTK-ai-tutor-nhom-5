@@ -12,7 +12,16 @@ function inline(s) {
     .replace(/`([^`]+)`/g, '<code>$1</code>');
 }
 
+// A line of LaTeX the model forgot to put in $…$ (commands present, no ordinary words outside \text{}).
+const LIST_HEAD = /^(\s*(?:[-*•]|\d+[.)])?\s*)/;
+function bareMath(line) {
+  if (line.includes('$') || !/\\[a-zA-Z]+/.test(line)) return false;
+  const rest = line.replace(LIST_HEAD, '').replace(/\\text\{[^}]*\}/g, '').replace(/\\[a-zA-Z]+/g, '');
+  return !/[A-Za-zÀ-ỹ]{3,}/.test(rest);
+}
+
 export function md(src) {
+  src = String(src ?? '').split('\n').map((l) => (bareMath(l) ? l.replace(/^(\s*(?:[-*•]|\d+[.)])?\s*)(.*?)\s*$/, '$1$$$2$$') : l)).join('\n');
   const math = [];
   // Protect math so * and _ inside formulas are not treated as markdown.
   let s = String(src ?? '').replace(/\r/g, '').replace(MATH, (m) => `\u0000${math.push(m) - 1}\u0000`);
@@ -39,8 +48,9 @@ export function md(src) {
     para.push(t);
   }
   flushPara(); flushList();
-  // Vietnamese decimal comma: 0,25 inside math must be 0{,}25 or KaTeX spaces it like punctuation.
-  return out.join('').replace(/\u0000(\d+)\u0000/g, (_, i) => esc(math[i].replace(/(\d),(?=\d)/g, '$1{,}')));
+  // Inside math: 0,25 must be 0{,}25 (else KaTeX spaces it like punctuation), and a bare % starts a LaTeX comment.
+  const fixMath = (m) => m.replace(/(\d),(?=\d)/g, '$1{,}').replace(/(?<!\\)%/g, '\\%');
+  return out.join('').replace(/\u0000(\d+)\u0000/g, (_, i) => esc(fixMath(math[i])));
 }
 
 /** Render KaTeX inside an element (no-op if the CDN failed; raw LaTeX stays readable). */

@@ -7,7 +7,8 @@ const LIMITS = { text: 8000, files: 3, fileBytes: 14_000_000, history: 24 };
 const MIMES = ['image/png', 'image/jpeg', 'image/webp', 'image/heic', 'image/heif', 'application/pdf'];
 
 const SYSTEM = `Bạn là gia sư môn Xác suất Thống kê (XSTK) cho sinh viên đại học Việt Nam. Luôn trả lời bằng tiếng Việt có dấu.
-Viết công thức bằng LaTeX: $...$ trong dòng, $$...$$ riêng dòng. Dùng dấu phẩy thập phân kiểu Việt Nam (0,25).
+Viết công thức bằng LaTeX: $...$ trong dòng, $$...$$ riêng dòng; MỌI công thức phải nằm trong cặp dấu $. Phần trăm trong công thức viết \\%.
+Trong chuỗi JSON, mỗi dấu \\ của LaTeX phải nhân đôi (ví dụ "\\\\frac{1}{2}", "\\\\sqrt{x}"). Dùng dấu phẩy thập phân kiểu Việt Nam (0,25).
 Sư phạm bắt buộc:
 - Giải toán theo 4 bước Polya: (1) Tìm hiểu đề: cái đã cho, cái phải tìm, điều kiện, kí hiệu; (2) Xây dựng chương trình giải: đưa về bài toán quen thuộc, chọn kiến thức, dự đoán; (3) Trình bày lời giải; (4) Kiểm tra & nghiên cứu: kiểm tra kết quả, rút ra phương pháp, cách khác, bài tương tự/khái quát.
 - Dạy khái niệm và định lí theo: Trải nghiệm → Hình thành → Củng cố → Vận dụng.
@@ -133,7 +134,7 @@ export function buildRequest(task, payload = {}) {
       systemInstruction: { parts: [{ text: p.lang === 'en' ? `${SYSTEM}
 LANGUAGE OVERRIDE: write every text value of the JSON in English (keep JSON keys as specified; use dot decimals; keep the topic and error-type values exactly as listed in Vietnamese).` : SYSTEM }] },
       contents: [{ role: 'user', parts: [{ text }, ...files.map((f) => ({ inlineData: { mimeType: f.mimeType, data: f.data } }))] }],
-      generationConfig: { responseMimeType: 'application/json', temperature: task === 'practice' ? 0.9 : 0.4, maxOutputTokens: 8192 },
+      generationConfig: { responseMimeType: 'application/json', temperature: task === 'practice' ? 0.9 : 0.4, maxOutputTokens: 16384 },
     },
     promptChars: SYSTEM.length + text.length,
     fileCount: files.length,
@@ -141,10 +142,42 @@ LANGUAGE OVERRIDE: write every text value of the JSON in English (keep JSON keys
 }
 
 /** Parse model JSON, tolerating ``` fences or leading prose. */
+// LaTeX commands that start with a letter JSON also uses as an escape (\b \f \n \r \t \u). A model that writes
+// "\frac" with one backslash would otherwise get a form-feed + "rac"; these are always meant as LaTeX.
+const LATEX_LIKE = new RegExp(String.raw`(?<!\\)((?:\\\\)*)\\(?=(?:${[
+  'beta', 'bar', 'binom', 'begin', 'bigg', 'big', 'boldsymbol', 'bullet', 'bot', 'boxed', 'bmod', 'backslash',
+  'frac', 'forall', 'nu', 'neq', 'ne', 'notin', 'not', 'nabla', 'ni', 'neg', 'nmid', 'newline',
+  'rightarrow', 'right', 'rho', 'rangle', 'rceil', 'rfloor', 'rm',
+  'textbf', 'textit', 'text', 'times', 'theta', 'tau', 'tilde', 'tfrac', 'therefore', 'triangle', 'top', 'to',
+  'underline', 'underbrace', 'uparrow', 'upsilon',
+].join('|')})(?![a-zA-Z]))`, 'g');
+// Any other backslash not starting a valid JSON escape (\s, \o, \c, \l, \m, \u without 4 hex digits…).
+const INVALID_ESCAPE = /(?<!\\)((?:\\\\)*)\\(?!["\\/bfnrt]|u[0-9a-fA-F]{4})/g;
+
+/** Close a reply cut off at the token limit: drop the unfinished trailing item, then close open brackets. */
+function closeTruncated(s) {
+  const stack = []; let inStr = false, esc = false, cut = null;
+  for (let i = 0; i < s.length; i++) {
+    const c = s[i];
+    if (inStr) { if (esc) esc = false; else if (c === '\\') esc = true; else if (c === '"') inStr = false; continue; }
+    if (c === '"') inStr = true;
+    else if (c === '{' || c === '[') stack.push(c === '{' ? '}' : ']');
+    else if (c === '}' || c === ']') stack.pop();
+    else if (c === ',') cut = { at: i, closers: [...stack].reverse().join('') };
+  }
+  return cut ? s.slice(0, cut.at) + cut.closers : s;
+}
+
+/** Parse model JSON, tolerating ``` fences, leading prose, single-backslash LaTeX and truncation. */
 export function extractJson(raw) {
-  const s = String(raw).trim().replace(/^```(?:json)?\s*/i, '').replace(/```$/, '').trim();
-  try { return JSON.parse(s); } catch { /* fall through */ }
-  const start = s.search(/[{[]/), end = Math.max(s.lastIndexOf('}'), s.lastIndexOf(']'));
-  if (start >= 0 && end > start) return JSON.parse(s.slice(start, end + 1));
+  let s = String(raw).trim().replace(/^```(?:json)?\s*/i, '').replace(/```$/, '').trim();
+  const start = s.search(/[{[]/);
+  if (start > 0) s = s.slice(start);
+  s = s.replace(LATEX_LIKE, '$1\\\\');
+  const attempts = [s, s.replace(INVALID_ESCAPE, '$1\\\\')];
+  const fixed = attempts[1], end = Math.max(fixed.lastIndexOf('}'), fixed.lastIndexOf(']'));
+  if (end > 0) attempts.push(fixed.slice(0, end + 1)); // trailing prose after the JSON
+  attempts.push(closeTruncated(fixed));
+  for (const a of attempts) { try { return JSON.parse(a); } catch { /* next */ } }
   throw new Error('Phản hồi AI không đúng định dạng.');
 }

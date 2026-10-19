@@ -89,3 +89,14 @@ test('voice: unclear() flags empty or meaningless transcripts', async () => {
   assert.equal(unclear('xác suất có điều kiện là gì'), false);
   assert.match(FALLBACK.vi, /nghe không rõ/);
 });
+
+test('md escapes % inside math so KaTeX does not treat it as a comment', () => {
+  assert.equal(md('$6,1 \\text{ (%/năm)}$'), '<p>$6{,}1 \\text{ (\\%/năm)}$</p>');
+  assert.equal(md('$50\\%$'), '<p>$50\\%$</p>');
+});
+
+test('md wraps a bare LaTeX line in $ but leaves prose that mentions a command', () => {
+  assert.equal(md('\\overline{x} = \\frac{307,2}{50}'), '<p>$\\overline{x} = \\frac{307{,}2}{50}$</p>');
+  assert.equal(md('- s = \\sqrt{0,32} \\approx 0,57 \\text{ (%/năm)}'), '<ul><li>$s = \\sqrt{0{,}32} \\approx 0{,}57 \\text{ (\\%/năm)}$</li></ul>');
+  assert.equal(md('Dùng lệnh \\frac để viết phân số'), '<p>Dùng lệnh \\frac để viết phân số</p>');
+});

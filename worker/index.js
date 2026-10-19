@@ -28,41 +28,53 @@ export default {
       return json({ error: e.message || 'Yêu cầu không hợp lệ.' }, 400);
     }
 
-    const tokens = estimateTokens(req.promptChars, req.fileCount, req.body.generationConfig.maxOutputTokens);
+    // Reserve a typical reply size, not the maximum; settle() corrects it with Gemini's real count.
+    const tokens = estimateTokens(req.promptChars, req.fileCount, 3000);
     const limiter = env.LIMITER.get(env.LIMITER.idFromName('global'));
     const ip = request.headers.get('cf-connecting-ip') || 'unknown';
-    const slot = await limiter.acquire(ip, tokens);
-    if (!slot.ok) {
-      const msg = { ip: 'Bạn gửi quá nhanh', rpm: 'Hệ thống đang nhiều người dùng', tpm: 'Hệ thống đang xử lí nhiều dữ liệu', rpd: 'Đã hết lượt dùng AI hôm nay' }[slot.reason];
-      return json({ error: `${msg}. Vui lòng thử lại sau ${slot.retryAfter} giây.`, retryAfter: slot.retryAfter, reason: slot.reason }, 429, { 'retry-after': String(slot.retryAfter) });
-    }
-
     const model = env.GEMINI_MODEL || 'gemini-3.5-flash-lite';
-    let res;
-    try {
-      res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`, {
-        method: 'POST',
-        headers: { 'content-type': 'application/json', 'x-goog-api-key': env.GEMINI_API_KEY },
-        body: JSON.stringify(req.body),
-      });
-    } catch {
-      return json({ error: 'Không kết nối được tới Gemini. Thử lại sau.' }, 502);
-    }
-    const data = await res.json().catch(() => ({}));
-    const actual = data.usageMetadata?.totalTokenCount;
-    if (actual) ctx.waitUntil(limiter.settle(slot.t, actual));
 
-    if (res.status === 429) return json({ error: 'Gemini đang quá tải. Vui lòng thử lại sau 30 giây.', retryAfter: 30, reason: 'upstream' }, 429);
-    if (!res.ok) {
-      console.error('gemini', res.status, data.error?.message);
-      return json({ error: 'AI tạm thời không phản hồi được. Thử lại sau.' }, 502);
+    // One automatic retry for a transient Gemini error or an unreadable/cut-off reply.
+    let failure;
+    for (let attempt = 0; attempt < 2; attempt++) {
+      const slot = await limiter.acquire(ip, tokens, attempt > 0);
+      if (!slot.ok) {
+        if (attempt > 0) break;
+        const msg = { ip: 'Bạn gửi quá nhanh', rpm: 'Hệ thống đang nhiều người dùng', tpm: 'Hệ thống đang xử lí nhiều dữ liệu', rpd: 'Đã hết lượt dùng AI hôm nay' }[slot.reason];
+        return json({ error: `${msg}. Vui lòng thử lại sau ${slot.retryAfter} giây.`, retryAfter: slot.retryAfter, reason: slot.reason }, 429, { 'retry-after': String(slot.retryAfter) });
+      }
+      let res;
+      try {
+        res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`, {
+          method: 'POST',
+          headers: { 'content-type': 'application/json', 'x-goog-api-key': env.GEMINI_API_KEY },
+          body: JSON.stringify(req.body),
+        });
+      } catch {
+        failure = json({ error: 'Không kết nối được tới Gemini. Thử lại sau.' }, 502);
+        continue;
+      }
+      const data = await res.json().catch(() => ({}));
+      const actual = data.usageMetadata?.totalTokenCount;
+      if (actual) ctx.waitUntil(limiter.settle(slot.t, actual));
+
+      if (res.status === 429) return json({ error: 'Gemini đang quá tải. Vui lòng thử lại sau 30 giây.', retryAfter: 30, reason: 'upstream' }, 429);
+      if (!res.ok) {
+        console.error('gemini', res.status, data.error?.message);
+        failure = json({ error: 'AI tạm thời không phản hồi được. Thử lại sau.' }, 502);
+        if (res.status >= 500) continue;
+        return failure;
+      }
+      const cand = data.candidates?.[0];
+      const text = (cand?.content?.parts || []).filter((p) => !p.thought).map((p) => p.text || '').join('');
+      try {
+        return json({ data: extractJson(text) });
+      } catch {
+        console.error('unparsable', cand?.finishReason, text.slice(0, 300));
+        failure = json({ error: 'AI trả về nội dung không đọc được. Bấm thử lại.' }, 502);
+      }
     }
-    const text = (data.candidates?.[0]?.content?.parts || []).filter((p) => !p.thought).map((p) => p.text || '').join('');
-    try {
-      return json({ data: extractJson(text) });
-    } catch {
-      return json({ error: 'AI trả về nội dung không đọc được. Bấm thử lại.' }, 502);
-    }
+    return failure || json({ error: 'AI tạm thời không phản hồi được. Thử lại sau.' }, 502);
   },
 };
 
@@ -76,11 +88,11 @@ export class Limiter extends DurableObject {
     });
   }
 
-  async acquire(ip, tokens) {
+  async acquire(ip, tokens, retry = false) {
     const now = Date.now();
     const perIp = Number(this.env.LIMIT_PER_IP_RPM || 6);
     const mine = (this.ips.get(ip) || []).filter((t) => now - t < 60_000);
-    if (mine.length >= perIp) return { ok: false, reason: 'ip', retryAfter: Math.ceil((mine[0] + 60_000 - now) / 1000) };
+    if (!retry && mine.length >= perIp) return { ok: false, reason: 'ip', retryAfter: Math.ceil((mine[0] + 60_000 - now) / 1000) };
 
     const r = admit(this.s, {
       now, tokens,

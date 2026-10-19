@@ -106,3 +106,27 @@ test('validatePost cleans and checks forum input', async () => {
   assert.equal(v.title, 'Hỏi về Bayes'); assert.equal(v.author, 'Ẩn danh'); assert.equal(v.topic, FORUM_TOPICS[0]);
   assert.equal(validatePost({ body: 'trả lời' }, { reply: true }).body, 'trả lời');
 });
+
+// Gemini often writes LaTeX with single backslashes inside JSON strings.
+const BS = String.fromCharCode(92);
+test('extractJson repairs invalid LaTeX escapes (\sqrt, \overline, \cdot)', () => {
+  const raw = `{"a": "$${BS}sqrt{2}$ và $${BS}overline{x}$ = $a${BS}cdot b$"}`;
+  assert.equal(extractJson(raw).a, `$${BS}sqrt{2}$ và $${BS}overline{x}$ = $a${BS}cdot b$`);
+});
+
+test('extractJson keeps LaTeX commands that look like JSON escapes (\frac, \text, \beta, \right, \nu)', () => {
+  const raw = `{"a": "${BS}frac{1}{2} ${BS}text{x} ${BS}beta ${BS}left( ${BS}right) ${BS}nu ${BS}neq ${BS}times ${BS}underline{u}", "b": "dòng 1${BS}ndòng 2"}`;
+  const d = extractJson(raw);
+  assert.equal(d.a, `${BS}frac{1}{2} ${BS}text{x} ${BS}beta ${BS}left( ${BS}right) ${BS}nu ${BS}neq ${BS}times ${BS}underline{u}`);
+  assert.equal(d.b, 'dòng 1\ndòng 2'); // a real newline escape survives
+});
+
+test('extractJson leaves correctly escaped JSON alone', () => {
+  const ok = JSON.stringify({ a: `${BS}frac{a}{b} ${BS}sqrt{x}`, q: 'say "hi"' });
+  assert.deepEqual(extractJson(ok), { a: `${BS}frac{a}{b} ${BS}sqrt{x}`, q: 'say "hi"' });
+});
+
+test('extractJson closes a reply cut off at the token limit', () => {
+  const d = extractJson('{"questions": [{"prompt": "Câu 1", "answer": 0}, {"prompt": "Câu 2 bị cắ');
+  assert.equal(d.questions[0].prompt, 'Câu 1');
+});
