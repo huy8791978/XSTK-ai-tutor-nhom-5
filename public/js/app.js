@@ -32,12 +32,26 @@ function go() {
   title.textContent = mod.meta.title; lede.textContent = mod.meta.lede;
   document.title = `${tr(mod.meta.title)} · XSTK·AI`;
   document.querySelector('.nav [aria-current]')?.scrollIntoView({ block: 'nearest', inline: 'nearest' });
-  view.replaceChildren();
-  mod.render(view);
+  // Each feature keeps its own pane, hidden while you are elsewhere, so work in progress survives switching.
+  // Pages showing shared or freshly computed data are rebuilt on every visit.
+  if (current) { scrollY[current] = window.scrollY; panes[current].hidden = true; }
+  window.speechSynthesis?.cancel();
+  const fresh = FRESH.has(key) || !panes[key];
+  if (fresh) {
+    panes[key]?.remove();
+    panes[key] = Object.assign(document.createElement('div'), { className: 'pane' });
+    view.append(panes[key]);
+    mod.render(panes[key]);
+  }
+  panes[key].hidden = false;
+  current = key;
   ros.reseed(ORDER.indexOf(key));
   if (document.activeElement?.closest?.('.nav')) document.getElementById('main').focus({ preventScroll: true });
-  scrollTo({ top: 0 });
+  scrollTo({ top: fresh ? 0 : scrollY[key] || 0 });
 }
+const FRESH = new Set(['dien-dan', 'thong-ke', 'ho-so']);
+const panes = {}, scrollY = {};
+let current = null;
 
 const paintSerial = () => { serial.textContent = `SERI ${load().id}`; };
 addEventListener('hashchange', go);
