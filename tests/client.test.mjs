@@ -65,3 +65,27 @@ test('insightPayload is compact JSON', () => {
 test('md protects Vietnamese decimal commas inside math', () => {
   assert.equal(md('$0,25 + 1,5$'), '<p>$0{,}25 + 1{,}5$</p>');
 });
+
+test('byFeature splits sessions by feature', async () => {
+  const { byFeature } = await import('../public/js/stats.js');
+  const r = byFeature(S);
+  assert.deepEqual(r.map((x) => x.feature), ['tutor', 'practice-mcq', 'oral']);
+  assert.equal(r.find((x) => x.feature === 'oral').mistakes, 2);
+  assert.equal(r.find((x) => x.feature === 'tutor').avg, 6);
+});
+
+test('t() translates known UI strings, runtime patterns, and leaves the rest alone', async () => {
+  const { t } = await import('../public/js/i18n.js');
+  assert.equal(t('Chấm bài'), 'Grade');
+  assert.equal(t('  Hồ sơ của tôi '), '  My profile ');
+  assert.equal(t('Câu 3'), 'Question 3');
+  assert.equal(t('Bước 2: Chương trình giải →'), 'Step 2: Plan →');
+  assert.equal(t('Một câu AI viết'), 'Một câu AI viết');
+});
+
+test('voice: unclear() flags empty or meaningless transcripts', async () => {
+  const { unclear, FALLBACK } = await import('../public/js/voice.js');
+  assert.equal(unclear(''), true); assert.equal(unclear(' . '), true);
+  assert.equal(unclear('xác suất có điều kiện là gì'), false);
+  assert.match(FALLBACK.vi, /nghe không rõ/);
+});

@@ -22,7 +22,6 @@ export function render(root) {
   fileIn.onchange = async () => { try { await importFile(fileIn.files[0]); toast('Đã nhập hồ sơ.'); rerender(); } catch (e) { toast(e.message); } };
   const rerender = () => { root.replaceChildren(); render(root); };
 
-  const maxErr = Math.max(1, ...s.errorTypes.map((e) => e.count));
   root.append(
     h('section.panel.ticket', { style: 'margin-bottom:24px', 'aria-label': 'Tổng quan' },
       h('span.ticket-serial', {}, `MÃ HỒ SƠ ${p.id}`),
@@ -32,17 +31,13 @@ export function render(root) {
         h('div.row', {}, h('b', {}, 'Lỗi đã ghi'), h('span', {}, s.errorTypes[0] ? `Nhiều nhất: ${s.errorTypes[0].name}` : 'Chưa có lỗi nào'), h('em', {}, String(s.mistakeCount))))),
     h('div.work', {},
       h('div.stack', {},
-        h('section.panel', { 'aria-label': 'Nhận định của AI' }, h('h2', {}, 'Nhận định & lộ trình'), h('div.btn-row', { style: 'margin:14px 0 6px' }, bInsight), insightOut),
-        h('section.panel', { 'aria-label': 'Loại lỗi' }, h('h2', {}, 'Bạn hay sai ở đâu'),
-          s.errorTypes.length ? h('div', { style: 'margin-top:12px' }, ...s.errorTypes.map((e) => hbar(e.name, e.count, maxErr))) : h('p.muted', { style: 'margin-top:10px' }, 'Chưa có lỗi nào được ghi.'),
-          s.topics.length ? [h('h3', {}, 'Điểm theo chủ đề (yếu nhất trước)'), ...s.topics.map((t) => hbar(t.name, fmtScore(t.avg), 10, t.avg, 'topic'))] : null)),
+        h('section.panel', { 'aria-label': 'Nhận định của AI' }, h('h2', {}, 'Nhận định & lộ trình'), h('div.btn-row', { style: 'margin:14px 0 6px' }, bInsight, h('a.btn', { href: '#thong-ke' }, 'Xem thống kê lỗi sai')), insightOut)),
       h('div.stack', {},
         h('section.panel', { 'aria-label': 'Diễn biến điểm' }, h('h2', {}, 'Diễn biến điểm'),
           s.trend.length ? chart({ type: 'bars', labels: s.trend.map((x) => date(x.at)), values: s.trend.map((x) => x.score), caption: `${s.trend.length} phiên gần nhất` }) : h('p.muted', { style: 'margin-top:10px' }, 'Chưa có điểm.')),
         h('section.panel', { 'aria-label': 'Nhật kí' }, h('h2', {}, 'Nhật kí học tập'),
           p.sessions.length ? h('div.log', { style: 'margin-top:8px' }, ...p.sessions.slice(-12).reverse().map((x) => h('div.row', {},
-            h('b', {}, x.serial), h('span', {}, `${FEATURES[x.feature] || x.feature} · ${x.topic} · ${date(x.at)}`), h('em', {}, fmtScore(x.score))))) : h('p.muted', { style: 'margin-top:10px' }, 'Chưa có phiên nào.'),
-          s.recent.length ? [h('h3', {}, 'Lỗi gần đây'), h('div', {}, ...s.recent.map((m) => h('div.mistake', {}, h('div.tags', {}, h('span.tag', {}, m.type), h('span.tag.topic', {}, m.topic), h('span.serialtag', {}, m.serial)), rich(m.detail))))] : null),
+            h('b', {}, x.serial), h('span', {}, `${FEATURES[x.feature] || x.feature} · ${x.topic} · ${date(x.at)}`), h('em', {}, fmtScore(x.score))))) : h('p.muted', { style: 'margin-top:10px' }, 'Chưa có phiên nào.')),
         h('section.panel', { 'aria-label': 'Quản lí hồ sơ' }, h('h2', {}, 'Mang hồ sơ sang máy khác'),
           h('p.muted', { style: 'margin:8px 0 14px' }, 'Hồ sơ chỉ nằm trên trình duyệt này. Xuất tệp để sao lưu hoặc nhập trên thiết bị khác.'),
           h('div.btn-row', {},
@@ -52,11 +47,11 @@ export function render(root) {
 }
 
 
-function hbar(name, label, max, value = label, cls = '') {
+export function hbar(name, label, max, value = label, cls = '') {
   return h(`div.hbar${cls ? `.${cls}` : ''}`, {}, h('span', {}, name), h('span.t', {}, h('i', { style: `width:${Math.max(3, (value / max) * 100)}%` })), h('em', {}, String(label)));
 }
 
-function insightView(d, at) {
+export function insightView(d, at) {
   return h('div', {},
     h('p.muted', { style: 'font-size:13px' }, `Cập nhật ${new Date(at).toLocaleString('vi-VN')}`),
     d.assessment ? rich(d.assessment) : null,

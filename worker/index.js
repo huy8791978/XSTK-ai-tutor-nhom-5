@@ -1,6 +1,7 @@
 import { DurableObject } from 'cloudflare:workers';
 import { admit, settle, estimateTokens } from './limits.js';
 import { buildRequest, extractJson } from './prompts.js';
+import { validatePost, FORUM_TOPICS } from './forum.js';
 
 const json = (data, status = 200, headers = {}) =>
   new Response(JSON.stringify(data), { status, headers: { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store', ...headers } });
@@ -8,12 +9,14 @@ const json = (data, status = 200, headers = {}) =>
 export default {
   async fetch(request, env, ctx) {
     const url = new URL(request.url);
-    if (url.pathname !== '/api/ai') return env.ASSETS.fetch(request);
-    if (request.method !== 'POST') return json({ error: 'Method not allowed' }, 405);
+    if (!url.pathname.startsWith('/api/')) return env.ASSETS.fetch(request);
 
-    // Only our own pages may call the proxy.
+    // Only our own pages may call the API.
     const origin = request.headers.get('origin');
     if (origin && new URL(origin).host !== url.host) return json({ error: 'Nguồn không hợp lệ.' }, 403);
+    if (url.pathname.startsWith('/api/forum')) return forum(request, env, url);
+    if (url.pathname !== '/api/ai') return json({ error: 'Không tìm thấy.' }, 404);
+    if (request.method !== 'POST') return json({ error: 'Method not allowed' }, 405);
     if (!env.GEMINI_API_KEY) return json({ error: 'Máy chủ chưa cấu hình GEMINI_API_KEY.' }, 500);
     if (Number(request.headers.get('content-length') || 0) > 16_000_000) return json({ error: 'Dữ liệu gửi lên quá lớn.' }, 413);
 
@@ -95,5 +98,96 @@ export class Limiter extends DurableObject {
   async settle(t, actual) {
     this.s = settle(this.s, { t, actual });
     await this.ctx.storage.put('s', this.s);
+  }
+}
+
+const hex = (buf) => [...new Uint8Array(buf)].map((b) => b.toString(16).padStart(2, '0')).join('');
+const sha = async (s) => hex(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(s)));
+
+/** /api/forum routes:
+ *  GET  /api/forum?topic=&before=   list threads     GET  /api/forum/:id          thread + replies
+ *  POST /api/forum                  new thread       POST /api/forum/:id/reply    reply
+ *  POST /api/forum/delete {kind,id,token}            author deletes own post */
+async function forum(request, env, url) {
+  const db = env.FORUM.get(env.FORUM.idFromName('global'));
+  const ip = request.headers.get('cf-connecting-ip') || 'unknown';
+  const [, , , id, action] = url.pathname.split('/');
+  try {
+    if (request.method === 'GET') {
+      if (id) return json(await db.get(id));
+      return json({ threads: await db.list({ topic: url.searchParams.get('topic'), before: url.searchParams.get('before') }), topics: FORUM_TOPICS });
+    }
+    if (request.method !== 'POST') return json({ error: 'Method not allowed' }, 405);
+    if (Number(request.headers.get('content-length') || 0) > 32_000) return json({ error: 'Bài viết quá dài.' }, 413);
+    const body = await request.json();
+    if (id === 'delete') return json(await db.remove(body.kind, body.id, body.token));
+    if (id && action === 'reply') return json(await db.reply(id, body, ip));
+    if (!id) return json(await db.create(body, ip));
+    return json({ error: 'Không tìm thấy.' }, 404);
+  } catch (e) {
+    // Errors thrown inside the Durable Object arrive here with their Vietnamese message intact.
+    return json({ error: e.message || 'Lỗi diễn đàn.' }, 400);
+  }
+}
+
+/** One global forum instance; SQLite storage (free plan). The author keeps a random token to delete their own post. */
+export class Forum extends DurableObject {
+  constructor(ctx, env) {
+    super(ctx, env);
+    this.sql = ctx.storage.sql;
+    this.ips = new Map();
+    this.sql.exec(`CREATE TABLE IF NOT EXISTS threads (id INTEGER PRIMARY KEY AUTOINCREMENT, title TEXT, body TEXT, author TEXT, topic TEXT, created INTEGER, last INTEGER, replies INTEGER DEFAULT 0, token TEXT);
+      CREATE TABLE IF NOT EXISTS replies (id INTEGER PRIMARY KEY AUTOINCREMENT, thread INTEGER, body TEXT, author TEXT, created INTEGER, token TEXT);
+      CREATE INDEX IF NOT EXISTS replies_thread ON replies(thread);`);
+  }
+
+  throttle(ip) {
+    const now = Date.now(), mine = (this.ips.get(ip) || []).filter((t) => now - t < 60_000);
+    if (mine.length >= Number(this.env.FORUM_PER_IP_RPM || 5)) throw new Error('Bạn đăng quá nhanh. Đợi một phút rồi thử lại.');
+    if (this.ips.size > 5000) this.ips.clear();
+    this.ips.set(ip, [...mine, now]);
+  }
+
+  list({ topic, before } = {}) {
+    const args = [], where = [];
+    if (FORUM_TOPICS.includes(topic)) { where.push('topic = ?'); args.push(topic); }
+    if (Number(before) > 0) { where.push('last < ?'); args.push(Number(before)); }
+    return this.sql.exec(`SELECT id, title, substr(body, 1, 200) AS preview, author, topic, created, last, replies FROM threads
+      ${where.length ? `WHERE ${where.join(' AND ')}` : ''} ORDER BY last DESC LIMIT 30`, ...args).toArray();
+  }
+
+  get(id) {
+    const [thread] = this.sql.exec('SELECT id, title, body, author, topic, created, replies FROM threads WHERE id = ?', Number(id)).toArray();
+    if (!thread) throw new Error('Không tìm thấy bài viết.');
+    return { thread, replies: this.sql.exec('SELECT id, body, author, created FROM replies WHERE thread = ? ORDER BY id LIMIT 500', thread.id).toArray() };
+  }
+
+  async create(p, ip) {
+    const v = validatePost(p);
+    this.throttle(ip);
+    const token = crypto.randomUUID(), now = Date.now();
+    const [{ id }] = this.sql.exec('INSERT INTO threads (title, body, author, topic, created, last, token) VALUES (?, ?, ?, ?, ?, ?, ?) RETURNING id',
+      v.title, v.body, v.author, v.topic, now, now, await sha(token)).toArray();
+    return { id, token };
+  }
+
+  async reply(id, p, ip) {
+    const v = validatePost(p, { reply: true });
+    this.get(id);
+    this.throttle(ip);
+    const token = crypto.randomUUID(), now = Date.now();
+    const [{ id: rid }] = this.sql.exec('INSERT INTO replies (thread, body, author, created, token) VALUES (?, ?, ?, ?, ?) RETURNING id', Number(id), v.body, v.author, now, await sha(token)).toArray();
+    this.sql.exec('UPDATE threads SET replies = replies + 1, last = ? WHERE id = ?', now, Number(id));
+    return { id: rid, token };
+  }
+
+  async remove(kind, id, token) {
+    const table = kind === 'reply' ? 'replies' : 'threads', hash = await sha(String(token || ''));
+    const [row] = this.sql.exec(`SELECT id, ${kind === 'reply' ? 'thread' : 'id AS thread'} FROM ${table} WHERE id = ? AND token = ?`, Number(id), hash).toArray();
+    if (!row) throw new Error('Bạn chỉ xoá được bài của chính mình.');
+    this.sql.exec(`DELETE FROM ${table} WHERE id = ?`, Number(id));
+    if (kind === 'reply') this.sql.exec('UPDATE threads SET replies = replies - 1 WHERE id = ?', row.thread);
+    else this.sql.exec('DELETE FROM replies WHERE thread = ?', Number(id));
+    return { ok: true };
   }
 }

@@ -5,6 +5,7 @@ import { readFiles } from '../files.js';
 import { mathField } from '../mathinput.js';
 import { chart, odometer, galton } from '../viz.js';
 import { addSession } from '../profile.js';
+import { boardToggle } from '../board.js';
 
 export const meta = { title: 'Gia sư chấm bài', lede: 'Tải ảnh hoặc PDF bài làm. AI gợi ý chiến lược (không lộ đáp án), chấm điểm từng bước và chỉ hiện lời giải khi bạn yêu cầu.' };
 
@@ -15,6 +16,10 @@ export function render(root) {
   const input = h('input', { type: 'file', accept: 'image/*,application/pdf', multiple: true, 'aria-label': 'Chọn ảnh hoặc PDF bài làm' });
   const drop = h('label.drop', {}, icon('upload'), h('span', {}, h('strong', {}, 'Chọn ảnh hoặc PDF'), ' hoặc kéo thả vào đây'), h('small.muted', {}, 'Tối đa 3 tệp, mỗi tệp ≤ 10 MB. Chụp thẳng, đủ sáng để AI đọc chính xác.'), input);
   const thumbs = h('div.files');
+  const board = boardToggle();
+  const barem = mathField({ label: 'Barem điểm (tuỳ chọn)', name: 'barem', rows: 3, placeholder: 'Ví dụ: Đặt biến cố 1đ; Công thức đầy đủ 2đ; Bayes 4đ; Kết luận 1đ…' });
+  const baremBox = h('div', { hidden: true }, barem);
+  const bBarem = h('button.btn.btn-ghost', { type: 'button', 'aria-expanded': 'false', onclick: () => { baremBox.hidden = !baremBox.hidden; bBarem.setAttribute('aria-expanded', String(!baremBox.hidden)); } }, 'Cập nhật barem điểm');
   const out = h('div', {}, empty());
 
   const bStrat = h('button.btn', { type: 'button' }, 'Chiến lược giải');
@@ -40,9 +45,13 @@ export function render(root) {
   drop.addEventListener('dragleave', () => drop.classList.remove('over'));
   drop.addEventListener('drop', (e) => { e.preventDefault(); drop.classList.remove('over'); add(e.dataTransfer.files); });
 
-  const payload = () => ({ problem: problem.querySelector('textarea').value.trim(), files: files.map(({ mimeType, data }) => ({ mimeType, data })) });
+  const payload = () => ({
+    problem: problem.querySelector('textarea').value.trim(),
+    barem: barem.querySelector('textarea').value.trim(),
+    files: [...files, ...(board.board.isEmpty() ? [] : [board.board.toFile()])].map(({ mimeType, data }) => ({ mimeType, data })),
+  });
   const need = (p, wantFiles) => {
-    if (wantFiles && !p.files.length) { toast('Hãy tải ảnh hoặc PDF bài làm để AI chấm.'); return false; }
+    if (wantFiles && !p.files.length) { toast('Hãy tải ảnh/PDF bài làm hoặc viết trên bảng để AI chấm.'); return false; }
     if (!p.problem && !p.files.length) { toast('Hãy nhập đề bài hoặc tải tệp lên.'); return false; }
     return true;
   };
@@ -61,7 +70,8 @@ export function render(root) {
   }, 'Đang viết lời giải…'); };
 
   root.append(rail, h('div.work', {},
-    h('section.panel.stack', { 'aria-label': 'Bài làm' }, problem, h('div.field', {}, h('span', {}, 'Bài làm (ảnh / PDF)'), drop), thumbs,
+    h('section.panel.stack', { 'aria-label': 'Bài làm' }, problem, h('div.field', {}, h('span', {}, 'Bài làm (ảnh / PDF / bảng iPad)'), drop), thumbs,
+      h('div.btn-row', {}, board.btn, bBarem), board.wrap, baremBox,
       h('div.btn-row', {}, bStrat, bGrade, bSolve)),
     h('section.panel.sticky-col', { 'aria-label': 'Kết quả' }, out)));
 }

@@ -121,7 +121,7 @@ export function rosette(canvas) {
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0); ctx.clearRect(0, 0, w, hh);
     const wide = w > hh;
     // Tall rail: rosette sits low, clear of the nav; wide bottom bar: off to the right.
-    const cx = wide ? w * 0.82 : w * 0.72, cy = wide ? hh * 0.5 : hh * 0.68, S = wide ? hh * 0.9 : Math.min(w * 1.15, 300);
+    const cx = wide ? w * 0.82 : w * 0.72, cy = wide ? hh * 0.5 : hh * 0.82, S = wide ? hh * 0.9 : Math.min(w * 0.9, 220);
     const phase = (t - t0) / 26000;
     ctx.lineWidth = 0.7;
     for (let j = 0; j < 5; j++) {

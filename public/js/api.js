@@ -1,4 +1,5 @@
 // Browser → Worker proxy. The Gemini key never exists in the browser.
+import { getLang } from './i18n.js';
 export class AIError extends Error {
   constructor(message, retryAfter) { super(message); this.retryAfter = retryAfter; }
 }
@@ -9,7 +10,7 @@ export async function ai(task, payload = {}) {
     res = await fetch('/api/ai', {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ task, payload }),
+      body: JSON.stringify({ task, payload: { ...payload, lang: getLang() } }),
     });
   } catch {
     throw new AIError('Mất kết nối mạng. Kiểm tra Internet rồi thử lại.');

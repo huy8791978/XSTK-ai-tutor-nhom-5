@@ -19,7 +19,7 @@ function tally(items, key) {
 
 export function summarize(sessions = []) {
   const scored = sessions.filter((s) => typeof s.score === 'number' && Number.isFinite(s.score));
-  const mistakes = sessions.flatMap((s) => (s.mistakes || []).map((m) => ({ ...m, serial: s.serial, at: s.at })));
+  const mistakes = sessions.flatMap((s) => (s.mistakes || []).map((m) => ({ ...m, serial: s.serial, at: s.at, feature: s.feature })));
 
   const topicMap = new Map();
   for (const s of scored) {
@@ -47,4 +47,17 @@ export function insightPayload(sessions) {
     soPhien: s.n, diemTB: s.avg, loaiLoi: s.errorTypes, chuDeLoi: s.errorTopics, diemTheoChuDe: s.topics,
     loiGanDay: sessions.flatMap((x) => (x.mistakes || []).map((m) => `${m.topic} | ${m.type} | ${m.detail}`)).slice(-40),
   });
+}
+
+/** Per feature: sessions, average score, sessions under 5 points, mistakes logged. Order follows FEATURES. */
+export function byFeature(sessions = []) {
+  return Object.keys(FEATURES).map((f) => {
+    const ss = sessions.filter((s) => s.feature === f), scored = ss.filter((s) => typeof s.score === 'number');
+    return {
+      feature: f, name: FEATURES[f], n: ss.length,
+      avg: scored.length ? round1(scored.reduce((a, s) => a + s.score, 0) / scored.length) : null,
+      low: scored.filter((s) => s.score < 5).length,
+      mistakes: ss.reduce((a, s) => a + (s.mistakes?.length || 0), 0),
+    };
+  }).filter((r) => r.n);
 }

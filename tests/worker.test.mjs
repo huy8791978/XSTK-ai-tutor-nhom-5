@@ -80,3 +80,29 @@ test('solutions ask for CASIO fx-580VN X key steps', () => {
   assert.match(buildRequest('solve', { problem: 'x' }).body.contents[0].parts[0].text, /"casio"/);
   assert.match(buildRequest('solve', { problem: 'x' }).body.systemInstruction.parts[0].text, /fx-580VN X/);
 });
+
+test('grade prompt uses the teacher barem when given', () => {
+  assert.match(buildRequest('grade', { barem: 'Bước 1: 2 điểm' }).body.contents[0].parts[0].text, /BAREM ĐIỂM[\s\S]*Bước 1: 2 điểm/);
+});
+
+test('practice questions carry the 4 Polya steps', () => {
+  assert.match(buildRequest('practice', { kind: 'essay', topic: 'x' }).body.contents[0].parts[0].text, /"polya"/);
+});
+
+test('voice prompt asks whether the student was understood', () => {
+  assert.match(buildRequest('voice', { text: 'xin chào' }).body.contents[0].parts[0].text, /"understood"/);
+});
+
+test('English mode switches the answer language', () => {
+  assert.match(buildRequest('solve', { problem: 'x', lang: 'en' }).body.systemInstruction.parts[0].text, /in English/);
+  assert.doesNotMatch(buildRequest('solve', { problem: 'x' }).body.systemInstruction.parts[0].text, /in English/);
+});
+
+test('validatePost cleans and checks forum input', async () => {
+  const { validatePost, FORUM_TOPICS } = await import('../worker/forum.js');
+  assert.throws(() => validatePost({ title: 'ab', body: 'nội dung' }), /Tiêu đề/);
+  assert.throws(() => validatePost({ title: 'Câu hỏi', body: 'x'.repeat(4001) }), /tối đa/);
+  const v = validatePost({ title: '  Hỏi về Bayes ', body: 'Vì sao?', topic: 'không có' });
+  assert.equal(v.title, 'Hỏi về Bayes'); assert.equal(v.author, 'Ẩn danh'); assert.equal(v.topic, FORUM_TOPICS[0]);
+  assert.equal(validatePost({ body: 'trả lời' }, { reply: true }).body, 'trả lời');
+});

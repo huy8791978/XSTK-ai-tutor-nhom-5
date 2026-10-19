@@ -24,6 +24,7 @@ Mỗi phần tử "keys" là tên phím in trên máy (MENU, SHIFT, ALPHA, OPTN,
 Chỉ trả về JSON hợp lệ đúng cấu trúc được yêu cầu.`;
 
 const CASIO = '"casio": [{"keys": ["..."], "note": "..."}]';
+const POLYA_Q = '"polya": {"understand": ["câu hỏi dẫn dắt bước 1: cái đã cho, cái phải tìm, điều kiện, kí hiệu"], "given": ["cái đã cho"], "find": ["cái phải tìm"], "plan": ["câu hỏi dẫn dắt bước 2: đưa về bài toán quen thuộc, chọn công thức"], "present": "<gợi ý cách trình bày bước 3, không có đáp số>", "check": ["câu hỏi tự kiểm tra bước 4"], "extend": "<bài tương tự hoặc khái quát hoá>"}';
 
 const MISTAKE = `{"topic": "<chủ đề hợp lệ>", "type": "<loại lỗi hợp lệ>", "detail": "<mô tả ngắn>"}`;
 
@@ -36,6 +37,7 @@ Trả JSON: {"topic": "<chủ đề>", "given": ["..."], "find": ["..."], "condi
   grade: (p) => ({
     text: `Đề bài: ${p.problem || '(nếu đề nằm trong tệp, hãy tự nhận dạng)'}\n
 Tệp đính kèm là BÀI LÀM của sinh viên (ảnh hoặc PDF). Hãy nhận dạng chữ (OCR) bài làm rồi CHẤM ĐIỂM thang 10 theo từng bước.
+${p.barem ? `BAREM ĐIỂM của giáo viên (chấm đúng theo barem này, mỗi mục barem là một dòng rubric):\n${p.barem}\n` : 'Chưa có barem: tự lập barem hợp lí theo 4 bước Polya.\n'}Bài làm có thể là ảnh chụp, PDF hoặc ảnh viết tay trên bảng (iPad).
 Chỉ chấm và nhận xét bài làm; KHÔNG viết lời giải đúng hoàn chỉnh, KHÔNG nêu đáp số đúng.
 Trả JSON: {"transcript": "<bài làm đã nhận dạng, dùng LaTeX>", "score": <0-10>, "summary": "...", "rubric": [{"step": "...", "points": <số>, "max": <số>, "comment": "..."}], "strengths": ["..."], "mistakes": [${MISTAKE}], "advice": ["..."]}`,
   }),
@@ -45,8 +47,24 @@ Viết lời giải chi tiết đủ 4 bước Polya.
 Trả JSON: {"topic": "<chủ đề>", "understand": "<bước 1, markdown>", "plan": "<bước 2>", "solution": "<bước 3, lời giải chi tiết từng dòng>", "check": "<bước 4: kiểm tra, phương pháp rút ra, cách khác>", "similar": ["2 bài tương tự/khái quát hoá"], ${CASIO}, "viz": <viz hoặc null>}`,
   }),
   practice: (p) => ({
-    text: `Tạo đúng 5 bài ${p.kind === 'mcq' ? 'TRẮC NGHIỆM 4 phương án (chỉ 1 đúng)' : 'TỰ LUẬN'} mới, khác nhau, về chủ đề "${p.topic}", mức độ ${p.level || 'trung bình'}, gắn với tình huống thực tế Việt Nam khi có thể.
-Trả JSON: {"questions": [{"prompt": "...", ${p.kind === 'mcq' ? '"options": ["A","B","C","D"], "answer": <chỉ số 0-3>, ' : ''}"topic": "<chủ đề>", "strategy": ["gợi ý dẫn dắt, KHÔNG lộ đáp án"], "solution": "<lời giải chi tiết 4 bước Polya, markdown>", ${CASIO}, "viz": <viz hoặc null>}]}`,
+    text: `Tạo đúng 5 bài ${p.kind === 'mcq' ? 'TRẮC NGHIỆM 4 phương án (chỉ 1 đúng)' : 'TỰ LUẬN'} mới, khác nhau, về chủ đề "${p.topic}", mức độ ${p.level || 'trung bình'}, gắn với tình huống thực tế Việt Nam khi có thể.${p.sample ? `
+Các bài phải TƯƠNG TỰ bài mẫu sau (cùng dạng, đổi số liệu và bối cảnh): ${p.sample}` : ''}
+Trả JSON: {"questions": [{"prompt": "...", ${p.kind === 'mcq' ? '"options": ["A","B","C","D"], "answer": <chỉ số 0-3>, ' : ''}"topic": "<chủ đề>", ${POLYA_Q}, "solution": "<lời giải chi tiết 4 bước Polya, markdown>", ${CASIO}, "viz": <viz hoặc null>}]}
+Mỗi câu đi kèm đủ 4 bước giải toán Polya để sinh viên tự củng cố. Bước 1, 2 và 4 là câu hỏi dẫn dắt, TUYỆT ĐỐI không lộ đáp số.`,
+  }),
+  explain: (p) => ({
+    text: `Câu trắc nghiệm: ${p.question}\nCác phương án: ${(p.options || []).map((o, i) => `${'ABCD'[i]}. ${o}`).join(' | ')}\nĐáp án đúng: ${'ABCD'[p.answer] ?? '?'}. Sinh viên đã chọn: ${'ABCD'[p.picked] ?? '(chưa chọn)'}.
+Câu hỏi của sinh viên: ${p.ask || 'Vì sao đáp án đúng là như vậy?'}
+Giải đáp ngắn gọn, đúng trọng tâm câu hỏi: vì sao đáp án đúng, vì sao phương án sinh viên chọn sai (nếu sai), sai lầm thường gặp.
+Trả JSON: {"answer": "<markdown, LaTeX>", ${CASIO}, "viz": <viz hoặc null>}`,
+  }),
+  voice: (p) => ({
+    text: `Hội thoại bằng GIỌNG NÓI với sinh viên về môn XSTK. Câu nói của sinh viên được nhận dạng tự động nên có thể sai chính tả hoặc thiếu ý. Lịch sử:\n${history(p.history) || '(chưa có)'}\n
+Sinh viên vừa nói: "${p.text || ''}"${p.typed ? ' (gõ bằng bàn phím)' : ''}. ${p.files?.length ? 'Kèm ảnh bài viết trên bảng (iPad).' : ''}
+- Nếu câu nói rỗng, vô nghĩa, không liên quan XSTK hoặc bạn KHÔNG chắc đã hiểu đúng ý, đặt "understood": false.
+- Nếu là bài toán có nhiều công thức, khó trình bày bằng lời, đặt "board": true để mời sinh viên viết đề/lời giải lên bảng.
+- Bài toán: dẫn dắt theo 4 bước Polya, không đưa ngay đáp số trừ khi sinh viên đã tự làm.
+Trả JSON: {"understood": true|false, "reply": "<câu trả lời hiển thị, markdown + LaTeX>", "speech": "<bản để đọc thành tiếng: tiếng Việt thuần, KHÔNG LaTeX, đọc công thức bằng lời, tối đa 4 câu>", "board": true|false, ${CASIO}, "viz": <viz hoặc null>}`,
   }),
   practiceGrade: (p) => ({
     text: `Đề: ${p.question}\nLời giải tham khảo (để chấm, KHÔNG chép lại cho sinh viên): ${p.reference}\nBài làm sinh viên: ${p.answer || '(xem tệp đính kèm)'}\n
@@ -111,7 +129,9 @@ export function buildRequest(task, payload = {}) {
   const { text } = TASKS[task](p);
   return {
     body: {
-      systemInstruction: { parts: [{ text: SYSTEM }] },
+      // English UI: same pedagogy and JSON keys, but every text value in English.
+      systemInstruction: { parts: [{ text: p.lang === 'en' ? `${SYSTEM}
+LANGUAGE OVERRIDE: write every text value of the JSON in English (keep JSON keys as specified; use dot decimals; keep the topic and error-type values exactly as listed in Vietnamese).` : SYSTEM }] },
       contents: [{ role: 'user', parts: [{ text }, ...files.map((f) => ({ inlineData: { mimeType: f.mimeType, data: f.data } }))] }],
       generationConfig: { responseMimeType: 'application/json', temperature: task === 'practice' ? 0.9 : 0.4, maxOutputTokens: 8192 },
     },

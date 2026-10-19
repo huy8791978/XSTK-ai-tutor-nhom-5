@@ -4,15 +4,21 @@ Web tĩnh (HTML/CSS/JS, không cần build) chạy trên **Cloudflare Workers (m
 
 ## Tính năng
 
-| Màn hình | Nội dung |
+| Mục trên menu | Nội dung |
 |---|---|
-| **Gia sư chấm bài** | Tải ảnh/PDF bài làm (Gemini đọc chữ – OCR). Nút **Chiến lược giải** (không lộ đáp án), **Chấm điểm** (chỉ chấm bài của bạn, theo từng bước), **Lời giải chi tiết** (4 bước Polya). |
-| **Học lí thuyết** | Học một khái niệm theo 4 bước: Trải nghiệm → Hình thành định nghĩa (dấu hiệu bản chất, thuật ngữ, kí hiệu) → Củng cố (câu hỏi nhận diện, có chấm) → Vận dụng (bài thực tế có chấm). |
+| **Gia sư chấm bài** | Bài làm bằng ảnh, PDF hoặc **viết tay trên bảng (iPad / Apple Pencil)**. Nút **Cập nhật barem điểm** để AI chấm đúng barem của giáo viên. Nút **Chiến lược giải** (không lộ đáp án), **Chấm điểm**, **Lời giải chi tiết**. |
+| **Học lí thuyết** | Một khái niệm qua 4 bước: Trải nghiệm → Hình thành định nghĩa → Củng cố (có chấm) → Vận dụng. |
 | **Học định lí** | Trải nghiệm để dự đoán → Hình thành định lí (giả thiết, kết luận, luận cứ, chứng minh, cấu trúc logic) → Củng cố → Vận dụng. |
-| **Luyện tập** | Nút **Tạo 5 câu trắc nghiệm** / **Tạo 5 câu tự luận** theo chủ đề và mức độ. Mỗi câu có **Chiến lược**, **Chấm bài**, **Xem lời giải**. |
-| **Vấn đáp** | AI hỏi lí thuyết theo Trải nghiệm → Hình thành → Củng cố → Vận dụng, chấm từng câu trả lời, tổng kết lỗ hổng kiến thức và sai lầm. |
-| **Bản đồ tư duy** | Bản đồ toàn môn có sẵn + AI vẽ bản đồ theo chủ đề. Bấm nút để thu/mở nhánh, kéo, phóng to. Hiển thị đầy đủ dấu tiếng Việt và công thức. |
-| **Hồ sơ học tập** | Nút **Hồ sơ của tôi** ở mọi trang. Thống kê điểm, loại lỗi, chủ đề yếu; AI phân tích lỗi lặp lại và đề xuất lộ trình 2 tuần. Xuất/nhập hồ sơ để mang sang máy khác. |
+| **Bài tập tự luận** | Tạo ngẫu nhiên 5 bài (hoặc 5 bài tương tự một bài mẫu). Mỗi bài có **4 nút bước giải toán**: Tìm hiểu đề → Chương trình giải → Trình bày (chấm bài, viết bảng) → Kiểm tra & nghiên cứu (lời giải, bài tương tự). |
+| **Bài tập trắc nghiệm** | 5 câu, chấm ngay. Cũng đi qua 4 bước giải toán; nút **Hỏi AI: vì sao?** để hỏi lại đáp án. |
+| **Vấn đáp** | Hỏi lí thuyết theo 4 giai đoạn, chấm từng câu, tổng kết lỗ hổng kiến thức và sai lầm. |
+| **Hỏi đáp giọng nói** | Bấm micro, hỏi bằng giọng nói; AI trả lời bằng chữ và đọc thành tiếng. Bài nhiều công thức thì viết lên bảng. Nếu không nghe rõ / chưa hiểu, AI nói và hiện: *"Vì tôi nghe không rõ, nghe được hoặc chưa hiểu rõ ý của bạn, bạn hãy nhập đề bài hoặc đáp án hoặc câu trả lời của bạn dưới đây."* rồi đưa bạn tới ô nhập. Mọi ô nhập khác cũng có nút **Nói** để đọc chính tả. |
+| **Thống kê lỗi sai** | Thống kê câu sai theo vấn đáp, trắc nghiệm, tự luận, chấm bài…; lọc theo từng mục; AI nhận định chung và hướng khắc phục. |
+| **Bản đồ tư duy** | Bản đồ toàn môn + AI vẽ theo chủ đề; thu/mở nhánh, kéo, phóng to. |
+| **Diễn đàn XSTK** | Đăng câu hỏi, trả lời, lọc theo chủ đề, gõ công thức; người viết xoá được bài của mình. Lưu trên server (Durable Object, miễn phí). |
+| **Hồ sơ học tập** | Điểm, nhật kí, AI đề xuất lộ trình 2 tuần; xuất/nhập hồ sơ. |
+
+Nút **EN / VI** ở góc trên đổi toàn bộ giao diện sang tiếng Anh, và AI trả lời bằng tiếng Anh.
 
 Mọi ô nhập văn bản đều có nút **Nhập công thức**: mở bàn phím toán (MathLive) với trang **XSTK** gồm các mẫu P(A|B), E(X), D(X), tổ hợp, chỉnh hợp, phân số, mũ, căn, tổng, tích phân, x̄, chữ Hy Lạp…; bấm mẫu rồi chỉ cần điền giá trị vào các ô, bấm **Chèn vào bài**. Lời giải có thêm khung **Bấm máy CASIO fx-580VN X** từng bước. Chân trang luôn nhắc: nội dung do AI tạo, cần đối chiếu đề cương hoặc hỏi giáo viên. Các ví dụ có **biểu đồ minh hoạ** (nhị thức, Poisson, chuẩn có tô vùng, Venn, biểu đồ cột) và **bảng Galton** động.
 
@@ -47,6 +53,7 @@ Mọi yêu cầu đi qua **một Durable Object toàn cục**, nên các giới 
 | `LIMIT_TPM` | 225000 | Token/phút (ước tính trước, hiệu chỉnh theo số token thật Gemini trả về) |
 | `LIMIT_RPD` | 900 | Yêu cầu/ngày (đặt lại lúc 0h giờ Thái Bình Dương, giống Google) |
 | `LIMIT_PER_IP_RPM` | 6 | Yêu cầu/phút cho mỗi người (IP), để một người không chiếm hết lượt |
+| `FORUM_PER_IP_RPM` | 5 | Số bài/trả lời mỗi người được đăng mỗi phút trên diễn đàn |
 
 Khi vượt giới hạn, người dùng thấy thông báo tiếng Việt và nút tự đếm ngược tới lúc thử lại. Đặt các số này thấp hơn khoảng 10% so với hạn mức của dự án trong Google AI Studio (*Usage & limits*), vì hạn mức free tier thay đổi theo model và theo thời gian. Đổi model bằng biến `GEMINI_MODEL`.
 

@@ -1,6 +1,7 @@
 // Text field + visual formula editor (MathLive): press a template (fraction, P(A|B), Cₙᵏ…), then just type the values into its boxes.
 import { md, typeset } from './md.js';
 import { h, icon, toast } from './ui.js';
+import { listen, fallbackText } from './voice.js';
 
 const ML = 'https://cdn.jsdelivr.net/npm/mathlive@0.109.2';
 
@@ -52,6 +53,7 @@ export function mathField({ label, name, placeholder = '', rows = 4, value = '' 
   const pv = h('div.preview.rich', { 'aria-live': 'polite', hidden: true });
   const pad = h('div.mathpad', { hidden: true });
   const open = h('button.btn.btn-ghost.math-open', { type: 'button', 'aria-expanded': 'false' }, icon('sigma'), 'Nhập công thức');
+  const mic = micButton(ta);
   let sel = [0, 0], mf;
 
   const close = () => { pad.hidden = true; open.setAttribute('aria-expanded', 'false'); window.mathVirtualKeyboard?.hide(); ta.focus(); };
@@ -103,6 +105,28 @@ export function mathField({ label, name, placeholder = '', rows = 4, value = '' 
   });
 
   return h('div.field', {},
-    h('div.field-head', {}, h('label.label', { for: id }, label), open),
+    h('div.field-head', {}, h('label.label', { for: id }, label), h('div.btn-row', {}, mic, open)),
     ta, pad, pv);
+}
+
+/** Dictation into a textarea: tap, speak, the words are appended. Unclear or unsupported → ask to type instead. */
+export function micButton(ta) {
+  const b = h('button.btn.btn-ghost.math-open', { type: 'button', 'aria-pressed': 'false' }, icon('mic'), 'Nói');
+  let rec;
+  b.onclick = async () => {
+    if (rec) return rec.stop();
+    b.setAttribute('aria-pressed', 'true');
+    try {
+      rec = listen();
+      const text = await rec;
+      if (!text) throw { code: 'no-speech' };
+      ta.value = `${ta.value}${ta.value && !/\s$/.test(ta.value) ? ' ' : ''}${text}`;
+      ta.dispatchEvent(new Event('input', { bubbles: true }));
+    } catch {
+      toast(fallbackText()); ta.focus();
+    } finally {
+      rec = null; b.setAttribute('aria-pressed', 'false');
+    }
+  };
+  return b;
 }

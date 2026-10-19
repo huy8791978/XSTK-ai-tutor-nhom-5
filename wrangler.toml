@@ -22,3 +22,12 @@ LIMIT_RPM = "14"
 LIMIT_TPM = "225000"
 LIMIT_RPD = "900"
 LIMIT_PER_IP_RPM = "6"
+FORUM_PER_IP_RPM = "5"
+
+[[durable_objects.bindings]]
+name = "FORUM"
+class_name = "Forum"
+
+[[migrations]]
+tag = "v2"
+new_sqlite_classes = ["Forum"]
