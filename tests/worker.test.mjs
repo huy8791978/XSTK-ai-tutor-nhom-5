@@ -148,3 +148,11 @@ test('extractJson error carries the parse position for logging', () => {
   try { extractJson('{"a": 1 "b": 2}'); } catch (e) { err = e; }
   assert.match(String(err?.detail), /position|JSON|Unexpected|Expected/i);
 });
+
+test('extractJson fixes Vietnamese decimal commas in JSON numbers but not in text or arrays', () => {
+  const d = extractJson('{"viz": {"type": "venn", "pA": 0,5, "pB": 0,6, "pAB": 0,3}, "score": 7,5, "t": "P = 0,5", "v": [1,2,3]}');
+  assert.deepEqual(d.viz, { type: 'venn', pA: 0.5, pB: 0.6, pAB: 0.3 });
+  assert.equal(d.score, 7.5);
+  assert.equal(d.t, 'P = 0,5');
+  assert.deepEqual(d.v, [1, 2, 3]);
+});

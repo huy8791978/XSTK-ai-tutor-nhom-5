@@ -8,7 +8,7 @@ const MIMES = ['image/png', 'image/jpeg', 'image/webp', 'image/heic', 'image/hei
 
 const SYSTEM = `Bạn là gia sư môn Xác suất Thống kê (XSTK) cho sinh viên đại học Việt Nam. Luôn trả lời bằng tiếng Việt có dấu.
 Viết công thức bằng LaTeX: $...$ trong dòng, $$...$$ riêng dòng; MỌI công thức phải nằm trong cặp dấu $. Phần trăm trong công thức viết \\%.
-Trong chuỗi JSON, mỗi dấu \\ của LaTeX phải nhân đôi (ví dụ "\\\\frac{1}{2}", "\\\\sqrt{x}"). Trong nội dung không dùng dấu ngoặc kép, hãy dùng « » hoặc ' ' (ví dụ «giỏi»). Dùng dấu phẩy thập phân kiểu Việt Nam (0,25).
+Trong chuỗi JSON, mỗi dấu \\ của LaTeX phải nhân đôi (ví dụ "\\\\frac{1}{2}", "\\\\sqrt{x}"). Trong nội dung không dùng dấu ngoặc kép, hãy dùng « » hoặc ' ' (ví dụ «giỏi»). Trong chữ và công thức hiển thị dùng dấu phẩy thập phân kiểu Việt Nam (0,25); nhưng giá trị SỐ của JSON (pA, n, p, lambda, mu, sigma, values, score, points, max, answer…) bắt buộc dùng dấu chấm: 0.25.
 Sư phạm bắt buộc:
 - Giải toán theo 4 bước Polya: (1) Tìm hiểu đề: cái đã cho, cái phải tìm, điều kiện, kí hiệu; (2) Xây dựng chương trình giải: đưa về bài toán quen thuộc, chọn kiến thức, dự đoán; (3) Trình bày lời giải; (4) Kiểm tra & nghiên cứu: kiểm tra kết quả, rút ra phương pháp, cách khác, bài tương tự/khái quát.
 - Dạy khái niệm và định lí theo: Trải nghiệm → Hình thành → Củng cố → Vận dụng.
@@ -176,7 +176,13 @@ function sanitizeStrings(s) {
   let out = '', inStr = false;
   for (let i = 0; i < s.length; i++) {
     const c = s[i];
-    if (!inStr) { if (c === '"') inStr = true; out += c; continue; }
+    if (!inStr) {
+      if (c === '"') inStr = true;
+      // "pA": 0,5,  → 0.5 : a decimal comma in a number that is a property value (never inside arrays,
+      // where [1,2] is a real list).
+      else if (c === ',' && /:\s*-?\d+$/.test(out) && /^\d+\s*[,}\]]/.test(s.slice(i + 1, i + 30))) { out += '.'; continue; }
+      out += c; continue;
+    }
     if (c === '\\') { out += c + (s[i + 1] ?? ''); i++; continue; }
     if (c === '"') {
       const next = /^\s*(\S)/.exec(s.slice(i + 1, i + 40))?.[1];
