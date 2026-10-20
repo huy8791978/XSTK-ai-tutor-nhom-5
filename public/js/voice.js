@@ -46,6 +46,7 @@ export function speak(text, { onStart, onEnd } = {}) {
   u.lang = locale(); u.rate = 1;
   const v = currentVoice();
   if (v) u.voice = v;
+  u.pitch = pitchFor(v?.name, getGender());
   u.onstart = () => onStart?.();
   u.onend = u.onerror = () => onEnd?.();
   speechSynthesis.speak(u);
@@ -63,20 +64,25 @@ export function voiceGender(name = '') {
   return 'female';
 }
 
-const VOICE_KEY = 'xstk.voice';
+const GENDER_KEY = 'xstk.voiceGender';
 /** Voices for the current language (all voices if the device has none for it). */
 export function voices() {
   if (!('speechSynthesis' in window)) return [];
   const all = speechSynthesis.getVoices(), mine = all.filter((x) => x.lang?.toLowerCase().startsWith(locale().slice(0, 2)));
   return mine.length ? mine : all;
 }
-export function currentVoice() {
-  const list = voices();
-  let saved = null;
-  try { saved = localStorage.getItem(VOICE_KEY); } catch { /* private mode */ }
-  return list.find((v) => v.name === saved) || list[0] || null;
+/** The gender the student picked with the Nam/Nữ toggle (default: female). */
+export function getGender() {
+  try { return localStorage.getItem(GENDER_KEY) === 'male' ? 'male' : 'female'; } catch { return 'female'; }
 }
-export function setVoice(name) { try { localStorage.setItem(VOICE_KEY, name); } catch { /* private mode */ } }
+export function setGender(g) { try { localStorage.setItem(GENDER_KEY, g); } catch { /* private mode: this page only */ } }
+/** A voice matching the picked gender, else the first voice for the language. */
+export function currentVoice() {
+  const list = voices(), g = getGender();
+  return list.find((v) => voiceGender(v.name) === g) || list[0] || null;
+}
+/** Pitch: many devices have only a female Vietnamese voice, so "male" without a male voice is read lower. */
+export const pitchFor = (voiceName, gender) => (gender === 'male' && voiceGender(voiceName) !== 'male' ? 0.55 : 1);
 /** Run cb now and whenever the browser finishes loading its voice list (Chrome loads it asynchronously). */
 export function onVoices(cb) {
   if (!('speechSynthesis' in window)) return cb();

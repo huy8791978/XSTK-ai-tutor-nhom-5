@@ -123,3 +123,10 @@ test('voiceGender guesses from common voice names', async () => {
   assert.equal(voiceGender('Microsoft David - English (United States)'), 'male');
   assert.equal(voiceGender('Unknown voice'), 'female');
 });
+
+test('pitchFor lowers a female-only voice when the male teacher is picked', async () => {
+  const { pitchFor } = await import('../public/js/voice.js');
+  assert.equal(pitchFor('Google Tiếng Việt', 'male') < 1, true);
+  assert.equal(pitchFor('Microsoft An - Vietnamese', 'male'), 1);
+  assert.equal(pitchFor('Google Tiếng Việt', 'female'), 1);
+});

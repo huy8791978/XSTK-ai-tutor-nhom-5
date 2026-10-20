@@ -6,7 +6,7 @@ import { ai } from '../api.js';
 import { mathField } from '../mathinput.js';
 import { boardToggle } from '../board.js';
 import { chart } from '../viz.js';
-import { speak, stopSpeaking, unclear, canListen, fallbackText, voices, currentVoice, setVoice, voiceGender, onVoices } from '../voice.js';
+import { speak, stopSpeaking, unclear, canListen, fallbackText, getGender, setGender } from '../voice.js';
 import { teacher } from '../teacher.js';
 
 
@@ -23,18 +23,17 @@ export function render(root) {
   const history = [];
   let lastSpeech = '';
   const thread = h('div.thread', { 'aria-live': 'polite' });
-  const face = teacher(voiceGender(currentVoice()?.name));
-  // Voice picker: the teacher is a man for a male voice and a woman for a female one.
-  const voiceSel = h('select', { id: 'voice-pick', 'aria-label': 'Giọng đọc' });
-  const voiceBox = h('label.voice-select', { for: 'voice-pick', hidden: true }, 'Giọng đọc', voiceSel);
-  onVoices(() => {
-    const list = voices(), cur = currentVoice();
-    voiceBox.hidden = list.length < 2;
-    const short = (n) => n.replace(/^(Microsoft|Google)\s+/, '').replace(/\s*[-–(].*$/, '');
-    voiceSel.replaceChildren(...list.map((v) => h('option', { value: v.name, selected: v.name === cur?.name }, `${short(v.name)} · ${voiceGender(v.name) === 'male' ? 'giọng nam' : 'giọng nữ'}`)));
-    face.dataset.gender = voiceGender(cur?.name);
+  // Nam / Nữ toggle: switches both the reading voice and the teacher on screen.
+  const face = teacher(getGender());
+  const genderBtns = ['female', 'male'].map((g) => h('button', { type: 'button', 'data-g': g, 'aria-pressed': String(getGender() === g) }, g === 'male' ? 'Giọng nam' : 'Giọng nữ'));
+  const genderToggle = h('div.gender-toggle', { role: 'group', 'aria-label': 'Chọn giọng đọc' }, genderBtns);
+  genderToggle.addEventListener('click', (e) => {
+    const g = e.target.closest('button')?.dataset.g;
+    if (!g || g === getGender()) return;
+    setGender(g); face.dataset.gender = g;
+    genderBtns.forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.g === g)));
+    say(lastSpeech || (g === 'male' ? 'Chào em, thầy sẽ hướng dẫn em.' : 'Chào em, cô sẽ hướng dẫn em.'));
   });
-  voiceSel.onchange = () => { setVoice(voiceSel.value); face.dataset.gender = voiceGender(voiceSel.value); if (lastSpeech) say(lastSpeech); };
   const status = h('p.tutor-status', { role: 'status' }, LABEL.idle);
   const setState = (s) => { face.dataset.state = s; status.textContent = LABEL[s]; bReplay.disabled = !lastSpeech || s === 'speaking'; };
   const say = (text) => {
@@ -101,6 +100,6 @@ export function render(root) {
   };
 
   root.append(
-    h('section.panel.voice-stage', {}, face, status, h('div.btn-row', { style: 'justify-content:center;align-items:center' }, bReplay, bMute, voiceBox)),
+    h('section.panel.voice-stage', {}, genderToggle, face, status, h('div.btn-row', { style: 'justify-content:center' }, bReplay, bMute)),
     h('div', { style: 'max-width:900px;margin-top:20px' }, thread, compose));
 }

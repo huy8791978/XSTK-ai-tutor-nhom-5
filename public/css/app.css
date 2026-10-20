@@ -509,7 +509,13 @@ a.row.thread-row small { display: inline; }
 @keyframes t-gesture { 0%, 100% { transform: rotate(8deg); } 30% { transform: rotate(26deg); } 60% { transform: rotate(-4deg); } }
 @keyframes t-talk { from { transform: scaleY(.35); } to { transform: scaleY(1.15); } }
 @keyframes t-brow { 0%, 100% { transform: translateY(0); } 40% { transform: translateY(-3px); } }
-.voice-select { display: flex; align-items: center; gap: 8px; font-size: 13.5px; color: var(--ink-2); }
-.voice-select select { min-height: 38px; padding: 6px 36px 6px 10px; width: auto; max-width: 280px; }
 .voice-stage { display: grid; justify-items: center; gap: 10px; padding: 24px 20px; text-align: center; }
 .tutor-status { font-weight: 600; color: var(--ink-2); min-height: 1.6em; }
+/* Nam / Nữ toggle, top-right of the teacher panel */
+.voice-stage { position: relative; }
+.gender-toggle { position: absolute; top: 16px; right: 16px; display: inline-flex; border: 1.5px solid var(--rule-2); border-radius: var(--r); overflow: hidden; background: var(--sheet); }
+.gender-toggle button { min-height: 38px; padding: 6px 14px; border: 0; background: transparent; color: var(--ink-2); font-weight: 600; font-size: 13.5px; cursor: pointer; }
+.gender-toggle button + button { border-left: 1.5px solid var(--rule-2); }
+.gender-toggle button[aria-pressed="true"] { background: var(--ultra); color: #fff; }
+.gender-toggle button:focus-visible { outline: 2px solid var(--gold); outline-offset: -2px; }
+@media (max-width: 600px) { .gender-toggle { position: static; } }
