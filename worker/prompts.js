@@ -30,6 +30,17 @@ const POLYA_Q = '"polya": {"understand": ["câu hỏi dẫn dắt bước 1: cá
 const MISTAKE = `{"topic": "<chủ đề hợp lệ>", "type": "<loại lỗi hợp lệ>", "detail": "<mô tả ngắn>"}`;
 
 const TASKS = {
+  // Re-render content already on screen in the other language after the EN/VI switch.
+  translate: (p) => {
+    const items = p.items;
+    if (!Array.isArray(items) || !items.length || items.length > 40 || items.some((s) => typeof s !== 'string')) throw new Error('Danh sách cần dịch không hợp lệ.');
+    if (items.reduce((n, s) => n + s.length, 0) > 12000) throw new Error('Nội dung cần dịch quá dài.');
+    return {
+      text: `Dịch từng mục trong mảng JSON sau sang ${p.to === 'en' ? 'English' : 'tiếng Việt'}. Giữ NGUYÊN công thức LaTeX ($...$, $$...$$), định dạng markdown, số liệu và xuống dòng; chỉ dịch chữ. Không thêm, không bớt, không gộp mục.
+${JSON.stringify(items)}
+Trả JSON: {"items": ["bản dịch mục 1", "..."]} với đúng ${items.length} mục, cùng thứ tự.`,
+    };
+  },
   strategy: (p) => ({
     text: `Đề bài (có thể kèm ảnh/PDF):\n${p.problem || '(xem tệp đính kèm)'}\n
 Nhiệm vụ: CHỈ đưa ra chiến lược giải (bước 1 và 2 Polya). TUYỆT ĐỐI KHÔNG đưa đáp số, KHÔNG thay số tính ra kết quả cuối, KHÔNG viết lời giải hoàn chỉnh.
@@ -127,7 +138,10 @@ export function buildRequest(task, payload = {}) {
   }
   if (bytes > LIMITS.fileBytes) throw new Error('Tệp quá lớn (tối đa khoảng 10 MB).');
 
-  const { text } = TASKS[task](p);
+  let { text } = TASKS[task](p);
+  // The task wording and the student's input are often Vietnamese, which pulls the model back to Vietnamese;
+  // repeat the language rule last, in the user turn, where it wins.
+  if (p.lang === 'en') text += '\n\nLANGUAGE: Answer ONLY in English (every text value of the JSON), even if the student writes in Vietnamese. Keep the topic and error-type values exactly as listed in Vietnamese.';
   return {
     body: {
       // English UI: same pedagogy and JSON keys, but every text value in English.

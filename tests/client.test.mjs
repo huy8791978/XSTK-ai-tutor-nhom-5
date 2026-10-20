@@ -154,3 +154,8 @@ test('matchPronoun makes the spoken self-reference match the picked voice', asyn
   assert.equal(matchPronoun('Thầy sẽ giải thích, thầy hỏi em nhé.', 'female'), 'Cô sẽ giải thích, cô hỏi em nhé.');
   assert.equal(matchPronoun('Bài cố định cốt lõi, thầy thuốc', 'male'), 'Bài cố định cốt lõi, thầy thuốc');
 });
+
+test('md keeps the number of an ordered list that resumes after bullets', () => {
+  assert.equal(md('1. Tìm hiểu đề\n- Đã cho\n2. Lập kế hoạch\n- Công thức'),
+    '<ol><li>Tìm hiểu đề</li></ol><ul><li>Đã cho</li></ul><ol start="2"><li>Lập kế hoạch</li></ol><ul><li>Công thức</li></ul>');
+});

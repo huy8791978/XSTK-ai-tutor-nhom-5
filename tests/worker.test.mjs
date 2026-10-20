@@ -197,3 +197,20 @@ test('buildTts puts the reading style in systemInstruction, never in the spoken 
   assert.equal(b.contents[0].parts[0].text, 'Xin chào em');
   assert.equal(buildTts({ text: 'Hi', lang: 'en' }).systemInstruction.parts[0].text, TTS_STYLE.en);
 });
+
+test('English mode also tells every task, in the user turn, to answer in English even for Vietnamese input', () => {
+  for (const task of ['voice', 'grade', 'practice', 'oral', 'lesson', 'mindmap', 'explain']) {
+    const t = buildRequest(task, { text: 'định lí bayes là gì', problem: 'x', topic: 'x', name: 'x', lang: 'en' }).body.contents[0].parts[0].text;
+    assert.match(t, /Answer ONLY in English/, task);
+  }
+  assert.doesNotMatch(buildRequest('voice', { text: 'xin chào' }).body.contents[0].parts[0].text, /Answer ONLY in English/);
+});
+
+test('translate task keeps item count/order and validates size', () => {
+  const t = buildRequest('translate', { items: ['Xác suất $P(A)$', 'Lời giải'], to: 'en' }).body.contents[0].parts[0].text;
+  assert.match(t, /English/);
+  assert.match(t, /"items"/);
+  assert.ok(t.includes('Xác suất $P(A)$'));
+  assert.throws(() => buildRequest('translate', { items: 'x', to: 'en' }), /Danh sách/);
+  assert.throws(() => buildRequest('translate', { items: ['x'.repeat(13000)], to: 'en' }), /quá dài/);
+});

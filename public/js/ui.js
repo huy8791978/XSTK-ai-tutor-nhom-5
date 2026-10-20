@@ -1,5 +1,6 @@
 // Small DOM + async helpers shared by every view.
 import { md, typeset } from './md.js';
+import { getLang } from './i18n.js';
 
 /** h('div.class', {attrs}, ...children) */
 export function h(sel, attrs = {}, ...kids) {
@@ -21,9 +22,14 @@ export const icon = (id) => { const s = document.createElementNS('http://www.w3.
 /** Rich AI text block with markdown + KaTeX. */
 export function rich(text, tag = 'div') {
   const el = h(`${tag}.rich`, { html: md(text) });
+  // Remember the source text per language, so the EN/VI switch can translate it and switch back for free.
+  el._tr = { [getLang()]: String(text ?? '') };
   queueMicrotask(() => typeset(el));
   return el;
 }
+
+/** Show a .rich block in another language (text already translated). */
+export function rerich(el, text) { el.innerHTML = md(text); typeset(el); }
 export const list = (items = [], ordered = false) => rich((items || []).map((x, i) => `${ordered ? `${i + 1}.` : '-'} ${x}`).join('\n'));
 
 export function loading(text = 'AI đang suy nghĩ…') {

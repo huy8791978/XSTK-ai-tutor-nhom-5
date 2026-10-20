@@ -34,7 +34,8 @@ export function md(src) {
   const out = [];
   let list = null, para = [];
   const flushPara = () => { if (para.length) out.push(`<p>${para.map(inline).join('<br>')}</p>`); para = []; };
-  const flushList = () => { if (list) out.push(`<${list.tag}>${list.items.map((i) => `<li>${inline(i)}</li>`).join('')}</${list.tag}>`); list = null; };
+  // An ordered list keeps its first number, so "3. Trình bày" after a bullet list is not renumbered "1.".
+  const flushList = () => { if (list) out.push(`<${list.tag}${list.start > 1 ? ` start="${list.start}"` : ''}>${list.items.map((i) => `<li>${inline(i)}</li>`).join('')}</${list.tag}>`); list = null; };
 
   for (const line of s.split('\n')) {
     const t = line.trim();
@@ -44,7 +45,7 @@ export function md(src) {
     if ((m = t.match(/^(?:[-*•]|(\d+)[.)])\s+(.*)$/))) {
       flushPara();
       const tag = m[1] ? 'ol' : 'ul';
-      if (!list || list.tag !== tag) { flushList(); list = { tag, items: [] }; }
+      if (!list || list.tag !== tag) { flushList(); list = { tag, items: [], start: Number(m[1]) || 1 }; }
       list.items.push(m[2]);
       continue;
     }

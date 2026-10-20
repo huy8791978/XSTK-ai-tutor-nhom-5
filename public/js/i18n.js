@@ -4,10 +4,6 @@
 const KEY = 'xstk.lang';
 let lang = (() => { try { return localStorage.getItem(KEY) === 'en' ? 'en' : 'vi'; } catch { return 'vi'; } })();
 export const getLang = () => lang;
-export function setLang(l) {
-  try { localStorage.setItem(KEY, l); } catch { /* private mode: this page only */ }
-  location.reload();
-}
 
 const DICT = {
   // shell & nav
@@ -81,6 +77,9 @@ const DICT = {
   'Hãy viết đề bài hoặc lời giải lên bảng rồi bấm Gửi.': 'Write the problem or your solution on the board, then press Send.', '(bài viết trên bảng)': '(written on the board)',
   'Bấm nút Nói ở ô bên dưới và hỏi bằng giọng nói về Xác suất Thống kê. Bài toán nhiều công thức thì viết lên bảng (iPad). Gia sư trả lời bằng chữ và đọc thành tiếng.': 'Press Speak on the box below and ask about Probability & Statistics by voice. Write formula-heavy problems on the board (iPad). The tutor answers on screen and out loud.',
   'Bấm Nói ở ô bên dưới để hỏi bằng giọng nói': 'Press Speak in the box below to ask by voice', 'Trình duyệt này không nhận giọng nói. Hãy gõ câu hỏi ở ô bên dưới.': 'This browser cannot recognise speech. Type your question below.',
+  'Đang dịch nội dung đã có sang tiếng Anh…': 'Translating the content on screen into English…',
+  'Đang dịch nội dung đã có sang tiếng Việt…': 'Translating the content on screen into Vietnamese…',
+  'Không dịch được nội dung cũ. Nội dung mới sẽ theo ngôn ngữ đã chọn.': 'Could not translate earlier content. New content will follow the chosen language.',
   'Giọng đọc': 'Voice', 'Giọng nam': 'Male voice', 'Giọng nữ': 'Female voice', 'Chọn giọng đọc': 'Choose a voice', 'Đang nghe bạn nói…': 'Listening…', 'Gia sư đang suy nghĩ…': 'The tutor is thinking…', 'Gia sư đang trả lời…': 'The tutor is answering…', 'Nghe lại': 'Play again',
   'Hỏi bằng giọng nói (nút Nói) hoặc nhập đề bài, đáp án, câu trả lời': 'Ask by voice (Speak button) or type your problem, answer or reply', 'Hỏi gia sư': 'Ask the tutor',
   // lessons
@@ -166,36 +165,73 @@ export function t(s) {
 
 const SKIP = '.rich, .katex, math-field, script, style, .ML__keyboard, .markmap';
 const ATTRS = ['placeholder', 'title', 'aria-label'];
+// What each node said before we translated it, so switching back restores the exact Vietnamese text.
+const TEXT = new WeakMap();  // text node → { vi, en }
+const ATTR = new WeakMap();  // element  → { [attr]: { vi, en } }
+
+const swapText = (n) => {
+  const was = TEXT.get(n);
+  if (lang === 'en') {
+    if (was && n.nodeValue === was.en) return;
+    const en = t(n.nodeValue);
+    if (en !== n.nodeValue) { TEXT.set(n, { vi: n.nodeValue, en }); n.nodeValue = en; }
+  } else if (was && n.nodeValue === was.en) n.nodeValue = was.vi;
+};
+const swapAttr = (el, a) => {
+  const v = el.getAttribute(a), all = ATTR.get(el) || {}, was = all[a];
+  if (lang === 'en') {
+    if (was && v === was.en) return;
+    const en = t(v);
+    if (en !== v) { all[a] = { vi: v, en }; ATTR.set(el, all); el.setAttribute(a, en); }
+  } else if (was && v === was.en) el.setAttribute(a, was.vi);
+};
+
 function translate(root) {
-  if (root.nodeType === 3) { if (!root.parentElement?.closest(SKIP)) { const v = t(root.nodeValue); if (v !== root.nodeValue) root.nodeValue = v; } return; }
+  if (root.nodeType === 3) { if (!root.parentElement?.closest(SKIP)) swapText(root); return; }
   if (root.nodeType !== 1 || root.closest(SKIP)) return;
-  const els = [root, ...root.querySelectorAll('*')];
-  for (const el of els) {
+  for (const el of [root, ...root.querySelectorAll('*')]) {
     if (el.closest(SKIP)) continue;
     // Keep Vietnamese option values (topics are matched server-side) while showing English text.
     if (el.tagName === 'OPTION' && !el.hasAttribute('value')) el.setAttribute('value', el.textContent);
-    for (const a of ATTRS) if (el.hasAttribute(a)) { const v = t(el.getAttribute(a)); if (v !== el.getAttribute(a)) el.setAttribute(a, v); }
-    for (const n of el.childNodes) if (n.nodeType === 3) { const v = t(n.nodeValue); if (v !== n.nodeValue) n.nodeValue = v; }
+    for (const a of ATTRS) if (el.hasAttribute(a)) swapAttr(el, a);
+    for (const n of el.childNodes) if (n.nodeType === 3) swapText(n);
   }
 }
 
-/** Wire the EN/VI button and, in English mode, translate the page live. */
-export function initI18n() {
-  const btn = document.querySelector('[data-lang-toggle]');
-  if (btn) {
-    btn.textContent = lang === 'en' ? 'VI' : 'EN';
-    btn.setAttribute('lang', lang === 'en' ? 'vi' : 'en');
-    btn.setAttribute('aria-label', lang === 'en' ? 'Chuyển sang tiếng Việt' : 'Switch to English');
-    btn.onclick = () => setLang(lang === 'en' ? 'vi' : 'en');
-  }
-  if (lang !== 'en') return;
-  document.documentElement.lang = 'en';
+const btn = () => document.querySelector('[data-lang-toggle]');
+function paintButton() {
+  const b = btn();
+  if (!b) return;
+  b.textContent = lang === 'en' ? 'VI' : 'EN';
+  b.setAttribute('lang', lang === 'en' ? 'vi' : 'en');
+  b.setAttribute('aria-label', lang === 'en' ? 'Chuyển sang tiếng Việt' : 'Switch to English');
+}
+
+/**
+ * Switch language in place: no reload, so everything on screen stays. Interface text flips both ways here;
+ * listeners of "langchange" (app.js) re-render page titles and translate the AI-written content.
+ */
+export function setLang(l) {
+  if (l === lang) return;
+  try { localStorage.setItem(KEY, l); } catch { /* private mode: this page only */ }
+  lang = l;
+  document.documentElement.lang = l;
+  paintButton();
   translate(document.body);
+  dispatchEvent(new CustomEvent('langchange', { detail: l }));
+}
+
+/** Wire the EN/VI button and keep newly rendered UI in the current language. */
+export function initI18n() {
+  paintButton();
+  btn()?.addEventListener('click', () => setLang(lang === 'en' ? 'vi' : 'en'));
+  document.documentElement.lang = lang;
+  if (lang === 'en') translate(document.body);
   new MutationObserver((list) => {
+    if (lang !== 'en') return;
     for (const m of list) {
-      if (m.type === 'characterData') translate(m.target);
-      else if (m.type === 'attributes') translate(m.target);
-      else m.addedNodes.forEach(translate);
+      if (m.type === 'childList') m.addedNodes.forEach(translate);
+      else translate(m.target);
     }
   }).observe(document.body, { childList: true, subtree: true, characterData: true, attributes: true, attributeFilter: ATTRS });
 }
