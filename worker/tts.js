@@ -4,15 +4,15 @@
 export const TTS_VOICES = { female: 'Kore', male: 'Charon' };
 const MAX_CHARS = 1200;
 
-/** Validate { text, gender, lang } and build a generateContent body that returns audio. Throws a Vietnamese Error. */
-export function buildTts({ text, gender, lang } = {}) {
+/** Validate { text, gender } and build a generateContent body that returns audio. Throws a Vietnamese Error. */
+export function buildTts({ text, gender } = {}) {
   const t = String(text ?? '').replace(/\$+/g, '').replace(/\\[a-zA-Z]+/g, ' ').replace(/\s+/g, ' ').trim();
   if (!t) throw new Error('Không có nội dung để đọc.');
   if (t.length > MAX_CHARS) throw new Error('Nội dung quá dài để đọc.');
   const voice = TTS_VOICES[gender === 'male' ? 'male' : 'female'];
-  const style = lang === 'en' ? 'Read this clearly and warmly, like a friendly teacher:' : 'Đọc rõ ràng, ấm áp như một giáo viên thân thiện:';
   return {
-    contents: [{ role: 'user', parts: [{ text: `${style} ${t}` }] }],
+    // Only the words to read: TTS models speak any instruction placed in the text. The voice is set below.
+    contents: [{ role: 'user', parts: [{ text: t }] }],
     generationConfig: { responseModalities: ['AUDIO'], speechConfig: { voiceConfig: { prebuiltVoiceConfig: { voiceName: voice } } } },
   };
 }

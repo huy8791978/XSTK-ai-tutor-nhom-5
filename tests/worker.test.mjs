@@ -183,3 +183,9 @@ test('voice tutor refers to itself as cô or thầy to match the picked voice', 
   const m = buildRequest('voice', { text: 'Bayes là gì', gender: 'male' }).body.contents[0].parts[0].text;
   assert.match(m, /xưng là «thầy»/);
 });
+
+test('buildTts sends only the words to read, no spoken instruction', async () => {
+  const { buildTts } = await import('../worker/tts.js');
+  assert.equal(buildTts({ text: 'Xin chào em', gender: 'female', lang: 'vi' }).contents[0].parts[0].text, 'Xin chào em');
+  assert.equal(buildTts({ text: 'Hello', gender: 'male', lang: 'en' }).contents[0].parts[0].text, 'Hello');
+});
