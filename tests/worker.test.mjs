@@ -189,3 +189,11 @@ test('buildTts sends only the words to read, no spoken instruction', async () =>
   assert.equal(buildTts({ text: 'Xin chào em', gender: 'female', lang: 'vi' }).contents[0].parts[0].text, 'Xin chào em');
   assert.equal(buildTts({ text: 'Hello', gender: 'male', lang: 'en' }).contents[0].parts[0].text, 'Hello');
 });
+
+test('buildTts puts the reading style in systemInstruction, never in the spoken text', async () => {
+  const { buildTts, TTS_STYLE } = await import('../worker/tts.js');
+  const b = buildTts({ text: 'Xin chào em', gender: 'female', lang: 'vi' });
+  assert.equal(b.systemInstruction.parts[0].text, TTS_STYLE.vi);
+  assert.equal(b.contents[0].parts[0].text, 'Xin chào em');
+  assert.equal(buildTts({ text: 'Hi', lang: 'en' }).systemInstruction.parts[0].text, TTS_STYLE.en);
+});

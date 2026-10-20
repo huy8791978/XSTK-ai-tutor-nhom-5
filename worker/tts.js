@@ -3,15 +3,21 @@
 
 export const TTS_VOICES = { female: 'Kore', male: 'Charon' };
 const MAX_CHARS = 1200;
+export const TTS_STYLE = {
+  vi: 'Đọc văn bản người dùng gửi bằng giọng giáo viên: rõ ràng, ấm áp, thân thiện, tốc độ vừa phải. Chỉ đọc đúng văn bản đó, không đọc chỉ dẫn này.',
+  en: 'Read the user text in a teacher voice: clear, warm, friendly, at a moderate pace. Read only that text, never this instruction.',
+};
 
-/** Validate { text, gender } and build a generateContent body that returns audio. Throws a Vietnamese Error. */
-export function buildTts({ text, gender } = {}) {
+/** Validate { text, gender, lang } and build a generateContent body that returns audio. Throws a Vietnamese Error. */
+export function buildTts({ text, gender, lang } = {}) {
   const t = String(text ?? '').replace(/\$+/g, '').replace(/\\[a-zA-Z]+/g, ' ').replace(/\s+/g, ' ').trim();
   if (!t) throw new Error('Không có nội dung để đọc.');
   if (t.length > MAX_CHARS) throw new Error('Nội dung quá dài để đọc.');
   const voice = TTS_VOICES[gender === 'male' ? 'male' : 'female'];
   return {
-    // Only the words to read: TTS models speak any instruction placed in the text. The voice is set below.
+    // The reading style goes in systemInstruction, which the model follows but does not speak; the text holds
+    // only the words to read (an instruction placed there gets read aloud).
+    systemInstruction: { parts: [{ text: TTS_STYLE[lang === 'en' ? 'en' : 'vi'] }] },
     contents: [{ role: 'user', parts: [{ text: t }] }],
     generationConfig: { responseModalities: ['AUDIO'], speechConfig: { voiceConfig: { prebuiltVoiceConfig: { voiceName: voice } } } },
   };

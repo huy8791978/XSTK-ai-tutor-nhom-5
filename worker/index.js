@@ -157,7 +157,12 @@ async function tts(request, env) {
   const now = Date.now();
   for (const model of ttsModels(env)) {
     if ((ttsBenched.get(model) || 0) > now) continue;
-    const res = await gateway(env).generate(model, body);
+    let res = await gateway(env).generate(model, body);
+    // A model that rejects systemInstruction (400) still reads fine without the style hint.
+    if (res.status === 400 && body.systemInstruction) {
+      const { systemInstruction, ...plain } = body;
+      res = await gateway(env).generate(model, plain);
+    }
     const audio = res.status === 200 ? ttsAudio(res.data) : null;
     if (audio) return json({ ...audio, model });
     console.error('tts', model, res.status, res.data?.error?.message);
