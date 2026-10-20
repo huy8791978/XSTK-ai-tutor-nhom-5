@@ -8,7 +8,7 @@ const MIMES = ['image/png', 'image/jpeg', 'image/webp', 'image/heic', 'image/hei
 
 const SYSTEM = `Bạn là gia sư môn Xác suất Thống kê (XSTK) cho sinh viên đại học Việt Nam. Luôn trả lời bằng tiếng Việt có dấu.
 Viết công thức bằng LaTeX: $...$ trong dòng, $$...$$ riêng dòng; MỌI công thức phải nằm trong cặp dấu $. Phần trăm trong công thức viết \\%.
-Trong chuỗi JSON, mỗi dấu \\ của LaTeX phải nhân đôi (ví dụ "\\\\frac{1}{2}", "\\\\sqrt{x}"). Dùng dấu phẩy thập phân kiểu Việt Nam (0,25).
+Trong chuỗi JSON, mỗi dấu \\ của LaTeX phải nhân đôi (ví dụ "\\\\frac{1}{2}", "\\\\sqrt{x}"). Trong nội dung không dùng dấu ngoặc kép, hãy dùng « » hoặc ' ' (ví dụ «giỏi»). Dùng dấu phẩy thập phân kiểu Việt Nam (0,25).
 Sư phạm bắt buộc:
 - Giải toán theo 4 bước Polya: (1) Tìm hiểu đề: cái đã cho, cái phải tìm, điều kiện, kí hiệu; (2) Xây dựng chương trình giải: đưa về bài toán quen thuộc, chọn kiến thức, dự đoán; (3) Trình bày lời giải; (4) Kiểm tra & nghiên cứu: kiểm tra kết quả, rút ra phương pháp, cách khác, bài tương tự/khái quát.
 - Dạy khái niệm và định lí theo: Trải nghiệm → Hình thành → Củng cố → Vận dụng.
@@ -168,16 +168,39 @@ function closeTruncated(s) {
   return cut ? s.slice(0, cut.at) + cut.closers : s;
 }
 
-/** Parse model JSON, tolerating ``` fences, leading prose, single-backslash LaTeX and truncation. */
+/**
+ * Fix string contents the model left invalid: raw newlines/tabs become escapes, and a quote that does not
+ * end the string (the next non-space char is not , } ] :) is an inner quote, e.g. loại "giỏi", so escape it.
+ */
+function sanitizeStrings(s) {
+  let out = '', inStr = false;
+  for (let i = 0; i < s.length; i++) {
+    const c = s[i];
+    if (!inStr) { if (c === '"') inStr = true; out += c; continue; }
+    if (c === '\\') { out += c + (s[i + 1] ?? ''); i++; continue; }
+    if (c === '"') {
+      const next = /^\s*(\S)/.exec(s.slice(i + 1, i + 40))?.[1];
+      if (next === undefined || ',}]:'.includes(next)) { inStr = false; out += c; } else out += '\\"';
+      continue;
+    }
+    out += c === '\n' ? '\\n' : c === '\r' ? '\\r' : c === '\t' ? '\\t' : c;
+  }
+  return out;
+}
+
+/** Parse model JSON, tolerating ``` fences, leading prose, single-backslash LaTeX, stray quotes/newlines and truncation. */
 export function extractJson(raw) {
   let s = String(raw).trim().replace(/^```(?:json)?\s*/i, '').replace(/```$/, '').trim();
   const start = s.search(/[{[]/);
   if (start > 0) s = s.slice(start);
   s = s.replace(LATEX_LIKE, '$1\\\\');
-  const attempts = [s, s.replace(INVALID_ESCAPE, '$1\\\\')];
-  const fixed = attempts[1], end = Math.max(fixed.lastIndexOf('}'), fixed.lastIndexOf(']'));
+  const escaped = s.replace(INVALID_ESCAPE, '$1\\\\');
+  const fixed = sanitizeStrings(escaped), end = Math.max(fixed.lastIndexOf('}'), fixed.lastIndexOf(']'));
+  const attempts = [s, escaped, fixed];
   if (end > 0) attempts.push(fixed.slice(0, end + 1)); // trailing prose after the JSON
   attempts.push(closeTruncated(fixed));
-  for (const a of attempts) { try { return JSON.parse(a); } catch { /* next */ } }
-  throw new Error('Phản hồi AI không đúng định dạng.');
+  let last;
+  for (const a of attempts) { try { return JSON.parse(a); } catch (e) { last = e; } }
+  // detail + text let the Worker log exactly where the reply broke.
+  throw Object.assign(new Error('Phản hồi AI không đúng định dạng.'), { detail: last?.message, text: fixed });
 }

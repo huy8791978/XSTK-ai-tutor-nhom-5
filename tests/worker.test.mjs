@@ -130,3 +130,21 @@ test('extractJson closes a reply cut off at the token limit', () => {
   const d = extractJson('{"questions": [{"prompt": "Câu 1", "answer": 0}, {"prompt": "Câu 2 bị cắ');
   assert.equal(d.questions[0].prompt, 'Câu 1');
 });
+
+test('extractJson repairs unescaped quotes inside Vietnamese text', () => {
+  const raw = '{"name": "Xác suất", "situation": "Có 60% sinh viên đạt loại "giỏi" môn XSTK.", "n": 1}';
+  const d = extractJson(raw);
+  assert.equal(d.situation, 'Có 60% sinh viên đạt loại "giỏi" môn XSTK.');
+  assert.equal(d.n, 1);
+});
+
+test('extractJson repairs raw newlines and tabs inside strings', () => {
+  const d = extractJson('{"a": "dòng 1\ndòng 2\tcột", "b": [1]}');
+  assert.equal(d.a, 'dòng 1\ndòng 2\tcột');
+});
+
+test('extractJson error carries the parse position for logging', () => {
+  let err;
+  try { extractJson('{"a": 1 "b": 2}'); } catch (e) { err = e; }
+  assert.match(String(err?.detail), /position|JSON|Unexpected|Expected/i);
+});

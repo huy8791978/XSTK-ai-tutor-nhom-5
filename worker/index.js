@@ -20,10 +20,11 @@ export default {
     if (!env.GEMINI_API_KEY) return json({ error: 'Máy chủ chưa cấu hình GEMINI_API_KEY.' }, 500);
     if (Number(request.headers.get('content-length') || 0) > 16_000_000) return json({ error: 'Dữ liệu gửi lên quá lớn.' }, 413);
 
-    let req;
+    let req, task;
     try {
-      const { task, payload } = await request.json();
-      req = buildRequest(task, payload);
+      const body = await request.json();
+      task = body.task;
+      req = buildRequest(task, body.payload);
     } catch (e) {
       return json({ error: e.message || 'Yêu cầu không hợp lệ.' }, 400);
     }
@@ -69,8 +70,11 @@ export default {
       const text = (cand?.content?.parts || []).filter((p) => !p.thought).map((p) => p.text || '').join('');
       try {
         return json({ data: extractJson(text) });
-      } catch {
-        console.error('unparsable', cand?.finishReason, text.slice(0, 300));
+      } catch (e) {
+        // Log the parser's reason and the text around the failing position, not just the start of the reply.
+        const pos = Number(/position (\d+)/.exec(e.detail || '')?.[1]);
+        const around = Number.isFinite(pos) ? (e.text || text).slice(Math.max(0, pos - 150), pos + 150) : text.slice(-300);
+        console.error('unparsable', task, cand?.finishReason, e.detail, `len=${text.length}`, `…${around}…`);
         failure = json({ error: 'AI trả về nội dung không đọc được. Bấm thử lại.' }, 502);
       }
     }
