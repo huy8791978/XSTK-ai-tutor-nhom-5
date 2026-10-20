@@ -156,3 +156,8 @@ test('extractJson fixes Vietnamese decimal commas in JSON numbers but not in tex
   assert.equal(d.t, 'P = 0,5');
   assert.deepEqual(d.v, [1, 2, 3]);
 });
+
+test('voice reply is spoken in the page language', () => {
+  assert.match(buildRequest('voice', { text: 'hi', lang: 'en' }).body.contents[0].parts[0].text, /"speech": "<[^"]*English/);
+  assert.match(buildRequest('voice', { text: 'xin chào' }).body.contents[0].parts[0].text, /"speech": "<[^"]*tiếng Việt/);
+});

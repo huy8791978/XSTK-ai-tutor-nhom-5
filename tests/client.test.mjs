@@ -130,3 +130,9 @@ test('pitchFor lowers a female-only voice when the male teacher is picked', asyn
   assert.equal(pitchFor('Microsoft An - Vietnamese', 'male'), 1);
   assert.equal(pitchFor('Google Tiếng Việt', 'female'), 1);
 });
+
+test('pitchFor raises a male-only voice when the female teacher is picked', async () => {
+  const { pitchFor } = await import('../public/js/voice.js');
+  assert.equal(pitchFor('Microsoft An - Vietnamese (Vietnam)', 'female') > 1, true);
+  assert.equal(pitchFor('Microsoft HoaiMy Online (Natural)', 'female'), 1);
+});

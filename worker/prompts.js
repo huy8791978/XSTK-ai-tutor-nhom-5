@@ -65,7 +65,7 @@ Sinh viên vừa nói: "${p.text || ''}"${p.typed ? ' (gõ bằng bàn phím)' :
 - Nếu câu nói rỗng, vô nghĩa, không liên quan XSTK hoặc bạn KHÔNG chắc đã hiểu đúng ý, đặt "understood": false.
 - Nếu là bài toán có nhiều công thức, khó trình bày bằng lời, đặt "board": true để mời sinh viên viết đề/lời giải lên bảng.
 - Bài toán: dẫn dắt theo 4 bước Polya, không đưa ngay đáp số trừ khi sinh viên đã tự làm.
-Trả JSON: {"understood": true|false, "reply": "<câu trả lời hiển thị, markdown + LaTeX>", "speech": "<bản để đọc thành tiếng: tiếng Việt thuần, KHÔNG LaTeX, đọc công thức bằng lời, tối đa 4 câu>", "board": true|false, ${CASIO}, "viz": <viz hoặc null>}`,
+Trả JSON: {"understood": true|false, "reply": "<câu trả lời hiển thị, markdown + LaTeX>", "speech": "<bản để đọc thành tiếng: ${p.lang === 'en' ? 'in plain spoken English' : 'tiếng Việt thuần'}, KHÔNG LaTeX, đọc công thức bằng lời, tối đa 4 câu>", "board": true|false, ${CASIO}, "viz": <viz hoặc null>}`,
   }),
   practiceGrade: (p) => ({
     text: `Đề: ${p.question}\nLời giải tham khảo (để chấm, KHÔNG chép lại cho sinh viên): ${p.reference}\nBài làm sinh viên: ${p.answer || '(xem tệp đính kèm)'}\n

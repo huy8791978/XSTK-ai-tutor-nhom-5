@@ -32,7 +32,8 @@ export function render(root) {
     if (!g || g === getGender()) return;
     setGender(g); face.dataset.gender = g;
     genderBtns.forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.g === g)));
-    say(lastSpeech || (g === 'male' ? 'Chào em, thầy sẽ hướng dẫn em.' : 'Chào em, cô sẽ hướng dẫn em.'));
+    // Switching is silent; only a sentence being read right now continues in the new voice.
+    if (face.dataset.state === 'speaking' && lastSpeech) say(lastSpeech);
   });
   const status = h('p.tutor-status', { role: 'status' }, LABEL.idle);
   const setState = (s) => { face.dataset.state = s; status.textContent = LABEL[s]; bReplay.disabled = !lastSpeech || s === 'speaking'; };

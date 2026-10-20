@@ -39,9 +39,17 @@ export function unclear(text) {
 }
 
 /** Read text aloud. onStart/onEnd fire when the voice actually starts and stops (also on error/cancel). */
-export function speak(text, { onStart, onEnd } = {}) {
+export function speak(text, { onStart, onEnd } = {}, retried = false) {
   if (!('speechSynthesis' in window) || !text) { onEnd?.(); return; }
   speechSynthesis.cancel();
+  // Chrome loads its voice list late; speaking before that uses the default voice whatever gender was picked.
+  if (!retried && !voices().length) {
+    let done = false;
+    const go = () => { if (!done) { done = true; speak(text, { onStart, onEnd }, true); } };
+    speechSynthesis.addEventListener('voiceschanged', go, { once: true });
+    setTimeout(go, 800);
+    return;
+  }
   const u = new SpeechSynthesisUtterance(String(text).replace(/\$+/g, '').replace(/\\[a-z]+/gi, ' '));
   u.lang = locale(); u.rate = 1;
   const v = currentVoice();
@@ -81,8 +89,14 @@ export function currentVoice() {
   const list = voices(), g = getGender();
   return list.find((v) => voiceGender(v.name) === g) || list[0] || null;
 }
-/** Pitch: many devices have only a female Vietnamese voice, so "male" without a male voice is read lower. */
-export const pitchFor = (voiceName, gender) => (gender === 'male' && voiceGender(voiceName) !== 'male' ? 0.55 : 1);
+// Many devices have one voice per language: Windows ships only the male "Microsoft An" for Vietnamese, phones
+// often only a female one. When the picked gender has no voice, shift the pitch of the one we have.
+export function pitchFor(voiceName, gender) {
+  const actual = voiceGender(voiceName);
+  if (gender === 'male' && actual !== 'male') return 0.55;
+  if (gender === 'female' && actual === 'male') return 1.7;
+  return 1;
+}
 /** Run cb now and whenever the browser finishes loading its voice list (Chrome loads it asynchronously). */
 export function onVoices(cb) {
   if (!('speechSynthesis' in window)) return cb();
