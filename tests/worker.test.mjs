@@ -231,3 +231,14 @@ test('Vietnamese mode answers in Vietnamese even after an English conversation',
   }
   assert.doesNotMatch(buildRequest('voice', { text: 'hi', lang: 'en' }).body.contents[0].parts[0].text, /HOÀN TOÀN bằng tiếng Việt/);
 });
+
+test('wrongLanguage spots a Vietnamese reply in English mode and an English reply in Vietnamese mode', async () => {
+  const { wrongLanguage } = await import('../worker/prompts.js');
+  const vi = { reply: 'Chào em, định lí Bayes giúp cập nhật xác suất khi có thêm thông tin mới. Chúng ta hãy cùng khám phá.', topic: 'Xác suất có điều kiện & Bayes' };
+  const en = { reply: 'Bayes theorem lets us update a probability when new information arrives. Let us explore it together with a real example from medicine and spam filters.', topic: 'Xác suất có điều kiện & Bayes' };
+  assert.equal(wrongLanguage(vi, 'en'), true);
+  assert.equal(wrongLanguage(en, 'en'), false); // the Vietnamese topic label is ignored
+  assert.equal(wrongLanguage(en, 'vi'), true);
+  assert.equal(wrongLanguage(vi, 'vi'), false);
+  assert.equal(wrongLanguage({ score: 7, reply: 'OK' }, 'vi'), false); // too short to judge
+});

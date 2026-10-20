@@ -1,7 +1,7 @@
 // Voice Q&A: talk with the tutor about XSTK. The "Nói" button on the text box below is the microphone; the
 // tutor character above shows what is happening: listening, thinking, speaking. Math that is hard to say goes
 // on the handwriting board. Missing/unclear speech → the tutor says so (aloud and on screen) and asks to type.
-import { h, icon, rich, run, toast, casio } from '../ui.js';
+import { h, icon, rich, run, toast, casio, loading } from '../ui.js';
 import { ai } from '../api.js';
 import { mathField } from '../mathinput.js';
 import { boardToggle } from '../board.js';
@@ -38,14 +38,20 @@ export function render(root) {
   });
   const status = h('p.tutor-status', { role: 'status' }, LABEL.idle);
   const setState = (s) => { face.dataset.state = s; status.textContent = LABEL[s]; bReplay.disabled = !lastSpeech || s === 'speaking'; };
-  const say = (text) => {
+  /** Read text aloud; onShow runs once when the voice starts (or when it ends/fails without starting). */
+  const say = (text, onShow) => {
     lastSpeech = text;
+    let shown = false;
+    const show = () => { if (!shown) { shown = true; onShow?.(); } };
     // Speak with the pronoun of the teacher now on screen, even for a reply written under the other voice.
-    speak(getLang() === 'en' ? text : matchPronoun(text, getGender()), { onStart: () => setState('speaking'), onEnd: () => setState('idle') });
-    if (!('speechSynthesis' in window)) setState('idle');
+    speak(getLang() === 'en' ? text : matchPronoun(text, getGender()), { onStart: () => { show(); setState('speaking'); }, onEnd: () => { show(); setState('idle'); } });
+    setTimeout(show, 12000); // never keep the answer hidden for long
+    if (!('speechSynthesis' in window) && !('Audio' in window)) { show(); setState('idle'); }
   };
   const bReplay = h('button.btn.btn-ghost', { type: 'button', disabled: true, onclick: () => lastSpeech && say(lastSpeech) }, icon('speaker'), 'Nghe lại');
-  const bMute = h('button.btn.btn-ghost', { type: 'button', onclick: () => { stopSpeaking(); setState('idle'); } }, 'Dừng đọc');
+  // Stopping while the voice is still being prepared must not leave the answer hidden.
+  const revealAll = () => { thread.querySelectorAll('.loading').forEach((l) => l.remove()); thread.querySelectorAll('.msg.ai[hidden]').forEach((m) => { m.hidden = false; }); };
+  const bMute = h('button.btn.btn-ghost', { type: 'button', onclick: () => { stopSpeaking(); revealAll(); setState('idle'); } }, 'Dừng đọc');
 
   const field = mathField({ label: 'Hỏi bằng giọng nói (nút Nói) hoặc nhập đề bài, đáp án, câu trả lời', name: 'voice', rows: 3, placeholder: 'Gõ câu hỏi, đề bài hoặc câu trả lời…' });
   const ta = field.querySelector('textarea');
@@ -80,10 +86,14 @@ export function render(root) {
       reply = d.speech || d.reply || '';
       if (d.board) { board.open(); toast('Hãy viết đề bài hoặc lời giải lên bảng rồi bấm Gửi.'); }
       if (files.length) board.board.clear();
-      return h('div.msg.ai', {}, rich(d.reply || ''), chart(d.viz), casio(d.casio));
+      // The answer stays hidden, with the tutor still thinking, until the voice starts: text and voice arrive together.
+      return [loading('Gia sư đang chuẩn bị giọng đọc…'), h('div.msg.ai', { hidden: true }, rich(d.reply || ''), chart(d.viz), casio(d.casio))];
     }, 'Gia sư đang nghĩ…');
     if (!slot.childElementCount) slot.remove(); // AI did not understand: no empty bubble
-    if (reply) say(reply);
+    if (reply) {
+      setState('thinking');
+      say(reply, () => { slot.querySelector('.loading')?.remove(); const m = slot.querySelector('.msg.ai'); if (m) m.hidden = false; });
+    }
     else if (slot.querySelector('.error')) setState('idle');
     else askToType(); // understood === false
   }

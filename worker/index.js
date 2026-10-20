@@ -1,6 +1,6 @@
 import { DurableObject } from 'cloudflare:workers';
 import { admit, settle, estimateTokens } from './limits.js';
-import { buildRequest, extractJson } from './prompts.js';
+import { buildRequest, extractJson, wrongLanguage, LANGUAGE_RETRY } from './prompts.js';
 import { validatePost, FORUM_TOPICS } from './forum.js';
 import { buildTts, ttsAudio } from './tts.js';
 
@@ -22,10 +22,10 @@ export default {
     if (!env.GEMINI_API_KEY) return json({ error: 'Máy chủ chưa cấu hình GEMINI_API_KEY.' }, 500);
     if (Number(request.headers.get('content-length') || 0) > 16_000_000) return json({ error: 'Dữ liệu gửi lên quá lớn.' }, 413);
 
-    let req, task;
+    let req, task, lang;
     try {
       const body = await request.json();
-      task = body.task;
+      task = body.task; lang = body.payload?.lang === 'en' ? 'en' : 'vi';
       req = buildRequest(task, body.payload);
     } catch (e) {
       return json({ error: e.message || 'Yêu cầu không hợp lệ.' }, 400);
@@ -38,7 +38,7 @@ export default {
     const model = env.GEMINI_MODEL || 'gemini-3.5-flash-lite';
 
     // One automatic retry for a transient Gemini error or an unreadable/cut-off reply.
-    let failure;
+    let failure, firstData;
     for (let attempt = 0; attempt < 2; attempt++) {
       const slot = await limiter.acquire(ip, tokens, attempt > 0);
       if (!slot.ok) {
@@ -67,7 +67,16 @@ export default {
       const cand = data.candidates?.[0];
       const text = (cand?.content?.parts || []).filter((p) => !p.thought).map((p) => p.text || '').join('');
       try {
-        return json({ data: extractJson(text) });
+        const data = extractJson(text);
+        // Wrong language (e.g. Vietnamese history pulled an English-mode reply back to Vietnamese): ask once more,
+        // with a blunt reminder appended. The second answer is returned whatever it is.
+        if (attempt === 0 && task !== 'translate' && wrongLanguage(data, lang)) {
+          console.error('wrong-language', task, lang);
+          req.body.contents[0].parts[0].text += LANGUAGE_RETRY[lang];
+          firstData = data;
+          continue;
+        }
+        return json({ data });
       } catch (e) {
         // Log the parser's reason and the text around the failing position, not just the start of the reply.
         const pos = Number(/position (\d+)/.exec(e.detail || '')?.[1]);
@@ -76,6 +85,7 @@ export default {
         failure = json({ error: 'AI trả về nội dung không đọc được. Bấm thử lại.' }, 502);
       }
     }
+    if (firstData) return json({ data: firstData }); // retry for language failed: the first answer beats an error
     return failure || json({ error: 'AI tạm thời không phản hồi được. Thử lại sau.' }, 502);
   },
 };

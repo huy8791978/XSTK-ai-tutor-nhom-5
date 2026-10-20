@@ -80,7 +80,7 @@ const DICT = {
   'Đang dịch nội dung đã có sang tiếng Anh…': 'Translating the content on screen into English…',
   'Đang dịch nội dung đã có sang tiếng Việt…': 'Translating the content on screen into Vietnamese…',
   'Không dịch được nội dung cũ. Nội dung mới sẽ theo ngôn ngữ đã chọn.': 'Could not translate earlier content. New content will follow the chosen language.',
-  'Giọng đọc': 'Voice', 'Giọng nam': 'Male voice', 'Giọng nữ': 'Female voice', 'Chọn giọng đọc': 'Choose a voice', 'Đang nghe bạn nói…': 'Listening…', 'Gia sư đang suy nghĩ…': 'The tutor is thinking…', 'Gia sư đang trả lời…': 'The tutor is answering…', 'Nghe lại': 'Play again',
+  'Gia sư đang chuẩn bị giọng đọc…': 'The tutor is getting ready to speak…', 'Giọng đọc': 'Voice', 'Giọng nam': 'Male voice', 'Giọng nữ': 'Female voice', 'Chọn giọng đọc': 'Choose a voice', 'Đang nghe bạn nói…': 'Listening…', 'Gia sư đang suy nghĩ…': 'The tutor is thinking…', 'Gia sư đang trả lời…': 'The tutor is answering…', 'Nghe lại': 'Play again',
   'Hỏi bằng giọng nói (nút Nói) hoặc nhập đề bài, đáp án, câu trả lời': 'Ask by voice (Speak button) or type your problem, answer or reply', 'Hỏi gia sư': 'Ask the tutor',
   // lessons
   'Khái niệm cần học': 'Concept to learn', 'Định lí / công thức cần học': 'Theorem / formula to learn', 'Ví dụ: Biến cố độc lập': 'e.g. Independent events', 'Ví dụ: Công thức Bayes': "e.g. Bayes' theorem",

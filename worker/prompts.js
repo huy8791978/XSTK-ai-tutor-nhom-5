@@ -232,3 +232,23 @@ export function extractJson(raw) {
   // detail + text let the Worker log exactly where the reply broke.
   throw Object.assign(new Error('Phản hồi AI không đúng định dạng.'), { detail: last?.message, text: fixed });
 }
+
+// ---- Language guard: a reply in the wrong language gets one retry (see index.js).
+const VI_MARKS = /[àáảãạăằắẳẵặâầấẩẫậèéẻẽẹêềếểễệìíỉĩịòóỏõọôồốổỗộơờớởỡợùúủũụưừứửữựỳýỷỹỵđ]/giu;
+function texts(v, key, out) {
+  if (typeof v === 'string') { if (key !== 'topic' && key !== 'type') out.push(v); }
+  else if (Array.isArray(v)) v.forEach((x) => texts(x, key, out));
+  else if (v && typeof v === 'object') for (const [k, x] of Object.entries(v)) texts(x, k, out);
+  return out;
+}
+/** True when the reply's prose is clearly not in `lang` (Vietnamese diacritics share of all letters). */
+export function wrongLanguage(data, lang) {
+  const s = texts(data, '', []).join(' ').replace(/\$[^$]*\$/g, ' ');
+  const letters = (s.match(/\p{L}/gu) || []).length, marks = (s.match(VI_MARKS) || []).length;
+  if (lang === 'en') return letters > 40 && marks / letters > 0.03;
+  return letters > 120 && marks / letters < 0.01;
+}
+export const LANGUAGE_RETRY = {
+  en: '\n\nYOUR PREVIOUS ANSWER WAS NOT IN ENGLISH. Rewrite everything in English only.',
+  vi: '\n\nCÂU TRẢ LỜI TRƯỚC KHÔNG PHẢI TIẾNG VIỆT. Viết lại toàn bộ bằng tiếng Việt.',
+};
