@@ -437,15 +437,6 @@ kbd.key.alpha { background: var(--red); }
 .step-body { padding-top: 16px; }
 
 /* Voice Q&A */
-.voice-stage { display: grid; justify-items: center; gap: 10px; padding: 28px 20px; text-align: center; }
-.mic { width: 96px; height: 96px; border-radius: 50%; border: 0; background: var(--ultra); color: #fff; display: grid; place-items: center; cursor: pointer;
-  transition: transform .2s var(--ease), background .2s; }
-.mic svg { width: 40px; height: 40px; }
-.mic:hover { background: var(--ultra-2); }
-.mic[aria-pressed="true"] { background: var(--red); animation: pulse 1.4s var(--ease) infinite; }
-@keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(215, 38, 61, .45); } 100% { box-shadow: 0 0 0 22px rgba(215, 38, 61, 0); } }
-.mic-label { font-weight: 600; color: var(--ink-2); }
-.live-text { min-height: 1.6em; color: var(--ultra); font-size: 17px; max-width: 60ch; }
 .compose-box { margin-top: 18px; }
 .compose-box.attention { border-color: var(--gold); box-shadow: 0 0 0 3px var(--gold-wash); }
 .msg.fallback { border-color: var(--gold); background: var(--gold-wash); }
@@ -463,3 +454,44 @@ a.row.thread-row small { display: inline; }
 .top h1 { grid-row: 1; grid-column: 1; }
 .top-actions { grid-row: 1; grid-column: 2; }
 .lede { grid-row: 2; grid-column: 1 / -1; margin-top: 6px; }
+
+/* Voice tutor character: data-state = idle | listening | thinking | speaking */
+.voice-stage { display: grid; justify-items: center; gap: 10px; padding: 24px 20px; text-align: center; }
+.tutor { width: clamp(150px, 18vw, 210px); aspect-ratio: 1; }
+.tutor-svg { width: 100%; height: 100%; overflow: visible; }
+.tutor-skin { fill: var(--ultra); }
+.tutor-ring { fill: none; stroke: var(--ultra-dim); stroke-width: 1; stroke-dasharray: 2 4; opacity: .6; transform-origin: 100px 108px; animation: tutor-spin 30s linear infinite; }
+.tutor-ring--2 { stroke: var(--gold); animation-direction: reverse; animation-duration: 40s; }
+.tutor-eye ellipse { fill: #fff; }
+.tutor-pupil { fill: var(--ink); transition: transform .4s var(--ease); }
+.tutor-eyes { transform-origin: 100px 98px; animation: tutor-blink 5s infinite; }
+.tutor-mouth { fill: #fff; transform-origin: 100px 131px; transition: transform .2s; }
+.tutor-head { transform-origin: 100px 108px; transition: transform .5s var(--ease); }
+.tutor-waves circle { fill: none; stroke: var(--gold); stroke-width: 2; opacity: 0; transform-origin: 100px 108px; }
+.tutor-bubbles circle { fill: var(--sheet); stroke: var(--ultra); stroke-width: 2.5; opacity: 0; }
+.tutor-status { font-weight: 600; color: var(--ink-2); min-height: 1.6em; }
+
+/* listening: head tilts, gold ripples */
+.tutor[data-state="listening"] .tutor-head { transform: rotate(-8deg); }
+.tutor[data-state="listening"] .tutor-waves circle { animation: tutor-wave 1.6s var(--ease) infinite; }
+.tutor[data-state="listening"] .tutor-waves circle:nth-child(2) { animation-delay: .5s; }
+.tutor[data-state="listening"] .tutor-waves circle:nth-child(3) { animation-delay: 1s; }
+/* thinking: eyes look up, thought bubbles pop in turn */
+.tutor[data-state="thinking"] .tutor-pupil { transform: translate(3px, -5px); }
+.tutor[data-state="thinking"] .tutor-mouth { transform: scaleX(.55); }
+.tutor[data-state="thinking"] .tutor-head { animation: tutor-ponder 2.4s ease-in-out infinite; }
+.tutor[data-state="thinking"] .tutor-bubbles circle { opacity: .45; animation: tutor-bubble 1.5s ease-in-out infinite both; }
+.tutor[data-state="thinking"] .tutor-bubbles circle:nth-child(2) { animation-delay: .25s; }
+.tutor[data-state="thinking"] .tutor-bubbles circle:nth-child(3) { animation-delay: .5s; }
+/* speaking: mouth moves, sound waves */
+.tutor[data-state="speaking"] .tutor-mouth { animation: tutor-talk .32s ease-in-out infinite alternate; }
+.tutor[data-state="speaking"] .tutor-waves circle { stroke: var(--ultra-dim); animation: tutor-wave 1.2s var(--ease) infinite; }
+.tutor[data-state="speaking"] .tutor-waves circle:nth-child(2) { animation-delay: .4s; }
+.tutor[data-state="speaking"] .tutor-waves circle:nth-child(3) { animation-delay: .8s; }
+
+@keyframes tutor-spin { to { transform: rotate(360deg); } }
+@keyframes tutor-blink { 0%, 94%, 100% { transform: scaleY(1); } 97% { transform: scaleY(.1); } }
+@keyframes tutor-wave { from { opacity: .8; transform: scale(1); } to { opacity: 0; transform: scale(1.45); } }
+@keyframes tutor-bubble { 0%, 100% { opacity: .45; transform: translateY(0); } 50% { opacity: 1; transform: translateY(-3px); } }
+@keyframes tutor-ponder { 0%, 100% { transform: rotate(0); } 50% { transform: rotate(5deg) translateY(-2px); } }
+@keyframes tutor-talk { from { transform: scaleY(.6) scaleX(.9); } to { transform: scaleY(3.2) scaleX(.75); } }

@@ -38,13 +38,16 @@ export function unclear(text) {
   return t.length < 3 || !/[\p{L}\p{N}]{2}/u.test(t);
 }
 
-export function speak(text) {
-  if (!('speechSynthesis' in window) || !text) return;
+/** Read text aloud. onStart/onEnd fire when the voice actually starts and stops (also on error/cancel). */
+export function speak(text, { onStart, onEnd } = {}) {
+  if (!('speechSynthesis' in window) || !text) { onEnd?.(); return; }
   speechSynthesis.cancel();
   const u = new SpeechSynthesisUtterance(String(text).replace(/\$+/g, '').replace(/\\[a-z]+/gi, ' '));
   u.lang = locale(); u.rate = 1;
   const v = speechSynthesis.getVoices().find((x) => x.lang?.toLowerCase().startsWith(locale().slice(0, 2)));
   if (v) u.voice = v;
+  u.onstart = () => onStart?.();
+  u.onend = u.onerror = () => onEnd?.();
   speechSynthesis.speak(u);
 }
 export const stopSpeaking = () => window.speechSynthesis?.cancel();

@@ -109,21 +109,28 @@ export function mathField({ label, name, placeholder = '', rows = 4, value = '' 
     ta, pad, pv);
 }
 
-/** Dictation into a textarea: tap, speak, the words are appended. Unclear or unsupported → ask to type instead. */
+/**
+ * Dictation into a textarea: tap, speak, the words are appended. Unclear or unsupported → ask to type instead.
+ * Fires "dictation" on the textarea ({ detail: { phase: 'start' | 'done' | 'fail', text } }); a page that calls
+ * preventDefault() on 'fail' handles the fallback itself.
+ */
 export function micButton(ta) {
   const b = h('button.btn.btn-ghost.math-open', { type: 'button', 'aria-pressed': 'false' }, icon('mic'), 'Nói');
+  const emit = (phase, text = '') => ta.dispatchEvent(new CustomEvent('dictation', { detail: { phase, text }, cancelable: true }));
   let rec;
   b.onclick = async () => {
     if (rec) return rec.stop();
     b.setAttribute('aria-pressed', 'true');
+    emit('start');
     try {
       rec = listen();
       const text = await rec;
       if (!text) throw { code: 'no-speech' };
       ta.value = `${ta.value}${ta.value && !/\s$/.test(ta.value) ? ' ' : ''}${text}`;
       ta.dispatchEvent(new Event('input', { bubbles: true }));
+      emit('done', text);
     } catch {
-      toast(fallbackText()); ta.focus();
+      if (emit('fail')) { toast(fallbackText()); ta.focus(); }
     } finally {
       rec = null; b.setAttribute('aria-pressed', 'false');
     }
