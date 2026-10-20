@@ -72,7 +72,7 @@ export function render(root) {
     setState('thinking');
     let reply = '';
     await run(bSend, slot, async () => {
-      const d = await ai('voice', { text, typed, history, files: files.map(({ mimeType, data }) => ({ mimeType, data })) });
+      const d = await ai('voice', { text, typed, history, gender: getGender(), files: files.map(({ mimeType, data }) => ({ mimeType, data })) });
       history.push({ role: 'user', text }, { role: 'ai', text: d.reply || '' });
       if (d.understood === false) return [];
       reply = d.speech || d.reply || '';

@@ -175,3 +175,11 @@ test('buildTts picks a female or male Gemini voice and strips LaTeX', async () =
   assert.deepEqual(ttsAudio({ candidates: [{ content: { parts: [{ inlineData: { mimeType: 'audio/L16;rate=24000', data: 'AAA' } }] } }] }), { mime: 'audio/L16;rate=24000', data: 'AAA' });
   assert.equal(ttsAudio({}), null);
 });
+
+test('voice tutor refers to itself as cô or thầy to match the picked voice', () => {
+  const f = buildRequest('voice', { text: 'Bayes là gì', gender: 'female' }).body.contents[0].parts[0].text;
+  assert.match(f, /xưng là «cô»/);
+  assert.match(f, /KHÔNG xưng «thầy»/);
+  const m = buildRequest('voice', { text: 'Bayes là gì', gender: 'male' }).body.contents[0].parts[0].text;
+  assert.match(m, /xưng là «thầy»/);
+});

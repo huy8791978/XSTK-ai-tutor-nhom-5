@@ -60,7 +60,7 @@ Giải đáp ngắn gọn, đúng trọng tâm câu hỏi: vì sao đáp án đ�
 Trả JSON: {"answer": "<markdown, LaTeX>", ${CASIO}, "viz": <viz hoặc null>}`,
   }),
   voice: (p) => ({
-    text: `Hội thoại bằng GIỌNG NÓI với sinh viên về môn XSTK. Câu nói của sinh viên được nhận dạng tự động nên có thể sai chính tả hoặc thiếu ý. Lịch sử:\n${history(p.history) || '(chưa có)'}\n
+    text: `Hội thoại bằng GIỌNG NÓI với sinh viên về môn XSTK. Bạn là ${p.gender === 'male' ? 'THẦY giáo: xưng là «thầy», KHÔNG xưng «cô»' : 'CÔ giáo: xưng là «cô», KHÔNG xưng «thầy»'} (gọi sinh viên là «em»), ở cả "reply" lẫn "speech", kể cả khi lịch sử bên dưới xưng khác. Câu nói của sinh viên được nhận dạng tự động nên có thể sai chính tả hoặc thiếu ý. Lịch sử:\n${history(p.history) || '(chưa có)'}\n
 Sinh viên vừa nói: "${p.text || ''}"${p.typed ? ' (gõ bằng bàn phím)' : ''}. ${p.files?.length ? 'Kèm ảnh bài viết trên bảng (iPad).' : ''}
 - Nếu câu nói rỗng, vô nghĩa, không liên quan XSTK hoặc bạn KHÔNG chắc đã hiểu đúng ý, đặt "understood": false.
 - Nếu là bài toán có nhiều công thức, khó trình bày bằng lời, đặt "board": true để mời sinh viên viết đề/lời giải lên bảng.
