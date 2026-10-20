@@ -214,3 +214,20 @@ test('translate task keeps item count/order and validates size', () => {
   assert.throws(() => buildRequest('translate', { items: 'x', to: 'en' }), /Danh sách/);
   assert.throws(() => buildRequest('translate', { items: ['x'.repeat(13000)], to: 'en' }), /quá dài/);
 });
+
+test('English mode forbids Vietnamese words and Vietnamese teacher pronouns', () => {
+  const t = buildRequest('voice', { text: 'bayes', gender: 'female', lang: 'en' }).body.contents[0].parts[0].text;
+  assert.match(t, /female teacher/);
+  assert.doesNotMatch(t, /xưng là «cô»/);
+  assert.match(t, /No Vietnamese words/);
+  assert.match(t, /Understand the problem/);
+});
+
+test('Vietnamese mode answers in Vietnamese even after an English conversation', () => {
+  const t = buildRequest('voice', { text: 'bayes', history: [{ role: 'ai', text: 'Hello! Bayes theorem…' }] }).body.contents[0].parts[0].text;
+  assert.match(t, /HOÀN TOÀN bằng tiếng Việt/);
+  for (const task of ['grade', 'practice', 'oral', 'lesson', 'explain']) {
+    assert.match(buildRequest(task, { problem: 'x', topic: 'x', name: 'x' }).body.contents[0].parts[0].text, /HOÀN TOÀN bằng tiếng Việt/, task);
+  }
+  assert.doesNotMatch(buildRequest('voice', { text: 'hi', lang: 'en' }).body.contents[0].parts[0].text, /HOÀN TOÀN bằng tiếng Việt/);
+});

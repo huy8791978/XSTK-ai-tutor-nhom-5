@@ -71,7 +71,7 @@ Giải đáp ngắn gọn, đúng trọng tâm câu hỏi: vì sao đáp án đ�
 Trả JSON: {"answer": "<markdown, LaTeX>", ${CASIO}, "viz": <viz hoặc null>}`,
   }),
   voice: (p) => ({
-    text: `Hội thoại bằng GIỌNG NÓI với sinh viên về môn XSTK. Bạn là ${p.gender === 'male' ? 'THẦY giáo: xưng là «thầy», KHÔNG xưng «cô»' : 'CÔ giáo: xưng là «cô», KHÔNG xưng «thầy»'} (gọi sinh viên là «em»), ở cả "reply" lẫn "speech", kể cả khi lịch sử bên dưới xưng khác. Câu nói của sinh viên được nhận dạng tự động nên có thể sai chính tả hoặc thiếu ý. Lịch sử:\n${history(p.history) || '(chưa có)'}\n
+    text: `Hội thoại bằng GIỌNG NÓI với sinh viên về môn XSTK. ${p.lang === 'en' ? `You are a ${p.gender === 'male' ? 'male' : 'female'} teacher speaking English with the student: use "I" and "you", never Vietnamese pronouns or greetings, in both "reply" and "speech".` : `Bạn là ${p.gender === 'male' ? 'THẦY giáo: xưng là «thầy», KHÔNG xưng «cô»' : 'CÔ giáo: xưng là «cô», KHÔNG xưng «thầy»'} (gọi sinh viên là «em»), ở cả "reply" lẫn "speech", kể cả khi lịch sử bên dưới xưng khác.`} Câu nói của sinh viên được nhận dạng tự động nên có thể sai chính tả hoặc thiếu ý. Lịch sử:\n${history(p.history) || '(chưa có)'}\n
 Sinh viên vừa nói: "${p.text || ''}"${p.typed ? ' (gõ bằng bàn phím)' : ''}. ${p.files?.length ? 'Kèm ảnh bài viết trên bảng (iPad).' : ''}
 - Nếu câu nói rỗng, vô nghĩa, không liên quan XSTK hoặc bạn KHÔNG chắc đã hiểu đúng ý, đặt "understood": false.
 - Nếu là bài toán có nhiều công thức, khó trình bày bằng lời, đặt "board": true để mời sinh viên viết đề/lời giải lên bảng.
@@ -141,7 +141,15 @@ export function buildRequest(task, payload = {}) {
   let { text } = TASKS[task](p);
   // The task wording and the student's input are often Vietnamese, which pulls the model back to Vietnamese;
   // repeat the language rule last, in the user turn, where it wins.
-  if (p.lang === 'en') text += '\n\nLANGUAGE: Answer ONLY in English (every text value of the JSON), even if the student writes in Vietnamese. Keep the topic and error-type values exactly as listed in Vietnamese.';
+  // The opposite rule matters too: after an English conversation the history pulls replies to English.
+  if (p.lang === 'en') {
+    text += '\n\nLANGUAGE: Answer ONLY in English (every text value of the JSON), even if the student or the history uses Vietnamese.'
+      + ' No Vietnamese words at all: no greetings like "Chào", no pronouns like "em", "cô", "thầy", no Vietnamese step names.'
+      + ' Call Polya\'s steps: Understand the problem, Devise a plan, Carry out the plan, Look back.'
+      + ' Only the "topic" and error "type" values stay exactly as listed in Vietnamese.';
+  } else if (task !== 'translate') {
+    text += '\n\nNGÔN NGỮ: Trả lời HOÀN TOÀN bằng tiếng Việt (mọi chuỗi trong JSON), kể cả khi câu hỏi hoặc lịch sử hội thoại bằng tiếng Anh. Không chèn tiếng Anh, trừ thuật ngữ thật cần thiết đặt trong ngoặc.';
+  }
   return {
     body: {
       // English UI: same pedagogy and JSON keys, but every text value in English.
