@@ -106,3 +106,20 @@ test('nodes() drops empty slots so absent AI fields never render as "null"/"unde
   assert.deepEqual(nodes(['a', null, [undefined, 'b', [false, 'c']]]), ['a', 'b', 'c']);
   assert.deepEqual(nodes(null), []);
 });
+
+// String.fromCharCode(92) is a backslash; the shell would eat a literal one in this file.
+test('md turns literal backslash-n into line breaks outside math only', () => {
+  const B = String.fromCharCode(92);
+  assert.equal(md(`Mở đầu${B}n1. **Tìm hiểu đề**${B}n2. Lập kế hoạch`), '<p>Mở đầu</p><ol><li><strong>Tìm hiểu đề</strong></li><li>Lập kế hoạch</li></ol>');
+  assert.equal(md(`$a ${B}neq b$`), `<p>$a ${B}neq b$</p>`);
+});
+
+test('voiceGender guesses from common voice names', async () => {
+  const { voiceGender } = await import('../public/js/voice.js');
+  assert.equal(voiceGender('Microsoft An - Vietnamese (Vietnam)'), 'male');
+  assert.equal(voiceGender('Microsoft NamMinh Online (Natural) - Vietnamese (Vietnam)'), 'male');
+  assert.equal(voiceGender('Microsoft HoaiMy Online (Natural) - Vietnamese (Vietnam)'), 'female');
+  assert.equal(voiceGender('Google Tiếng Việt'), 'female');
+  assert.equal(voiceGender('Microsoft David - English (United States)'), 'male');
+  assert.equal(voiceGender('Unknown voice'), 'female');
+});

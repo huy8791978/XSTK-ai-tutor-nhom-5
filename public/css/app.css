@@ -455,43 +455,61 @@ a.row.thread-row small { display: inline; }
 .top-actions { grid-row: 1; grid-column: 2; }
 .lede { grid-row: 2; grid-column: 1 / -1; margin-top: 6px; }
 
-/* Voice tutor character: data-state = idle | listening | thinking | speaking */
+
+/* Teacher character (voice page). data-gender: male | female; data-state: idle | listening | thinking | speaking */
+.teacher { width: clamp(170px, 20vw, 230px); aspect-ratio: 220 / 230; }
+.teacher-svg { width: 100%; height: 100%; display: block; }
+.teacher[data-gender="male"] .t-f, .teacher[data-gender="female"] .t-m { display: none; }
+.t-skin { fill: #F2C9A6; }
+.t-hair { fill: #2A1E17; }
+.t-jacket { fill: var(--ultra); }
+.t-shirt { fill: #fff; }
+.t-tie { fill: var(--red); }
+.t-earring { fill: var(--gold); }
+.t-brow { fill: none; stroke: #2A1E17; stroke-width: 3; stroke-linecap: round; transition: transform .4s var(--ease); transform-box: fill-box; transform-origin: center; }
+.t-eye { fill: var(--ink); transition: transform .4s var(--ease); }
+.t-eyes { transform-box: fill-box; transform-origin: center; animation: t-blink 5s infinite; }
+.t-glasses { fill: none; stroke: var(--ink); stroke-width: 2; }
+.t-nose { fill: none; stroke: #C99B7A; stroke-width: 2; stroke-linecap: round; }
+.t-smile { fill: none; stroke: #9C4A3A; stroke-width: 3; stroke-linecap: round; }
+.t-mouth { fill: #7A2E24; opacity: 0; transform-box: fill-box; transform-origin: center; }
+.t-head { transform-origin: 110px 140px; transition: transform .5s var(--ease); }
+.t-arm { transform-origin: 164px 206px; transform: rotate(150deg); transition: transform .6s var(--ease); }
+.t-waves circle { fill: none; stroke: var(--gold); stroke-width: 2; opacity: 0; transform-origin: 110px 96px; }
+.t-bubbles circle { fill: var(--sheet); stroke: var(--ultra); stroke-width: 2.5; opacity: 0; }
+
+/* listening: hand raised beside the head, head tilts, gold ripples */
+.teacher[data-state="listening"] .t-arm { transform: rotate(-12deg); }
+.teacher[data-state="listening"] .t-head { transform: rotate(-6deg); }
+.teacher[data-state="listening"] .t-waves circle { animation: t-wave 1.6s var(--ease) infinite; }
+.teacher[data-state="listening"] .t-waves circle:nth-child(2) { animation-delay: .5s; }
+.teacher[data-state="listening"] .t-waves circle:nth-child(3) { animation-delay: 1s; }
+/* thinking: hand on the chin like 🤔, eyes look up, brow raised, thought bubbles */
+.teacher[data-state="thinking"] .t-arm { transform: rotate(-35deg); animation: t-tap 1.6s ease-in-out infinite; }
+.teacher[data-state="thinking"] .t-eye { transform: translate(3px, -4px); }
+.teacher[data-state="thinking"] .t-brow-r { transform: translateY(-4px); }
+.teacher[data-state="thinking"] .t-smile { d: path("M100 122 Q110 120 120 123"); }
+.teacher[data-state="thinking"] .t-head { transform: rotate(4deg); }
+.teacher[data-state="thinking"] .t-bubbles circle { opacity: .45; animation: t-bubble 1.5s ease-in-out infinite both; }
+.teacher[data-state="thinking"] .t-bubbles circle:nth-child(2) { animation-delay: .25s; }
+.teacher[data-state="thinking"] .t-bubbles circle:nth-child(3) { animation-delay: .5s; }
+/* speaking: open mouth moves, hand gestures, sound waves */
+.teacher[data-state="speaking"] .t-smile { opacity: 0; }
+.teacher[data-state="speaking"] .t-mouth { opacity: 1; animation: t-talk .3s ease-in-out infinite alternate; }
+.teacher[data-state="speaking"] .t-arm { animation: t-gesture 1.8s ease-in-out infinite; }
+.teacher[data-state="speaking"] .t-brow { animation: t-brow 1.8s ease-in-out infinite; }
+.teacher[data-state="speaking"] .t-waves circle { stroke: var(--ultra-dim); animation: t-wave 1.3s var(--ease) infinite; }
+.teacher[data-state="speaking"] .t-waves circle:nth-child(2) { animation-delay: .45s; }
+.teacher[data-state="speaking"] .t-waves circle:nth-child(3) { animation-delay: .9s; }
+
+@keyframes t-blink { 0%, 94%, 100% { transform: scaleY(1); } 97% { transform: scaleY(.1); } }
+@keyframes t-wave { from { opacity: .8; transform: scale(1); } to { opacity: 0; transform: scale(1.5); } }
+@keyframes t-bubble { 0%, 100% { opacity: .45; transform: translateY(0); } 50% { opacity: 1; transform: translateY(-3px); } }
+@keyframes t-tap { 0%, 100% { transform: rotate(-35deg); } 50% { transform: rotate(-32deg); } }
+@keyframes t-gesture { 0%, 100% { transform: rotate(8deg); } 30% { transform: rotate(26deg); } 60% { transform: rotate(-4deg); } }
+@keyframes t-talk { from { transform: scaleY(.35); } to { transform: scaleY(1.15); } }
+@keyframes t-brow { 0%, 100% { transform: translateY(0); } 40% { transform: translateY(-3px); } }
+.voice-select { display: flex; align-items: center; gap: 8px; font-size: 13.5px; color: var(--ink-2); }
+.voice-select select { min-height: 38px; padding: 6px 36px 6px 10px; width: auto; max-width: 280px; }
 .voice-stage { display: grid; justify-items: center; gap: 10px; padding: 24px 20px; text-align: center; }
-.tutor { width: clamp(150px, 18vw, 210px); aspect-ratio: 1; }
-.tutor-svg { width: 100%; height: 100%; overflow: visible; }
-.tutor-skin { fill: var(--ultra); }
-.tutor-ring { fill: none; stroke: var(--ultra-dim); stroke-width: 1; stroke-dasharray: 2 4; opacity: .6; transform-origin: 100px 108px; animation: tutor-spin 30s linear infinite; }
-.tutor-ring--2 { stroke: var(--gold); animation-direction: reverse; animation-duration: 40s; }
-.tutor-eye ellipse { fill: #fff; }
-.tutor-pupil { fill: var(--ink); transition: transform .4s var(--ease); }
-.tutor-eyes { transform-origin: 100px 98px; animation: tutor-blink 5s infinite; }
-.tutor-mouth { fill: #fff; transform-origin: 100px 131px; transition: transform .2s; }
-.tutor-head { transform-origin: 100px 108px; transition: transform .5s var(--ease); }
-.tutor-waves circle { fill: none; stroke: var(--gold); stroke-width: 2; opacity: 0; transform-origin: 100px 108px; }
-.tutor-bubbles circle { fill: var(--sheet); stroke: var(--ultra); stroke-width: 2.5; opacity: 0; }
 .tutor-status { font-weight: 600; color: var(--ink-2); min-height: 1.6em; }
-
-/* listening: head tilts, gold ripples */
-.tutor[data-state="listening"] .tutor-head { transform: rotate(-8deg); }
-.tutor[data-state="listening"] .tutor-waves circle { animation: tutor-wave 1.6s var(--ease) infinite; }
-.tutor[data-state="listening"] .tutor-waves circle:nth-child(2) { animation-delay: .5s; }
-.tutor[data-state="listening"] .tutor-waves circle:nth-child(3) { animation-delay: 1s; }
-/* thinking: eyes look up, thought bubbles pop in turn */
-.tutor[data-state="thinking"] .tutor-pupil { transform: translate(3px, -5px); }
-.tutor[data-state="thinking"] .tutor-mouth { transform: scaleX(.55); }
-.tutor[data-state="thinking"] .tutor-head { animation: tutor-ponder 2.4s ease-in-out infinite; }
-.tutor[data-state="thinking"] .tutor-bubbles circle { opacity: .45; animation: tutor-bubble 1.5s ease-in-out infinite both; }
-.tutor[data-state="thinking"] .tutor-bubbles circle:nth-child(2) { animation-delay: .25s; }
-.tutor[data-state="thinking"] .tutor-bubbles circle:nth-child(3) { animation-delay: .5s; }
-/* speaking: mouth moves, sound waves */
-.tutor[data-state="speaking"] .tutor-mouth { animation: tutor-talk .32s ease-in-out infinite alternate; }
-.tutor[data-state="speaking"] .tutor-waves circle { stroke: var(--ultra-dim); animation: tutor-wave 1.2s var(--ease) infinite; }
-.tutor[data-state="speaking"] .tutor-waves circle:nth-child(2) { animation-delay: .4s; }
-.tutor[data-state="speaking"] .tutor-waves circle:nth-child(3) { animation-delay: .8s; }
-
-@keyframes tutor-spin { to { transform: rotate(360deg); } }
-@keyframes tutor-blink { 0%, 94%, 100% { transform: scaleY(1); } 97% { transform: scaleY(.1); } }
-@keyframes tutor-wave { from { opacity: .8; transform: scale(1); } to { opacity: 0; transform: scale(1.45); } }
-@keyframes tutor-bubble { 0%, 100% { opacity: .45; transform: translateY(0); } 50% { opacity: 1; transform: translateY(-3px); } }
-@keyframes tutor-ponder { 0%, 100% { transform: rotate(0); } 50% { transform: rotate(5deg) translateY(-2px); } }
-@keyframes tutor-talk { from { transform: scaleY(.6) scaleX(.9); } to { transform: scaleY(3.2) scaleX(.75); } }

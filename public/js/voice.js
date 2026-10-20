@@ -44,10 +44,42 @@ export function speak(text, { onStart, onEnd } = {}) {
   speechSynthesis.cancel();
   const u = new SpeechSynthesisUtterance(String(text).replace(/\$+/g, '').replace(/\\[a-z]+/gi, ' '));
   u.lang = locale(); u.rate = 1;
-  const v = speechSynthesis.getVoices().find((x) => x.lang?.toLowerCase().startsWith(locale().slice(0, 2)));
+  const v = currentVoice();
   if (v) u.voice = v;
   u.onstart = () => onStart?.();
   u.onend = u.onerror = () => onEnd?.();
   speechSynthesis.speak(u);
 }
 export const stopSpeaking = () => window.speechSynthesis?.cancel();
+
+// ---- Voice choice. Browsers expose no gender, so it is guessed from the voice name (e.g. "Microsoft An" and
+// "NamMinh" are male Vietnamese voices; "HoaiMy" and "Google Tiếng Việt" are female). Unknown → female.
+const MALE = /\b(an|nam\s?minh|namminh|minh|male|nam|david|mark|guy|andrew|brian|christopher|eric|ryan|daniel|thomas|george|james|roger|steffan|davis|tony|jason)\b/i;
+const FEMALE = /\b(hoai\s?my|hoaimy|linh|mai|lan|female|zira|aria|jenny|samantha|susan|hazel|emma|ava|michelle|sonia|libby|google)\b/i;
+export function voiceGender(name = '') {
+  const n = String(name).replace(/[()\-–,]/g, ' ');
+  if (FEMALE.test(n)) return 'female';
+  if (MALE.test(n)) return 'male';
+  return 'female';
+}
+
+const VOICE_KEY = 'xstk.voice';
+/** Voices for the current language (all voices if the device has none for it). */
+export function voices() {
+  if (!('speechSynthesis' in window)) return [];
+  const all = speechSynthesis.getVoices(), mine = all.filter((x) => x.lang?.toLowerCase().startsWith(locale().slice(0, 2)));
+  return mine.length ? mine : all;
+}
+export function currentVoice() {
+  const list = voices();
+  let saved = null;
+  try { saved = localStorage.getItem(VOICE_KEY); } catch { /* private mode */ }
+  return list.find((v) => v.name === saved) || list[0] || null;
+}
+export function setVoice(name) { try { localStorage.setItem(VOICE_KEY, name); } catch { /* private mode */ } }
+/** Run cb now and whenever the browser finishes loading its voice list (Chrome loads it asynchronously). */
+export function onVoices(cb) {
+  if (!('speechSynthesis' in window)) return cb();
+  speechSynthesis.addEventListener('voiceschanged', cb);
+  cb();
+}

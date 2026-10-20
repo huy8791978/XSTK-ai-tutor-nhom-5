@@ -6,7 +6,9 @@ import { ai } from '../api.js';
 import { mathField } from '../mathinput.js';
 import { boardToggle } from '../board.js';
 import { chart } from '../viz.js';
-import { speak, stopSpeaking, unclear, canListen, fallbackText } from '../voice.js';
+import { speak, stopSpeaking, unclear, canListen, fallbackText, voices, currentVoice, setVoice, voiceGender, onVoices } from '../voice.js';
+import { teacher } from '../teacher.js';
+
 
 export const meta = { title: 'Hỏi đáp giọng nói', lede: 'Bấm nút Nói ở ô bên dưới và hỏi bằng giọng nói về Xác suất Thống kê.\nBài toán nhiều công thức thì viết lên bảng (iPad). Gia sư trả lời bằng chữ và đọc thành tiếng.' };
 
@@ -17,28 +19,22 @@ const LABEL = {
   speaking: 'Gia sư đang trả lời…',
 };
 
-/** The tutor character: an ultramarine head with a guilloche ring. data-state drives every animation in CSS. */
-function tutorFace() {
-  return h('div.tutor', { 'data-state': 'idle', 'aria-hidden': 'true', html: `
-    <svg viewBox="0 0 200 200" class="tutor-svg">
-      <g class="tutor-waves"><circle cx="100" cy="108" r="70"/><circle cx="100" cy="108" r="70"/><circle cx="100" cy="108" r="70"/></g>
-      <g class="tutor-bubbles"><circle cx="146" cy="52" r="7"/><circle cx="161" cy="34" r="10"/><circle cx="178" cy="14" r="12"/></g>
-      <g class="tutor-head">
-        <circle cx="100" cy="108" r="62" class="tutor-skin"/>
-        <circle cx="100" cy="108" r="54" class="tutor-ring"/>
-        <circle cx="100" cy="108" r="47" class="tutor-ring tutor-ring--2"/>
-        <g class="tutor-eyes"><g class="tutor-eye"><ellipse cx="78" cy="98" rx="9" ry="11"/><circle cx="80" cy="99" r="4.5" class="tutor-pupil"/></g>
-          <g class="tutor-eye"><ellipse cx="122" cy="98" rx="9" ry="11"/><circle cx="124" cy="99" r="4.5" class="tutor-pupil"/></g></g>
-        <rect x="84" y="128" width="32" height="6" rx="3" class="tutor-mouth"/>
-      </g>
-    </svg>` });
-}
-
 export function render(root) {
   const history = [];
   let lastSpeech = '';
   const thread = h('div.thread', { 'aria-live': 'polite' });
-  const face = tutorFace();
+  const face = teacher(voiceGender(currentVoice()?.name));
+  // Voice picker: the teacher is a man for a male voice and a woman for a female one.
+  const voiceSel = h('select', { id: 'voice-pick', 'aria-label': 'Giọng đọc' });
+  const voiceBox = h('label.voice-select', { for: 'voice-pick', hidden: true }, 'Giọng đọc', voiceSel);
+  onVoices(() => {
+    const list = voices(), cur = currentVoice();
+    voiceBox.hidden = list.length < 2;
+    const short = (n) => n.replace(/^(Microsoft|Google)\s+/, '').replace(/\s*[-–(].*$/, '');
+    voiceSel.replaceChildren(...list.map((v) => h('option', { value: v.name, selected: v.name === cur?.name }, `${short(v.name)} · ${voiceGender(v.name) === 'male' ? 'giọng nam' : 'giọng nữ'}`)));
+    face.dataset.gender = voiceGender(cur?.name);
+  });
+  voiceSel.onchange = () => { setVoice(voiceSel.value); face.dataset.gender = voiceGender(voiceSel.value); if (lastSpeech) say(lastSpeech); };
   const status = h('p.tutor-status', { role: 'status' }, LABEL.idle);
   const setState = (s) => { face.dataset.state = s; status.textContent = LABEL[s]; bReplay.disabled = !lastSpeech || s === 'speaking'; };
   const say = (text) => {
@@ -58,7 +54,8 @@ export function render(root) {
   // Didn't hear / didn't understand: say it, show it, and hand over to typing.
   const askToType = () => {
     const msg = fallbackText();
-    thread.append(h('div.msg.ai.fallback', {}, h('p', {}, msg)));
+    // Don't stack the same reminder twice in a row.
+    if (!thread.lastElementChild?.matches('.fallback')) thread.append(h('div.msg.ai.fallback', {}, h('p', {}, msg)));
     say(msg);
     compose.classList.add('attention');
     ta.focus({ preventScroll: true });
@@ -83,6 +80,7 @@ export function render(root) {
       if (files.length) board.board.clear();
       return h('div.msg.ai', {}, rich(d.reply || ''), chart(d.viz), casio(d.casio));
     }, 'Gia sư đang nghĩ…');
+    if (!slot.childElementCount) slot.remove(); // AI did not understand: no empty bubble
     if (reply) say(reply);
     else if (slot.querySelector('.error')) setState('idle');
     else askToType(); // understood === false
@@ -103,6 +101,6 @@ export function render(root) {
   };
 
   root.append(
-    h('section.panel.voice-stage', {}, face, status, h('div.btn-row', { style: 'justify-content:center' }, bReplay, bMute)),
+    h('section.panel.voice-stage', {}, face, status, h('div.btn-row', { style: 'justify-content:center;align-items:center' }, bReplay, bMute, voiceBox)),
     h('div', { style: 'max-width:900px;margin-top:20px' }, thread, compose));
 }

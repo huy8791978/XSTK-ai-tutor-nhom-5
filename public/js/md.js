@@ -20,8 +20,12 @@ function bareMath(line) {
   return !/[A-Za-zÀ-ỹ]{3,}/.test(rest);
 }
 
+// The model sometimes double-escapes line breaks, so the text holds a literal backslash-n. Outside $…$ that is
+// never LaTeX, so turn it into a real line break; inside math (\neq, \nu…) leave it alone.
+const literalBreaks = (s) => s.split(/(\$\$[\s\S]+?\$\$|\$[^$\n]+?\$)/).map((part, i) => (i % 2 ? part : part.replace(/\\n/g, '\n'))).join('');
+
 export function md(src) {
-  src = String(src ?? '').split('\n').map((l) => (bareMath(l) ? l.replace(/^(\s*(?:[-*•]|\d+[.)])?\s*)(.*?)\s*$/, '$1$$$2$$') : l)).join('\n');
+  src = literalBreaks(String(src ?? '')).split('\n').map((l) => (bareMath(l) ? l.replace(/^(\s*(?:[-*•]|\d+[.)])?\s*)(.*?)\s*$/, '$1$$$2$$') : l)).join('\n');
   const math = [];
   // Protect math so * and _ inside formulas are not treated as markdown.
   let s = String(src ?? '').replace(/\r/g, '').replace(MATH, (m) => `\u0000${math.push(m) - 1}\u0000`);

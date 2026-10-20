@@ -81,7 +81,7 @@ const DICT = {
   'Hãy viết đề bài hoặc lời giải lên bảng rồi bấm Gửi.': 'Write the problem or your solution on the board, then press Send.', '(bài viết trên bảng)': '(written on the board)',
   'Bấm nút Nói ở ô bên dưới và hỏi bằng giọng nói về Xác suất Thống kê. Bài toán nhiều công thức thì viết lên bảng (iPad). Gia sư trả lời bằng chữ và đọc thành tiếng.': 'Press Speak on the box below and ask about Probability & Statistics by voice. Write formula-heavy problems on the board (iPad). The tutor answers on screen and out loud.',
   'Bấm Nói ở ô bên dưới để hỏi bằng giọng nói': 'Press Speak in the box below to ask by voice', 'Trình duyệt này không nhận giọng nói. Hãy gõ câu hỏi ở ô bên dưới.': 'This browser cannot recognise speech. Type your question below.',
-  'Đang nghe bạn nói…': 'Listening…', 'Gia sư đang suy nghĩ…': 'The tutor is thinking…', 'Gia sư đang trả lời…': 'The tutor is answering…', 'Nghe lại': 'Play again',
+  'Giọng đọc': 'Voice', 'Đang nghe bạn nói…': 'Listening…', 'Gia sư đang suy nghĩ…': 'The tutor is thinking…', 'Gia sư đang trả lời…': 'The tutor is answering…', 'Nghe lại': 'Play again',
   'Hỏi bằng giọng nói (nút Nói) hoặc nhập đề bài, đáp án, câu trả lời': 'Ask by voice (Speak button) or type your problem, answer or reply', 'Hỏi gia sư': 'Ask the tutor',
   // lessons
   'Khái niệm cần học': 'Concept to learn', 'Định lí / công thức cần học': 'Theorem / formula to learn', 'Ví dụ: Biến cố độc lập': 'e.g. Independent events', 'Ví dụ: Công thức Bayes': "e.g. Bayes' theorem",
