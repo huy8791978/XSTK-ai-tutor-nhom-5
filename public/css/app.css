@@ -514,7 +514,7 @@ a.row.thread-row small { display: inline; }
 /* Nam / Nữ toggle, top-right of the teacher panel */
 .voice-stage { position: relative; }
 .gender-toggle { position: absolute; top: 16px; right: 16px; display: inline-flex; border: 1.5px solid var(--rule-2); border-radius: var(--r); overflow: hidden; background: var(--sheet); }
-.gender-toggle button { min-height: 38px; padding: 6px 14px; border: 0; background: transparent; color: var(--ink-2); font-weight: 600; font-size: 13.5px; cursor: pointer; }
+.gender-toggle button { -webkit-appearance: none; appearance: none; border-radius: 0; min-height: 38px; padding: 6px 14px; border: 0; background: transparent; color: var(--ink-2); font-weight: 600; font-size: 13.5px; cursor: pointer; }
 .gender-toggle button + button { border-left: 1.5px solid var(--rule-2); }
 .gender-toggle button[aria-pressed="true"] { background: var(--ultra); color: #fff; }
 .gender-toggle button:focus-visible { outline: 2px solid var(--gold); outline-offset: -2px; }

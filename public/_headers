@@ -1,0 +1,4 @@
+# Always revalidate (ETag) so phones never keep an old app.css / index.html after a deploy.
+# Unchanged files answer 304, so this costs almost nothing.
+/*
+  Cache-Control: no-cache
