@@ -6,8 +6,20 @@ compatibility_date = "2025-09-01"
 directory = "./public"
 binding = "ASSETS"
 
-# Workers Logs (and the Issues view built on them). Kept here so deploys never switch it off.
+# Logs + Issues on, Traces off — mirrors the dashboard so deploys never switch them off.
 [observability]
+enabled = true
+head_sampling_rate = 1
+
+[observability.logs]
+enabled = true
+invocation_logs = true
+persist = true
+
+[observability.traces]
+enabled = false
+
+[observability.issue_detection]
 enabled = true
 
 [[durable_objects.bindings]]
