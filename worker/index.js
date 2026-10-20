@@ -44,23 +44,19 @@ export default {
         const msg = { ip: 'Bạn gửi quá nhanh', rpm: 'Hệ thống đang nhiều người dùng', tpm: 'Hệ thống đang xử lí nhiều dữ liệu', rpd: 'Đã hết lượt dùng AI hôm nay' }[slot.reason];
         return json({ error: `${msg}. Vui lòng thử lại sau ${slot.retryAfter} giây.`, retryAfter: slot.retryAfter, reason: slot.reason }, 429, { 'retry-after': String(slot.retryAfter) });
       }
-      let res;
-      try {
-        res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`, {
-          method: 'POST',
-          headers: { 'content-type': 'application/json', 'x-goog-api-key': env.GEMINI_API_KEY },
-          body: JSON.stringify(req.body),
-        });
-      } catch {
+      // The call to Google goes out from a Durable Object pinned to North America: visitors in Vietnam are often
+      // served from Cloudflare's Hong Kong edge, and Gemini rejects requests from there ("User location is not supported").
+      const res = await gateway(env).generate(model, req.body);
+      if (res.status === 0) {
         failure = json({ error: 'Không kết nối được tới Gemini. Thử lại sau.' }, 502);
         continue;
       }
-      const data = await res.json().catch(() => ({}));
+      const data = res.data;
       const actual = data.usageMetadata?.totalTokenCount;
       if (actual) ctx.waitUntil(limiter.settle(slot.t, actual));
 
       if (res.status === 429) return json({ error: 'Gemini đang quá tải. Vui lòng thử lại sau 30 giây.', retryAfter: 30, reason: 'upstream' }, 429);
-      if (!res.ok) {
+      if (res.status < 200 || res.status >= 300) {
         console.error('gemini', res.status, data.error?.message);
         failure = json({ error: 'AI tạm thời không phản hồi được. Thử lại sau.' }, 502);
         if (res.status >= 500) continue;
@@ -115,7 +111,25 @@ export class Limiter extends DurableObject {
     this.s = settle(this.s, { t, actual });
     await this.ctx.storage.put('s', this.s);
   }
+
+  /** Gemini call made from wherever this instance lives (the "gateway" instance is pinned to North America). */
+  async generate(model, body) {
+    try {
+      const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`, {
+        method: 'POST',
+        headers: { 'content-type': 'application/json', 'x-goog-api-key': this.env.GEMINI_API_KEY },
+        body: JSON.stringify(body),
+      });
+      return { status: res.status, data: await res.json().catch(() => ({})) };
+    } catch {
+      return { status: 0, data: {} };
+    }
+  }
 }
+
+// A Durable Object is created where its location hint says and stays there. The global limiter was created
+// near its first visitor (possibly Asia), so Gemini calls use a separate instance created in eastern North America.
+const gateway = (env) => env.LIMITER.get(env.LIMITER.idFromName('gemini-gateway-enam'), { locationHint: 'enam' });
 
 const hex = (buf) => [...new Uint8Array(buf)].map((b) => b.toString(16).padStart(2, '0')).join('');
 const sha = async (s) => hex(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(s)));
