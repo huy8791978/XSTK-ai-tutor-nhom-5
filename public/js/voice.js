@@ -149,3 +149,13 @@ export function stopSpeaking() {
   if (audio) { audio.pause(); audio = null; }
   window.speechSynthesis?.cancel();
 }
+
+/**
+ * Replies written while the other voice was picked say «cô»/«thầy» for the wrong teacher. Before reading aloud,
+ * swap the standalone word to match the voice now picked (case kept; «cố», «cốt», «thầy thuốc» untouched).
+ */
+export function matchPronoun(text, gender) {
+  const [from, to] = gender === 'male' ? ['cô', 'thầy'] : ['thầy', 'cô'];
+  const re = new RegExp(`(?<![\p{L}\p{M}])(${from}|${from[0].toUpperCase()}${from.slice(1)})(?![\p{L}\p{M}])(?!\s+thuốc)`, 'gu');
+  return String(text).normalize('NFC').replace(re, (w) => (w[0] === w[0].toUpperCase() ? to[0].toUpperCase() + to.slice(1) : to));
+}

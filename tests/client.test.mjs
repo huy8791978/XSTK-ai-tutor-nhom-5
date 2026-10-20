@@ -147,3 +147,10 @@ test('pcmToWav writes a 44-byte RIFF/WAVE header for 24 kHz mono 16-bit audio', 
   assert.equal(v.getUint32(40, true), 4);
   assert.equal(w.length, 48);
 });
+
+test('matchPronoun makes the spoken self-reference match the picked voice', async () => {
+  const { matchPronoun } = await import('../public/js/voice.js');
+  assert.equal(matchPronoun('Em hãy cùng cô xem ví dụ. Cô tin em làm được.', 'male'), 'Em hãy cùng thầy xem ví dụ. Thầy tin em làm được.');
+  assert.equal(matchPronoun('Thầy sẽ giải thích, thầy hỏi em nhé.', 'female'), 'Cô sẽ giải thích, cô hỏi em nhé.');
+  assert.equal(matchPronoun('Bài cố định cốt lõi, thầy thuốc', 'male'), 'Bài cố định cốt lõi, thầy thuốc');
+});

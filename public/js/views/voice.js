@@ -6,7 +6,8 @@ import { ai } from '../api.js';
 import { mathField } from '../mathinput.js';
 import { boardToggle } from '../board.js';
 import { chart } from '../viz.js';
-import { speak, stopSpeaking, unclear, canListen, fallbackText, getGender, setGender } from '../voice.js';
+import { speak, stopSpeaking, unclear, canListen, fallbackText, getGender, setGender, matchPronoun } from '../voice.js';
+import { getLang } from '../i18n.js';
 import { teacher } from '../teacher.js';
 
 
@@ -39,7 +40,8 @@ export function render(root) {
   const setState = (s) => { face.dataset.state = s; status.textContent = LABEL[s]; bReplay.disabled = !lastSpeech || s === 'speaking'; };
   const say = (text) => {
     lastSpeech = text;
-    speak(text, { onStart: () => setState('speaking'), onEnd: () => setState('idle') });
+    // Speak with the pronoun of the teacher now on screen, even for a reply written under the other voice.
+    speak(getLang() === 'en' ? text : matchPronoun(text, getGender()), { onStart: () => setState('speaking'), onEnd: () => setState('idle') });
     if (!('speechSynthesis' in window)) setState('idle');
   };
   const bReplay = h('button.btn.btn-ghost', { type: 'button', disabled: true, onclick: () => lastSpeech && say(lastSpeech) }, icon('speaker'), 'Nghe lại');
