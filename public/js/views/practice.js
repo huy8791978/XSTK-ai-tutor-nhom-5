@@ -1,6 +1,6 @@
 // Practice: 5 essay or 5 MCQ problems, one per frame. Every problem is worked through Polya's 4 steps,
 // each step a visible button: Tìm hiểu đề → Chương trình giải → Trình bày (+ chấm) → Kiểm tra & nghiên cứu.
-import { h, icon, rich, list, run, toast, casio, POLYA } from '../ui.js';
+import { h, icon, rich, list, run, toast, casio, POLYA, nodes } from '../ui.js';
 import { tr as t } from '../i18n.js';
 import { ai } from '../api.js';
 import { readFiles } from '../files.js';
@@ -111,7 +111,7 @@ function polyaCard(q, i, work, actions, extra4) {
     tabs.replaceChildren(...POLYA.map((label, j) => h('li', { 'data-state': j < cur ? 'done' : j === cur ? 'current' : 'todo' },
       h('button', { type: 'button', 'aria-current': j === cur ? 'step' : null, onclick: () => goto(j) }, h('b', {}, String(j + 1)), label))));
     reveal.replaceChildren();
-    body.replaceChildren(...[].concat(steps[cur]()).flat(),
+    body.replaceChildren(...nodes(steps[cur]()),
       h('div.stage-nav', {},
         cur > 0 ? h('button.btn.btn-ghost', { type: 'button', onclick: () => goto(cur - 1) }, `← Bước ${cur}`) : h('span'),
         cur < 3 ? h('button.btn.btn-ghost', { type: 'button', onclick: () => goto(cur + 1) }, `Bước ${cur + 2}: ${POLYA[cur + 1]} →`) : null));

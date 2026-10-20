@@ -100,3 +100,9 @@ test('md wraps a bare LaTeX line in $ but leaves prose that mentions a command',
   assert.equal(md('- s = \\sqrt{0,32} \\approx 0,57 \\text{ (%/năm)}'), '<ul><li>$s = \\sqrt{0{,}32} \\approx 0{,}57 \\text{ (\\%/năm)}$</li></ul>');
   assert.equal(md('Dùng lệnh \\frac để viết phân số'), '<p>Dùng lệnh \\frac để viết phân số</p>');
 });
+
+test('nodes() drops empty slots so absent AI fields never render as "null"/"undefined"', async () => {
+  const { nodes } = await import('../public/js/ui.js');
+  assert.deepEqual(nodes(['a', null, [undefined, 'b', [false, 'c']]]), ['a', 'b', 'c']);
+  assert.deepEqual(nodes(null), []);
+});

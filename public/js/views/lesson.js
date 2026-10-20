@@ -1,5 +1,5 @@
 // Theory lessons: concepts and theorems, each taught Trải nghiệm → Hình thành → Củng cố → Vận dụng.
-import { h, rich, list, run, toast, detents, STAGES } from '../ui.js';
+import { h, rich, list, run, toast, detents, STAGES, nodes } from '../ui.js';
 import { ai } from '../api.js';
 import { mathField } from '../mathinput.js';
 import { chart } from '../viz.js';
@@ -86,7 +86,7 @@ function lesson(kind, K, d, topicName) {
   const go = (i) => {
     cur = i;
     rail.replaceChildren(detents(K.stages, K.stages.map((_, k) => (k < cur ? 'done' : k === cur ? 'current' : 'todo'))));
-    stage.replaceChildren(...[].concat(views[cur]()).flat(),
+    stage.replaceChildren(...nodes(views[cur]()),
       h('div.stage-nav', {},
         cur > 0 ? h('button.btn.btn-ghost', { type: 'button', onclick: () => go(cur - 1) }, `← ${K.stages[cur - 1]}`) : h('span'),
         cur < 3 ? h('button.btn.btn-primary', { type: 'button', onclick: () => go(cur + 1) }, `Tiếp: ${K.stages[cur + 1]} →`) : null));

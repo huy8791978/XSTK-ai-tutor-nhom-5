@@ -12,7 +12,7 @@ export function h(sel, attrs = {}, ...kids) {
     else if (k === 'html') el.innerHTML = v;
     else el.setAttribute(k, v === true ? '' : v);
   }
-  el.append(...kids.flat().filter((k) => k != null && k !== false));
+  el.append(...nodes(kids));
   return el;
 }
 
@@ -55,7 +55,7 @@ export async function run(btn, out, fn, loadingText) {
   out.scrollIntoView?.({ block: 'nearest', behavior: 'smooth' });
   try {
     const node = await fn();
-    out.replaceChildren(...[].concat(node));
+    out.replaceChildren(...nodes(node));
   } catch (e) {
     out.replaceChildren(errorBox(e));
     if (e.retryAfter) return countdown(btn, label, e.retryAfter);
@@ -92,3 +92,6 @@ export function casio(steps) {
       h('span.keys', {}, (s.keys || []).map((k) => h(`kbd.${cls(String(k))}`, {}, String(k)))),
       s.note ? rich(s.note, 'span') : null))));
 }
+
+/** Flatten view content and drop empty slots (null/undefined/false), so an absent AI field never prints "null". */
+export const nodes = (x) => [x].flat(Infinity).filter((k) => k != null && k !== false);
