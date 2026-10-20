@@ -54,6 +54,8 @@ Mọi yêu cầu đi qua **một Durable Object toàn cục**, nên các giới 
 | `LIMIT_RPD` | 900 | Yêu cầu/ngày (đặt lại lúc 0h giờ Thái Bình Dương, giống Google) |
 | `LIMIT_PER_IP_RPM` | 6 | Yêu cầu/phút cho mỗi người (IP), để một người không chiếm hết lượt |
 | `FORUM_PER_IP_RPM` | 5 | Số bài/trả lời mỗi người được đăng mỗi phút trên diễn đàn |
+| `GEMINI_TTS_MODELS` | 3.8 → 3.1 → 2.5 | Các mô hình đọc giọng (giọng nam/nữ thật), thử từ mới đến cũ: mô hình nào hết lượt thì dùng mô hình kế tiếp; hết cả thì dùng giọng của máy |
+| `LIMIT_TTS_RPM` / `LIMIT_TTS_RPD` | 30 / 400 | Giới hạn riêng cho đọc giọng (tính chung các mô hình TTS), không ăn vào lượt AI trả lời |
 
 Khi vượt giới hạn, người dùng thấy thông báo tiếng Việt và nút tự đếm ngược tới lúc thử lại. Đặt các số này thấp hơn khoảng 10% so với hạn mức của dự án trong Google AI Studio (*Usage & limits*), vì hạn mức free tier thay đổi theo model và theo thời gian. Đổi model bằng biến `GEMINI_MODEL`.
 

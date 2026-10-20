@@ -136,3 +136,14 @@ test('pitchFor raises a male-only voice when the female teacher is picked', asyn
   assert.equal(pitchFor('Microsoft An - Vietnamese (Vietnam)', 'female') > 1, true);
   assert.equal(pitchFor('Microsoft HoaiMy Online (Natural)', 'female'), 1);
 });
+
+test('pcmToWav writes a 44-byte RIFF/WAVE header for 24 kHz mono 16-bit audio', async () => {
+  const { pcmToWav } = await import('../public/js/voice.js');
+  const w = pcmToWav(new Uint8Array([1, 2, 3, 4]), 24000);
+  const v = new DataView(w.buffer);
+  assert.equal(String.fromCharCode(...w.slice(0, 4)), 'RIFF');
+  assert.equal(String.fromCharCode(...w.slice(8, 12)), 'WAVE');
+  assert.equal(v.getUint32(24, true), 24000);
+  assert.equal(v.getUint32(40, true), 4);
+  assert.equal(w.length, 48);
+});

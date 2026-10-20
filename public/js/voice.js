@@ -38,14 +38,14 @@ export function unclear(text) {
   return t.length < 3 || !/[\p{L}\p{N}]{2}/u.test(t);
 }
 
-/** Read text aloud. onStart/onEnd fire when the voice actually starts and stops (also on error/cancel). */
-export function speak(text, { onStart, onEnd } = {}, retried = false) {
+/** Built-in browser voice (fallback). onStart/onEnd fire when it actually starts and stops (also on error/cancel). */
+function browserSpeak(text, { onStart, onEnd } = {}, retried = false) {
   if (!('speechSynthesis' in window) || !text) { onEnd?.(); return; }
   speechSynthesis.cancel();
   // Chrome loads its voice list late; speaking before that uses the default voice whatever gender was picked.
   if (!retried && !voices().length) {
     let done = false;
-    const go = () => { if (!done) { done = true; speak(text, { onStart, onEnd }, true); } };
+    const go = () => { if (!done) { done = true; browserSpeak(text, { onStart, onEnd }, true); } };
     speechSynthesis.addEventListener('voiceschanged', go, { once: true });
     setTimeout(go, 800);
     return;
@@ -59,7 +59,6 @@ export function speak(text, { onStart, onEnd } = {}, retried = false) {
   u.onend = u.onerror = () => onEnd?.();
   speechSynthesis.speak(u);
 }
-export const stopSpeaking = () => window.speechSynthesis?.cancel();
 
 // ---- Voice choice. Browsers expose no gender, so it is guessed from the voice name (e.g. "Microsoft An" and
 // "NamMinh" are male Vietnamese voices; "HoaiMy" and "Google Tiếng Việt" are female). Unknown → female.
@@ -102,4 +101,51 @@ export function onVoices(cb) {
   if (!('speechSynthesis' in window)) return cb();
   speechSynthesis.addEventListener('voiceschanged', cb);
   cb();
+}
+
+// ---- Gemini voices via /api/tts: a real female or male voice on every device. Falls back to the browser voice.
+/** Wrap raw 16-bit mono PCM (what Gemini TTS returns) in a WAV header so an <audio> element can play it. */
+export function pcmToWav(pcm, rate = 24000) {
+  const out = new Uint8Array(44 + pcm.length), v = new DataView(out.buffer);
+  const str = (o, s) => [...s].forEach((c, i) => v.setUint8(o + i, c.charCodeAt(0)));
+  str(0, 'RIFF'); v.setUint32(4, 36 + pcm.length, true); str(8, 'WAVE'); str(12, 'fmt ');
+  v.setUint32(16, 16, true); v.setUint16(20, 1, true); v.setUint16(22, 1, true);
+  v.setUint32(24, rate, true); v.setUint32(28, rate * 2, true); v.setUint16(32, 2, true); v.setUint16(34, 16, true);
+  str(36, 'data'); v.setUint32(40, pcm.length, true); out.set(pcm, 44);
+  return out;
+}
+
+const ttsCache = new Map(); // "gender|lang|text" → object URL, so "Nghe lại" costs nothing
+async function ttsUrl(text) {
+  const key = `${getGender()}|${getLang()}|${text}`;
+  if (ttsCache.has(key)) return ttsCache.get(key);
+  const res = await fetch('/api/tts', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ text, gender: getGender(), lang: getLang() }) });
+  if (!res.ok) throw new Error('tts');
+  const { mime, data } = await res.json();
+  const bytes = Uint8Array.from(atob(data), (c) => c.charCodeAt(0));
+  const blob = /wav/i.test(mime) ? new Blob([bytes], { type: 'audio/wav' }) : new Blob([pcmToWav(bytes, Number(/rate=(\d+)/i.exec(mime)?.[1] || 24000))], { type: 'audio/wav' });
+  const url = URL.createObjectURL(blob);
+  if (ttsCache.size > 20) { const [k, u] = ttsCache.entries().next().value; URL.revokeObjectURL(u); ttsCache.delete(k); }
+  ttsCache.set(key, url);
+  return url;
+}
+
+let audio = null, speakId = 0;
+/** Read text aloud with the picked teacher's voice. onStart/onEnd fire when sound really starts and stops. */
+export function speak(text, { onStart, onEnd } = {}) {
+  stopSpeaking();
+  if (!text) { onEnd?.(); return; }
+  const id = ++speakId;
+  ttsUrl(text).then((url) => {
+    if (id !== speakId) return; // a newer request or "Dừng đọc" won
+    audio = new Audio(url);
+    audio.onplaying = () => onStart?.();
+    audio.onended = () => onEnd?.();
+    return audio.play();
+  }).catch(() => { if (id === speakId) browserSpeak(text, { onStart, onEnd }); });
+}
+export function stopSpeaking() {
+  speakId++;
+  if (audio) { audio.pause(); audio = null; }
+  window.speechSynthesis?.cancel();
 }

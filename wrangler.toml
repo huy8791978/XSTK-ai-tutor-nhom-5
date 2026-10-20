@@ -39,6 +39,12 @@ LIMIT_TPM = "225000"
 LIMIT_RPD = "900"
 LIMIT_PER_IP_RPM = "6"
 FORUM_PER_IP_RPM = "5"
+# Reading answers aloud with Gemini TTS (real male/female voices). Models are tried newest → oldest: when one
+# is out of quota the next one is used; when all are, the browser voice is used. Our own cap counts all of them.
+GEMINI_TTS_MODELS = "gemini-3.8-flash-tts,gemini-3.8-flash-lite-tts,gemini-3.1-flash-tts-preview,gemini-2.5-flash-preview-tts"
+LIMIT_TTS_RPM = "30"
+LIMIT_TTS_RPD = "400"
+LIMIT_TTS_PER_IP_RPM = "6"
 
 [[durable_objects.bindings]]
 name = "FORUM"

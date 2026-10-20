@@ -161,3 +161,17 @@ test('voice reply is spoken in the page language', () => {
   assert.match(buildRequest('voice', { text: 'hi', lang: 'en' }).body.contents[0].parts[0].text, /"speech": "<[^"]*English/);
   assert.match(buildRequest('voice', { text: 'xin chào' }).body.contents[0].parts[0].text, /"speech": "<[^"]*tiếng Việt/);
 });
+
+test('buildTts picks a female or male Gemini voice and strips LaTeX', async () => {
+  const { buildTts, ttsAudio, TTS_VOICES } = await import('../worker/tts.js');
+  const B = String.fromCharCode(92);
+  const f = buildTts({ text: `Xác suất $P(A${B}mid B)$`, gender: 'female' });
+  assert.equal(f.generationConfig.speechConfig.voiceConfig.prebuiltVoiceConfig.voiceName, TTS_VOICES.female);
+  assert.deepEqual(f.generationConfig.responseModalities, ['AUDIO']);
+  assert.ok(!f.contents[0].parts[0].text.includes('$'));
+  assert.equal(buildTts({ text: 'hi', gender: 'male', lang: 'en' }).generationConfig.speechConfig.voiceConfig.prebuiltVoiceConfig.voiceName, TTS_VOICES.male);
+  assert.throws(() => buildTts({ text: '' }), /Không có nội dung/);
+  assert.throws(() => buildTts({ text: 'x'.repeat(1300) }), /quá dài/);
+  assert.deepEqual(ttsAudio({ candidates: [{ content: { parts: [{ inlineData: { mimeType: 'audio/L16;rate=24000', data: 'AAA' } }] } }] }), { mime: 'audio/L16;rate=24000', data: 'AAA' });
+  assert.equal(ttsAudio({}), null);
+});

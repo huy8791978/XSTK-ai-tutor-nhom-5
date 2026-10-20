@@ -2,6 +2,7 @@ import { DurableObject } from 'cloudflare:workers';
 import { admit, settle, estimateTokens } from './limits.js';
 import { buildRequest, extractJson } from './prompts.js';
 import { validatePost, FORUM_TOPICS } from './forum.js';
+import { buildTts, ttsAudio } from './tts.js';
 
 const json = (data, status = 200, headers = {}) =>
   new Response(JSON.stringify(data), { status, headers: { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store', ...headers } });
@@ -15,6 +16,7 @@ export default {
     const origin = request.headers.get('origin');
     if (origin && new URL(origin).host !== url.host) return json({ error: 'Nguồn không hợp lệ.' }, 403);
     if (url.pathname.startsWith('/api/forum')) return forum(request, env, url);
+    if (url.pathname === '/api/tts' && request.method === 'POST') return tts(request, env);
     if (url.pathname !== '/api/ai') return json({ error: 'Không tìm thấy.' }, 404);
     if (request.method !== 'POST') return json({ error: 'Method not allowed' }, 405);
     if (!env.GEMINI_API_KEY) return json({ error: 'Máy chủ chưa cấu hình GEMINI_API_KEY.' }, 500);
@@ -88,15 +90,16 @@ export class Limiter extends DurableObject {
     });
   }
 
-  async acquire(ip, tokens, retry = false) {
+  /** limits overrides { perIp, rpm, tpm, rpd } (the TTS counter uses its own, smaller quota). */
+  async acquire(ip, tokens, retry = false, limits = {}) {
     const now = Date.now();
-    const perIp = Number(this.env.LIMIT_PER_IP_RPM || 6);
+    const perIp = Number(limits.perIp ?? this.env.LIMIT_PER_IP_RPM ?? 6);
     const mine = (this.ips.get(ip) || []).filter((t) => now - t < 60_000);
     if (!retry && mine.length >= perIp) return { ok: false, reason: 'ip', retryAfter: Math.ceil((mine[0] + 60_000 - now) / 1000) };
 
     const r = admit(this.s, {
       now, tokens,
-      rpm: Number(this.env.LIMIT_RPM || 15), tpm: Number(this.env.LIMIT_TPM || 250000), rpd: Number(this.env.LIMIT_RPD || 1000),
+      rpm: Number(limits.rpm ?? this.env.LIMIT_RPM ?? 15), tpm: Number(limits.tpm ?? this.env.LIMIT_TPM ?? 250000), rpd: Number(limits.rpd ?? this.env.LIMIT_RPD ?? 1000),
     });
     this.s = r.state;
     if (!r.ok) return { ok: false, reason: r.reason, retryAfter: r.retryAfter };
@@ -133,6 +136,42 @@ const gateway = (env) => env.LIMITER.get(env.LIMITER.idFromName('gemini-gateway-
 
 const hex = (buf) => [...new Uint8Array(buf)].map((b) => b.toString(16).padStart(2, '0')).join('');
 const sha = async (s) => hex(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(s)));
+
+/** POST /api/tts { text, gender, lang } → { mime, data } audio from Gemini TTS. Own quota, so reading answers aloud
+ *  never eats into the AI-answer limits; any failure tells the browser to fall back to its built-in voice. */
+async function tts(request, env) {
+  if (!env.GEMINI_API_KEY) return json({ error: 'Máy chủ chưa cấu hình GEMINI_API_KEY.' }, 500);
+  if (Number(request.headers.get('content-length') || 0) > 20_000) return json({ error: 'Nội dung quá dài để đọc.' }, 413);
+  let body;
+  try { body = buildTts(await request.json()); } catch (e) { return json({ error: e.message }, 400); }
+
+  const counter = env.LIMITER.get(env.LIMITER.idFromName('tts'));
+  const ip = request.headers.get('cf-connecting-ip') || 'unknown';
+  const slot = await counter.acquire(ip, 1, false, {
+    perIp: env.LIMIT_TTS_PER_IP_RPM ?? 6, rpm: env.LIMIT_TTS_RPM ?? 10, rpd: env.LIMIT_TTS_RPD ?? 100, tpm: 1e9,
+  });
+  if (!slot.ok) return json({ error: 'Hết lượt đọc giọng AI, dùng giọng của máy.', retryAfter: slot.retryAfter }, 429);
+
+  // Newest model first; each has its own Google quota. A model that is out of quota (429) or unavailable
+  // (400/403/404) is skipped and the next, older one is tried.
+  const now = Date.now();
+  for (const model of ttsModels(env)) {
+    if ((ttsBenched.get(model) || 0) > now) continue;
+    const res = await gateway(env).generate(model, body);
+    const audio = res.status === 200 ? ttsAudio(res.data) : null;
+    if (audio) return json({ ...audio, model });
+    console.error('tts', model, res.status, res.data?.error?.message);
+    // Out of quota: skip this model for a minute (per-minute limits) so we don't pay a round trip each time.
+    if (res.status === 429) ttsBenched.set(model, now + 60_000);
+    else if ([400, 403, 404].includes(res.status)) ttsBenched.set(model, now + 10 * 60_000);
+  }
+  return json({ error: 'Không tạo được giọng đọc.' }, 502);
+}
+
+// Comma-separated in wrangler.toml so models can be added or reordered without code changes.
+const ttsModels = (env) => String(env.GEMINI_TTS_MODELS || 'gemini-3.8-flash-tts,gemini-3.8-flash-lite-tts,gemini-3.1-flash-tts-preview,gemini-2.5-flash-preview-tts')
+  .split(',').map((s) => s.trim()).filter(Boolean);
+const ttsBenched = new Map(); // model → time it may be tried again (per Worker isolate; best effort)
 
 /** /api/forum routes:
  *  GET  /api/forum?topic=&before=   list threads     GET  /api/forum/:id          thread + replies
