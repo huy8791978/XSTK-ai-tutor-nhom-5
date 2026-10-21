@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { md, esc } from '../public/js/md.js';
+import { md, esc, plainMath } from '../public/js/md.js';
 import { summarize, fmtScore, newSerial, insightPayload } from '../public/js/stats.js';
 import { insertLatex } from '../public/js/mathinput.js';
 
@@ -17,6 +17,17 @@ test('md builds lists, headings and paragraphs', () => {
 });
 
 test('esc handles null', () => assert.equal(esc(null), ''));
+
+test('plainMath turns course notation into Unicode text', () => {
+  const B = String.fromCharCode(92); // a backslash, kept out of the source so editors and shells can't eat it
+  const t = (s) => plainMath(s.replaceAll('~', B));
+  assert.equal(t('Hợp $A~cup B$, giao $A~cap B$'), 'Hợp A ∪ B, giao A ∩ B');
+  assert.equal(t('$P(A)=~frac{|A|}{|~Omega|}$'), 'P(A)=|A|/|Ω|');
+  assert.equal(t('$D(X)=E(X^2)-[E(X)]^2$'), 'D(X)=E(X²)-[E(X)]²');
+  assert.equal(t('$H_0$, $~chi^2$, $N(~mu;~sigma^2)$'), 'H₀, χ², N(μ;σ²)');
+  assert.equal(t('$~bar{x}$ và $~overline{A}$'), 'x̄ và Ā');
+  assert.equal(t('$P(B~mid A)$'), 'P(B | A)');
+});
 
 test('insertLatex wraps in $ outside math, with a space before', () => {
   const r = insertLatex('Tính', 4, 4, '\\frac{1}{2}');

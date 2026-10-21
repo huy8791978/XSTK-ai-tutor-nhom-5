@@ -1,6 +1,12 @@
 // Interactive mind map (markmap): click a node to fold/unfold, drag to pan, pinch/scroll to zoom. KaTeX inside nodes.
 import { h, run, loading } from '../ui.js';
 import { ai } from '../api.js';
+import { plainMath } from '../md.js';
+
+// Safari (and every iPhone browser, all WebKit) draws KaTeX inside the map's SVG foreignObject at the wrong place:
+// the formulas pile up in the corner. There the map shows math as Unicode text instead.
+const WEBKIT = typeof navigator !== 'undefined' && /AppleWebKit/.test(navigator.userAgent) && !/Chrome\/|Chromium|Edg\//.test(navigator.userAgent);
+const forMap = (md) => (WEBKIT ? plainMath(md) : md);
 
 export const meta = { title: 'Bản đồ tư duy', lede: 'Bấm vào một nút để thu gọn hoặc mở rộng, kéo để di chuyển, cuộn hoặc chụm hai ngón để phóng to.\nAI có thể vẽ bản đồ cho bất kì chủ đề nào.' };
 
@@ -76,7 +82,7 @@ export function render(root) {
     lastMd = markdown;
     const [{ Transformer }, { Markmap, deriveOptions }] = await loadLib();
     transformer ??= new Transformer();
-    const { root: tree } = transformer.transform(markdown);
+    const { root: tree } = transformer.transform(forMap(markdown));
     const opts = deriveOptions({ colorFreezeLevel: 2, initialExpandLevel: 2, maxWidth: 280, spacingVertical: 10, spacingHorizontal: 90, duration: 450, maxInitialScale: 1 });
     opts.color = (node) => ['#1B2A8C', '#D7263D', '#0E9F6E', '#7A5A00'][(node.state?.path?.split('.')[1] ?? 0) % 4];
     if (!mm) mm = Markmap.create(svgEl, opts, tree);
@@ -89,7 +95,7 @@ export function render(root) {
   bFit.onclick = () => mm?.fit();
   bWide.onclick = async () => {
     const [{ Transformer }] = await loadLib();
-    const { root: tree } = new Transformer().transform(lastMd);
+    const { root: tree } = new Transformer().transform(forMap(lastMd));
     mm?.setOptions({ initialExpandLevel: -1 }); await mm?.setData(tree); mm?.fit();
   };
   bMake.onclick = () => {

@@ -69,3 +69,36 @@ export function typeset(el) {
     throwOnError: false,
   });
 }
+
+
+// ---- LaTeX → readable Unicode, for places where KaTeX can't be laid out (Safari mis-places KaTeX inside SVG
+// foreignObject, so the mind map shows plain-text math there). Covers the notation used in this course.
+const SYM = {
+  alpha: 'α', beta: 'β', gamma: 'γ', delta: 'δ', epsilon: 'ε', varepsilon: 'ε', theta: 'θ', lambda: 'λ', mu: 'μ', nu: 'ν', pi: 'π',
+  rho: 'ρ', sigma: 'σ', tau: 'τ', varphi: 'φ', phi: 'φ', chi: 'χ', psi: 'ψ', omega: 'ω', Omega: 'Ω', Delta: 'Δ', Sigma: 'Σ', Phi: 'Φ', Gamma: 'Γ',
+  cup: '∪', cap: '∩', mid: '|', le: '≤', leq: '≤', ge: '≥', geq: '≥', ne: '≠', neq: '≠', sim: '~', cdot: '·', times: '×', infty: '∞',
+  sum: 'Σ', prod: 'Π', int: '∫', pm: '±', to: '→', in: '∈', notin: '∉', approx: '≈', subset: '⊂', emptyset: '∅', varnothing: '∅',
+  ldots: '…', cdots: '…', dots: '…', quad: ' ', qquad: '  ', ',': ' ', ';': ' ', '%': '%', '{': '{', '}': '}', lvert: '|', rvert: '|',
+};
+const OPS = new Set(['cup', 'cap', 'mid', 'le', 'leq', 'ge', 'geq', 'ne', 'neq', 'times', 'approx', 'in', 'notin', 'subset', 'to', 'pm']);
+const SUP = { 0: '⁰', 1: '¹', 2: '²', 3: '³', 4: '⁴', 5: '⁵', 6: '⁶', 7: '⁷', 8: '⁸', 9: '⁹', '+': '⁺', '-': '⁻', '(': '⁽', ')': '⁾', n: 'ⁿ', i: 'ⁱ', '*': '*' };
+const SUB = { 0: '₀', 1: '₁', 2: '₂', 3: '₃', 4: '₄', 5: '₅', 6: '₆', 7: '₇', 8: '₈', 9: '₉', '+': '₊', '-': '₋', a: 'ₐ', e: 'ₑ', o: 'ₒ', x: 'ₓ', i: 'ᵢ', j: 'ⱼ', n: 'ₙ', k: 'ₖ', m: 'ₘ', p: 'ₚ', t: 'ₜ' };
+const script = (s, map, mark) => ([...s].every((c) => map[c]) ? [...s].map((c) => map[c]).join('') : `${mark}(${s})`);
+const ARG = '\\{((?:[^{}]|\\{[^{}]*\\})*)\\}'; // one brace group, one level of nesting
+const wrap = (a) => (/^(\w+|\|[^|]+\|)$/.test(a) ? a : `(${a})`);
+function texToText(t) {
+  let s = t.replace(/\\(left|right|bigl|bigr|big|Big|displaystyle|text|mathrm|mathbf|operatorname)\b/g, '');
+  for (let k = 0; k < 4; k++) { // inner groups first
+    s = s.replace(new RegExp(`\\\\d?frac${ARG}${ARG}`, 'g'), (_, a, b) => `${wrap(a)}/${wrap(b)}`)
+      .replace(new RegExp(`\\\\sqrt${ARG}`, 'g'), (_, a) => `√${wrap(a)}`)
+      .replace(new RegExp(`\\\\(overline|bar|hat|widehat)${ARG}`, 'g'), (_, cmd, a) => [...a].map((c) => c + (/hat/.test(cmd) ? '̂' : '̄')).join(''))
+      .replace(/\\(?:bar|overline)\s*(\w)/g, (_, a) => `${a}̄`);
+  }
+  s = s.replace(/\\([A-Za-z]+|[,;%{}])/g, (_, c) => (OPS.has(c) ? ` ${SYM[c]} ` : SYM[c] ?? c))
+    .replace(new RegExp(`\\^${ARG}|\\^(\\S)`, 'g'), (_, a, b) => script(a ?? b, SUP, '^'))
+    .replace(new RegExp(`_${ARG}|_(\\S)`, 'g'), (_, a, b) => script(a ?? b, SUB, '_'))
+    .replace(/[{}]/g, '');
+  return s.replace(/\s+/g, ' ').trim();
+}
+/** Replace every $…$ / $$…$$ in markdown by plain Unicode text. */
+export const plainMath = (src) => String(src ?? '').replace(/\$\$([\s\S]+?)\$\$|\$([^$\n]+?)\$/g, (_, a, b) => texToText(a ?? b));
