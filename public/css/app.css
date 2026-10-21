@@ -331,11 +331,11 @@ body { --keyboard-accent-color: #1B2A8C; --keyboard-toolbar-text-active: #1B2A8C
   .nav a { flex-direction: column; gap: 3px; padding: 7px 0; font-size: 11px; letter-spacing: -.02em; white-space: nowrap; line-height: 1.2; text-align: center; border-radius: var(--r); }
   main { padding: 0 16px calc(96px + env(safe-area-inset-bottom)); }
   .top {
-    position: sticky; top: 0; z-index: 20; margin: 0 -16px 20px; padding: calc(12px + env(safe-area-inset-top)) 16px 14px;
+    position: relative; z-index: 20; margin: 0 -16px 20px; padding: calc(12px + env(safe-area-inset-top)) 16px 14px;
     background: var(--ultra); color: #fff; align-items: center;
   }
   .top h1 { font-size: 28px; }
-  .lede { display: none; }
+  .top .lede { color: rgba(255, 255, 255, .82); font-size: 14px; line-height: 1.5; white-space: normal; }
   .profile-btn { border-color: rgba(255, 255, 255, .45); color: #fff; min-height: 40px; padding: 6px 12px; }
   .profile-btn:hover { background: rgba(255, 255, 255, .12); color: #fff; border-color: #fff; }
   .profile-btn span { display: none; }
