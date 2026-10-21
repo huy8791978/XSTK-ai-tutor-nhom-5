@@ -2,6 +2,7 @@
 import { h, run, loading } from '../ui.js';
 import { ai } from '../api.js';
 import { plainMath } from '../md.js';
+import { COURSE } from '../course-map.js';
 
 // Safari (and every iPhone browser, all WebKit) draws KaTeX inside the map's SVG foreignObject at the wrong place:
 // the formulas pile up in the corner. There the map shows math as Unicode text instead.
@@ -10,55 +11,6 @@ const forMap = (md) => (WEBKIT ? plainMath(md) : md);
 
 export const meta = { title: 'Bản đồ tư duy', lede: 'Bấm vào một nút để thu gọn hoặc mở rộng, kéo để di chuyển, cuộn hoặc chụm hai ngón để phóng to.\nAI có thể vẽ bản đồ cho bất kì chủ đề nào.' };
 
-const COURSE = `# Xác suất Thống kê
-## Biến cố & xác suất
-### Phép thử, không gian mẫu $\\Omega$
-### Quan hệ biến cố
-- Hợp $A\\cup B$, giao $A\\cap B$
-- Đối $\\overline{A}$, xung khắc
-### Định nghĩa xác suất
-- Cổ điển $P(A)=\\frac{|A|}{|\\Omega|}$
-- Thống kê, hình học
-### Công thức
-- Cộng $P(A\\cup B)=P(A)+P(B)-P(AB)$
-- Nhân $P(AB)=P(A)P(B\\mid A)$
-- Đầy đủ & Bayes
-## Biến ngẫu nhiên
-### Rời rạc: bảng phân phối
-### Liên tục: hàm mật độ $f(x)$
-### Hàm phân phối $F(x)=P(X<x)$
-### Đặc trưng
-- Kì vọng $E(X)$
-- Phương sai $D(X)=E(X^2)-[E(X)]^2$
-- Mốt, trung vị
-## Phân phối thông dụng
-### Nhị thức $B(n;p)$
-### Poisson $P(\\lambda)$
-### Chuẩn $N(\\mu;\\sigma^2)$
-### Mũ, đều, siêu bội
-### Khi bình phương, Student, Fisher
-## Định lí giới hạn
-### Bất đẳng thức Chebyshev
-### Luật số lớn
-### Định lí giới hạn trung tâm
-## Thống kê mô tả
-### Mẫu ngẫu nhiên
-### Trung bình mẫu $\\bar{x}$
-### Phương sai mẫu $s^2$
-## Ước lượng
-### Điểm: không chệch, hiệu quả
-### Khoảng tin cậy
-- Trung bình
-- Tỉ lệ
-- Phương sai
-## Kiểm định giả thuyết
-### $H_0$, $H_1$, mức ý nghĩa $\\alpha$
-### Sai lầm loại I, loại II
-### Kiểm định trung bình, tỉ lệ
-### Kiểm định $\\chi^2$
-## Tương quan & hồi quy
-### Hệ số tương quan $r$
-### Hồi quy tuyến tính $y=a+bx$`;
 
 let lib; // markmap modules, loaded once on first visit
 const loadLib = () => (lib ??= Promise.all([
@@ -83,7 +35,7 @@ export function render(root) {
     const [{ Transformer }, { Markmap, deriveOptions }] = await loadLib();
     transformer ??= new Transformer();
     const { root: tree } = transformer.transform(forMap(markdown));
-    const opts = deriveOptions({ colorFreezeLevel: 2, initialExpandLevel: 2, maxWidth: 280, spacingVertical: 10, spacingHorizontal: 90, duration: 450, maxInitialScale: 1 });
+    const opts = deriveOptions({ colorFreezeLevel: 2, initialExpandLevel: 2, maxWidth: 460, spacingVertical: 12, spacingHorizontal: 90, duration: 450, maxInitialScale: 1 });
     opts.color = (node) => ['#1B2A8C', '#D7263D', '#0E9F6E', '#7A5A00'][(node.state?.path?.split('.')[1] ?? 0) % 4];
     if (!mm) mm = Markmap.create(svgEl, opts, tree);
     else { mm.setOptions(opts); mm.setData(tree).then(() => mm.fit()); return; } // d3 transitions wait on frames; do not block the caller

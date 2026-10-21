@@ -18,6 +18,20 @@ test('md builds lists, headings and paragraphs', () => {
 
 test('esc handles null', () => assert.equal(esc(null), ''));
 
+test('course map keeps the formulas the lecturer approved', async () => {
+  const { COURSE } = await import('../public/js/course-map.js');
+  const has = (s) => assert.ok(COURSE.includes(s), `missing: ${s}`);
+  assert.equal(COURSE.match(/^## Bài \d/gm).length, 7);
+  has('np-q\\le k_0\\le np-q+1'); // Mod of the binomial (Bài 3, slide p.8)
+  has('\\lambda=np\\le 5');
+  has('\\Phi\\left(\\frac{k_2-np}{\\sqrt{npq}}\\right)-\\Phi\\left(\\frac{k_1-np}{\\sqrt{npq}}\\right)'); // no ±0,5 (lecturer)
+  has('$E(X)=p$, $Var(X)=\\frac{pq}{n}$'); // kept as in the lecturer's map
+  has('\\frac{(n-1)s^2}{\\chi^2_{\\alpha/2}(n-1)};\\ \\frac{(n-1)s^2}{\\chi^2_{1-\\alpha/2}(n-1)}');
+  has('\\sqrt{f(1-f)\\left(\\frac{1}{n}+\\frac{1}{m}\\right)}');
+  has('$\\sigma_1^2<\\sigma_2^2$: $W=(-\\infty;F_\\alpha(n-1;m-1))$'); // kept as in the lecturer's map
+  assert.ok(!COURSE.includes('Tương quan') && !COURSE.includes('Chebyshev'));
+});
+
 test('plainMath turns course notation into Unicode text', () => {
   const B = String.fromCharCode(92); // a backslash, kept out of the source so editors and shells can't eat it
   const t = (s) => plainMath(s.replaceAll('~', B));
