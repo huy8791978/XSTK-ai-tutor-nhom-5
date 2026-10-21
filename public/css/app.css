@@ -537,3 +537,14 @@ a.row.thread-row small { display: inline; }
 .file.file-doc img { width: 44px; height: 44px; border-radius: 6px; flex: none; }
 /* A typed value on the CASIO (e.g. 0.95, 1-0.05): light key, may wrap on narrow screens */
 kbd.key.val { background: var(--paper); color: var(--ink); border: 1px solid var(--ink); white-space: normal; height: auto; min-height: 30px; padding: 4px 8px; overflow-wrap: anywhere; }
+
+/* Tutor: problem on the left, the 4 Polya steps as tabs on the right; every tab stays clickable */
+.btn-block { width: 100%; justify-content: center; }
+.work.tutor .panel.stack { gap: 18px; }
+.tutor-steps { margin: 0 0 24px; }
+.tutor-steps button { font-size: 13.5px; }
+.step-pane > h2 { margin: 0 0 6px; }
+.step-pane > .muted { margin: 0 0 14px; }
+.step-pane > .btn-row { margin-bottom: 14px; }
+.step-pane .empty canvas { max-width: 300px; }
+.step-pane .stage-nav { border-top: 1px solid var(--rule); padding-top: 14px; }
