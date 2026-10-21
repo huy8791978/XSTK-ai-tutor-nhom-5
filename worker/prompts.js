@@ -3,7 +3,7 @@
 import { TOPICS, ERROR_TYPES } from '../public/js/topics.js';
 
 export { TOPICS, ERROR_TYPES };
-const LIMITS = { text: 8000, files: 3, fileBytes: 14_000_000, history: 24 };
+const LIMITS = { text: 8000, files: 7, fileBytes: 14_000_000, history: 24 }; // files: 3 for the problem + 3 for the work + the iPad board
 const MIMES = ['image/png', 'image/jpeg', 'image/webp', 'image/heic', 'image/heif', 'application/pdf'];
 
 const SYSTEM = `Bạn là gia sư môn Xác suất Thống kê (XSTK) cho sinh viên đại học Việt Nam. Luôn trả lời bằng tiếng Việt có dấu.
@@ -27,7 +27,18 @@ Chỉ trả về JSON hợp lệ đúng cấu trúc được yêu cầu.`;
 const CASIO = '"casio": [{"keys": ["..."], "note": "..."}]';
 const POLYA_Q = '"polya": {"understand": ["câu hỏi dẫn dắt bước 1: cái đã cho, cái phải tìm, điều kiện, kí hiệu"], "given": ["cái đã cho"], "find": ["cái phải tìm"], "plan": ["câu hỏi dẫn dắt bước 2: đưa về bài toán quen thuộc, chọn công thức"], "present": "<gợi ý cách trình bày bước 3, không có đáp số>", "check": ["câu hỏi tự kiểm tra bước 4"], "extend": "<bài tương tự hoặc khái quát hoá>"}';
 
-const MISTAKE = `{"topic": "<chủ đề hợp lệ>", "type": "<loại lỗi hợp lệ>", "detail": "<mô tả ngắn>"}`;
+// Where the student's work is: the typed answer, the images/PDFs after the problem's own files, Word files marked [Bài làm].
+function workSource(p) {
+  const n = Number.isInteger(p.problemFiles) && p.problemFiles > 0 ? p.problemFiles : 0;
+  const parts = [];
+  if (p.answer) parts.push(`Bài làm sinh viên gõ:\n${p.answer}`);
+  if (n) parts.push(`Trong các tệp ảnh/PDF đính kèm: ${n} tệp đầu là ĐỀ BÀI, các tệp còn lại là BÀI LÀM của sinh viên.`);
+  else parts.push('Các tệp ảnh/PDF đính kèm (nếu có) là BÀI LÀM của sinh viên.');
+  parts.push('Tệp Word (nếu có) ở cuối, nhãn [Đề bài] hoặc [Bài làm] ở tên tệp.');
+  return parts.join('\n');
+}
+
+const MISTAKE =`{"topic": "<chủ đề hợp lệ>", "type": "<loại lỗi hợp lệ>", "detail": "<mô tả ngắn>"}`;
 
 const TASKS = {
   // Re-render content already on screen in the other language after the EN/VI switch.
@@ -54,7 +65,7 @@ Trả JSON: {"topic": "<chủ đề>", "given": ["..."], "find": ["..."], "condi
   }),
   grade: (p) => ({
     text: `Đề bài: ${p.problem || '(nếu đề nằm trong tệp, hãy tự nhận dạng)'}\n
-Tệp đính kèm là BÀI LÀM của sinh viên (ảnh, PDF hoặc văn bản Word ở cuối). Hãy nhận dạng chữ (OCR) bài làm rồi CHẤM ĐIỂM thang 10 theo từng bước.
+${workSource(p)} Hãy nhận dạng chữ (OCR) bài làm rồi CHẤM ĐIỂM thang 10 theo từng bước.
 ${p.barem ? `BAREM ĐIỂM của giáo viên (chấm đúng theo barem này, mỗi mục barem là một dòng rubric):\n${p.barem}\n` : 'Chưa có barem: tự lập barem hợp lí theo 4 bước Polya.\n'}Bài làm có thể là ảnh chụp, PDF hoặc ảnh viết tay trên bảng (iPad).
 Chỉ chấm và nhận xét bài làm; KHÔNG viết lời giải đúng hoàn chỉnh, KHÔNG nêu đáp số đúng.
 Trả JSON: {"transcript": "<bài làm đã nhận dạng, dùng LaTeX>", "score": <0-10>, "summary": "...", "rubric": [{"step": "...", "points": <số>, "max": <số>, "comment": "..."}], "strengths": ["..."], "mistakes": [${MISTAKE}], "advice": ["..."]}`,
@@ -152,7 +163,7 @@ export function buildRequest(task, payload = {}) {
 
   let { text } = TASKS[task](p);
   if (docs.length) {
-    const what = { grade: 'BÀI LÀM của sinh viên', practiceGrade: 'BÀI LÀM của sinh viên', practice: 'BÀI MẪU' }[task] || 'Đề bài hoặc bài làm';
+    const what = { grade: 'Đề bài và BÀI LÀM của sinh viên (xem nhãn ở tên tệp)', practiceGrade: 'BÀI LÀM của sinh viên', practice: 'BÀI MẪU' }[task] || 'Đề bài hoặc bài làm';
     text += `\n\n${what} trong tệp Word (đã chuyển thành văn bản, công thức đặt trong $...$):\n`
       + docs.map((d) => `--- ${String(d.name || 'tệp').slice(0, 120)} ---\n${clip(d.text)}`).join('\n');
   }

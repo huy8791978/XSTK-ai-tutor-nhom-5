@@ -548,3 +548,4 @@ kbd.key.val { background: var(--paper); color: var(--ink); border: 1px solid var
 .step-pane > .btn-row { margin-bottom: 14px; }
 .step-pane .empty canvas { max-width: 300px; }
 .step-pane .stage-nav { border-top: 1px solid var(--rule); padding-top: 14px; }
+.work-box { gap: 14px; padding: 16px; margin-bottom: 14px; border: 1px solid var(--rule); border-radius: var(--r); background: var(--paper); }

@@ -47,7 +47,7 @@ test('buildRequest rejects unknown tasks, bad files and too many files', () => {
   assert.throws(() => buildRequest('chat', {}), /không hợp lệ/);
   assert.throws(() => buildRequest('grade', { files: [{ mimeType: 'text/html', data: 'x' }] }), /Chỉ nhận/);
   const f = { mimeType: 'image/png', data: 'x' };
-  assert.throws(() => buildRequest('grade', { files: [f, f, f, f] }), /Tối đa/);
+  assert.throws(() => buildRequest('grade', { files: [f, f, f, f, f, f, f, f] }), /Tối đa/);
 });
 
 test('buildRequest puts Word text in the prompt and counts it toward the file limit', () => {
@@ -58,8 +58,17 @@ test('buildRequest puts Word text in the prompt and counts it toward the file li
   assert.ok(text.includes('TƯƠNG TỰ bài mẫu đó'));
   assert.equal(body.contents[0].parts.length, 1);
   const f = { mimeType: 'image/png', data: 'x' };
-  assert.throws(() => buildRequest('grade', { files: [f, f], docs: [doc, doc] }), /Tối đa/);
+  assert.throws(() => buildRequest('grade', { files: [f, f, f, f], docs: [doc, doc, doc, doc] }), /Tối đa/);
   assert.throws(() => buildRequest('grade', { docs: [{ name: 'x' }] }), /Word không hợp lệ/);
+});
+
+test('grade tells the AI which files are the problem and which are the work, plus the typed answer', () => {
+  const f = { mimeType: 'image/png', data: 'x' };
+  const text = buildRequest('grade', { problem: 'Đề', answer: 'P = 0.3', problemFiles: 1, files: [f, f] }).body.contents[0].parts[0].text;
+  assert.ok(text.includes('Bài làm sinh viên gõ:\nP = 0.3'));
+  assert.ok(text.includes('1 tệp đầu là ĐỀ BÀI'));
+  const plain = buildRequest('grade', { problem: 'Đề', files: [f] }).body.contents[0].parts[0].text;
+  assert.ok(plain.includes('là BÀI LÀM của sinh viên') && !plain.includes('tệp đầu là ĐỀ BÀI'));
 });
 
 test('ocr copies the file as written, even in English mode', () => {

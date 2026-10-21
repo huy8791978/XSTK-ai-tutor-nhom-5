@@ -118,6 +118,18 @@ test('nodes() drops empty slots so absent AI fields never render as "null"/"unde
   assert.deepEqual(nodes(null), []);
 });
 
+test('md repairs broken math delimiters so formulas always render', () => {
+  const B = String.fromCharCode(92);
+  const t = (s) => md(s.replaceAll('~', B));
+  // The bug from the screenshot: a formula opened with $ and never closed.
+  assert.equal(t('- Công thức: $(~bar{x} - t_{~alpha/2}(n-1)~frac{s}{~sqrt{n}})'), `<ul><li>Công thức: $(${B}bar{x} - t_{${B}alpha/2}(n-1)${B}frac{s}{${B}sqrt{n}})$</li></ul>`);
+  assert.equal(t('Giá 5$ một vé'), '<p>Giá 5 một vé</p>');
+  assert.equal(t('Có $a$ và $b$'), '<p>Có $a$ và $b$</p>');
+  // LaTeX typed into a sentence with no $ at all.
+  assert.equal(t('Tra bảng t_{~alpha/2}(n-1) ứng với độ tin cậy.'), `<p>Tra bảng $t_{${B}alpha/2}(n-1)$ ứng với độ tin cậy.</p>`);
+  assert.equal(t('dạng ~bar{x} - ~varepsilon < ~mu, rồi kết luận'), `<p>dạng $${B}bar{x} - ${B}varepsilon &lt; ${B}mu$, rồi kết luận</p>`);
+});
+
 test('CASIO steps survive the shapes the AI sends and turn text math into LaTeX', async () => {
   const { casioSteps, noteMath } = await import('../public/js/ui.js');
   const B = String.fromCharCode(92);

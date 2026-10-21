@@ -11,21 +11,36 @@ import { boardToggle } from '../board.js';
 export const meta = { title: 'Gia sư chấm bài', lede: 'Nhập đề bài, bấm «Tìm hiểu đề» rồi đi qua 4 bước giải toán; bấm vào bước nào cũng xem lại được.\nAI gợi ý chiến lược (không lộ đáp án), chấm bài ở bước Trình bày và chỉ hiện lời giải khi bạn yêu cầu.' };
 
 export function render(root) {
-  // ---- Left: the problem and the work. One main action: "Tìm hiểu đề".
-  const problem = mathField({ label: 'Đề bài', name: 'problem', rows: 4, placeholder: 'Gõ hoặc dán đề bài. Có thể bỏ trống nếu đề đã nằm trong ảnh/PDF.' });
-  const up = uploader({ label: 'Chọn ảnh, PDF hoặc Word', hint: 'Đề bài hoặc bài làm. Tối đa 3 tệp, mỗi tệp ≤ 10 MB.' });
-  const board = boardToggle();
+  // ---- Left: only the problem. One main action: "Tìm hiểu đề". The student's work is handed in at step 3.
+  const problem = mathField({ label: 'Đề bài', name: 'problem', rows: 5, placeholder: 'Gõ hoặc dán đề bài. Có thể bỏ trống nếu đề nằm trong tệp bên dưới.' });
+  const upProblem = uploader({ compact: true, title: 'Tải đề bài: ảnh, PDF hoặc Word', label: 'Tải ảnh, PDF hoặc Word đề bài', hint: 'Tối đa 3 tệp, mỗi tệp ≤ 10 MB.' });
   const bStart = h('button.btn.btn-primary.btn-block', { type: 'button' }, 'Tìm hiểu đề');
 
-  const payload = () => ({
+  // ---- Step 3: the student's work: typed answer, files, or the iPad board.
+  const answer = mathField({ label: 'Bài làm của bạn', name: 'answer', rows: 5, placeholder: 'Gõ lời giải, đáp án của bạn… hoặc tải tệp / viết trên bảng bên dưới.' });
+  const upWork = uploader({ compact: true, title: 'Tải bài làm: ảnh, PDF hoặc Word', label: 'Tải ảnh, PDF hoặc Word bài làm', hint: 'Chụp thẳng, đủ sáng để AI đọc chính xác. Tối đa 3 tệp.' });
+  const board = boardToggle();
+
+  const tag = (role) => (d) => ({ ...d, name: `[${role}] ${d.name}` });
+  const problemPart = () => ({
     problem: problem.querySelector('textarea').value.trim(),
-    barem: barem.querySelector('textarea').value.trim(),
-    files: [...up.files(), ...(board.board.isEmpty() ? [] : [board.board.toFile()]).map(({ mimeType, data }) => ({ mimeType, data }))],
-    docs: up.docs(),
+    files: upProblem.files(),
+    docs: upProblem.docs().map(tag('Đề bài')),
   });
-  const need = (p, wantFiles) => {
-    if (wantFiles && !p.files.length && !p.docs.length) { toast('Hãy tải ảnh/PDF/Word bài làm hoặc viết trên bảng để AI chấm.'); return false; }
-    if (!p.problem && !p.files.length && !p.docs.length) { toast('Hãy nhập đề bài hoặc tải tệp lên.'); return false; }
+  const workPart = () => {
+    const p = problemPart();
+    const work = [...upWork.files(), ...(board.board.isEmpty() ? [] : [board.board.toFile()]).map(({ mimeType, data }) => ({ mimeType, data }))];
+    // Problem files come first; the server is told how many, so the AI knows which images are the problem.
+    return { ...p, answer: answer.querySelector('textarea').value.trim(), barem: barem.querySelector('textarea').value.trim(),
+      problemFiles: p.files.length, workFiles: work.length, files: [...p.files, ...work], docs: [...p.docs, ...upWork.docs().map(tag('Bài làm'))] };
+  };
+  const needProblem = (p) => {
+    if (!p.problem && !p.files.length && !p.docs.length) { toast('Hãy nhập đề bài hoặc tải tệp đề bài lên.'); return false; }
+    return true;
+  };
+  const needWork = (p) => {
+    if (!needProblem(p)) return false;
+    if (!p.answer && !p.workFiles && !p.docs.some((d) => d.name.startsWith('[Bài làm]'))) { toast('Hãy gõ bài làm, tải tệp bài làm hoặc viết trên bảng để AI chấm.'); return false; }
     return true;
   };
 
@@ -51,8 +66,9 @@ export function render(root) {
   const steps = [
     [h('p.muted', {}, 'Đề cho gì, cần tìm gì, có điều kiện gì. Nhập đề ở khung Đề bài rồi bấm «Tìm hiểu đề».'), out[0]],
     [h('p.muted', {}, 'Hướng đi và kiến thức cần dùng, không có đáp số.'), out[1]],
-    [h('p.muted', {}, 'Tự trình bày lời giải, tải ảnh/PDF/Word hoặc viết trên bảng ở khung Đề bài, rồi bấm «Chấm điểm».'),
-      h('div.btn-row', {}, bGrade, bBarem), baremBox, out[2]],
+    [h('p.muted', {}, 'Tự trình bày lời giải: gõ vào ô dưới, tải ảnh/PDF/Word hoặc viết trên bảng, rồi bấm «Chấm điểm».'),
+      h('div.stack.work-box', {}, answer, upWork.el, h('div.btn-row', {}, board.btn, bBarem), board.wrap, baremBox),
+      h('div.btn-row', {}, bGrade), out[2]],
     [h('p.muted', {}, 'Kiểm tra lại kết quả, xem lời giải đầy đủ, cách bấm máy CASIO và bài tương tự.'), h('div.btn-row', {}, bSolve), out[3]],
   ].map((kids, i) => h('div.step-pane', { hidden: i !== 0 }, h('h2', {}, `Bước ${i + 1}. ${POLYA[i]}`), ...kids, nav(i)));
 
@@ -67,7 +83,7 @@ export function render(root) {
   }
 
   // One strategy call fills steps 1 and 2.
-  const understand = (btn) => { const p = payload(); if (!need(p)) return; go(0); run(btn, out[0], async () => {
+  const understand = (btn) => { const p = problemPart(); if (!needProblem(p)) return; go(0); run(btn, out[0], async () => {
     const d = await ai('strategy', p);
     has[0] = has[1] = true;
     out[1].replaceChildren(planView(d));
@@ -75,20 +91,20 @@ export function render(root) {
     return understandView(d);
   }, 'Đang phân tích đề…'); };
   bStart.onclick = () => understand(bStart);
-  bPlan.onclick = () => { const p = payload(); if (!need(p)) return; run(bPlan, out[1], async () => {
+  bPlan.onclick = () => { const p = problemPart(); if (!needProblem(p)) return; run(bPlan, out[1], async () => {
     const d = await ai('strategy', p);
     has[0] = has[1] = true;
     out[0].replaceChildren(understandView(d));
     go(1);
     return planView(d);
   }, 'Đang xây dựng chương trình giải…'); };
-  bGrade.onclick = () => { const p = payload(); if (!need(p, true)) return; run(bGrade, out[2], async () => {
+  bGrade.onclick = () => { const p = workPart(); if (!needWork(p)) return; run(bGrade, out[2], async () => {
     const d = await ai('grade', p);
     const serial = addSession({ feature: 'tutor', topic: d.mistakes?.[0]?.topic || 'Khác', score: d.score, mistakes: d.mistakes });
     has[2] = true; go(2);
     return gradeView(d, serial);
   }, 'Đang đọc bài làm và chấm điểm…'); };
-  bSolve.onclick = () => { const p = payload(); if (!need(p)) return; run(bSolve, out[3], async () => {
+  bSolve.onclick = () => { const p = problemPart(); if (!needProblem(p)) return; run(bSolve, out[3], async () => {
     const d = await ai('solve', p);
     has[3] = true; go(3);
     return solveView(d);
@@ -96,11 +112,7 @@ export function render(root) {
 
   go(0);
   root.append(tabs, h('div.work.tutor', {},
-    h('section.panel.stack', { 'aria-label': 'Đề bài và bài làm' },
-      problem,
-      h('div.field', {}, h('span', {}, 'Tệp đề bài / bài làm'), up.el),
-      h('div.btn-row', {}, board.btn), board.wrap,
-      bStart),
+    h('section.panel.stack', { 'aria-label': 'Đề bài' }, problem, upProblem.el, bStart),
     h('section.panel.sticky-col', { 'aria-label': 'Bước đang xem' }, ...steps)));
 }
 
