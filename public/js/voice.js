@@ -153,7 +153,24 @@ async function ttsUrl(text) {
   return url;
 }
 
-let audio = null, speakId = 0;
+// Phones (iOS Safari above all) only let a page start sound inside a tap. The answer's voice arrives seconds after
+// the tap (AI reply + TTS download), so a fresh `new Audio().play()` was blocked and stayed silent until the user
+// tapped "Nghe lại". Fix: one <audio> element for the whole page, unlocked by playing silence on the first tap;
+// an element that has played once may play again later without a tap. The browser voice is unlocked the same way.
+let player = null, unlocked = false, speakId = 0, silence = '';
+const getPlayer = () => (player ??= Object.assign(new Audio(), { preload: 'auto' }));
+export function unlockAudio() {
+  if (unlocked || typeof window === 'undefined') return;
+  unlocked = true;
+  const p = getPlayer();
+  p.src = silence ||= URL.createObjectURL(new Blob([pcmToWav(new Uint8Array(4800))], { type: 'audio/wav' })); // 0.1 s of silence
+  p.play().catch((e) => { if (e?.name === 'NotAllowedError') unlocked = false; }); // not a real tap: retry on the next
+  if ('speechSynthesis' in window) speechSynthesis.speak(new SpeechSynthesisUtterance(''));
+}
+if (typeof document !== 'undefined') {
+  for (const ev of ['touchend', 'click', 'keydown']) document.addEventListener(ev, unlockAudio, { capture: true, passive: true });
+}
+
 /** Read text aloud with the picked teacher's voice. onStart/onEnd fire when sound really starts and stops. */
 export function speak(text, { onStart, onEnd } = {}) {
   stopSpeaking();
@@ -161,15 +178,17 @@ export function speak(text, { onStart, onEnd } = {}) {
   const id = ++speakId;
   ttsUrl(text).then((url) => {
     if (id !== speakId) return; // a newer request or "Dừng đọc" won
-    audio = new Audio(url);
-    audio.onplaying = () => onStart?.();
-    audio.onended = () => onEnd?.();
-    return audio.play();
+    const a = getPlayer();
+    a.onplaying = () => { if (id === speakId) onStart?.(); };
+    a.onended = () => { if (id === speakId) onEnd?.(); };
+    a.src = url;
+    return a.play();
   }).catch(() => { if (id === speakId) browserSpeak(text, { onStart, onEnd }); });
 }
 export function stopSpeaking() {
   speakId++;
-  if (audio) { audio.pause(); audio = null; }
+  // Let the unlocking silence finish: cut short before it starts, iOS may not count it.
+  if (player) { player.onplaying = player.onended = null; if (player.src !== silence) player.pause(); }
   window.speechSynthesis?.cancel();
 }
 
