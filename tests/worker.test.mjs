@@ -62,6 +62,16 @@ test('buildRequest puts Word text in the prompt and counts it toward the file li
   assert.throws(() => buildRequest('grade', { docs: [{ name: 'x' }] }), /Word không hợp lệ/);
 });
 
+test('ocr copies the file as written, even in English mode', () => {
+  const f = { mimeType: 'image/png', data: 'x' };
+  const { body } = buildRequest('ocr', { files: [f], lang: 'en' });
+  const text = body.contents[0].parts[0].text;
+  assert.ok(text.includes('TOÀN BỘ') && !text.includes('LANGUAGE:') && !text.includes('NGÔN NGỮ:'));
+  assert.ok(!body.systemInstruction.parts[0].text.includes('LANGUAGE OVERRIDE'));
+  assert.equal(body.generationConfig.temperature, 0);
+  assert.throws(() => buildRequest('ocr', {}), /ảnh hoặc PDF/);
+});
+
 test('buildRequest attaches files and asks for JSON', () => {
   const { body, fileCount } = buildRequest('grade', { problem: 'Tính P(A)', files: [{ mimeType: 'application/pdf', data: 'QUJD' }] });
   assert.equal(fileCount, 1);

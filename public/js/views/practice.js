@@ -3,8 +3,7 @@
 import { h, icon, rich, list, run, toast, casio, POLYA, nodes } from '../ui.js';
 import { tr as t } from '../i18n.js';
 import { ai } from '../api.js';
-import { readFiles } from '../files.js';
-import { uploader, ACCEPT } from '../uploader.js';
+import { uploader } from '../uploader.js';
 import { mathField } from '../mathinput.js';
 import { boardToggle } from '../board.js';
 import { chart, odometer } from '../viz.js';
@@ -163,21 +162,15 @@ export function mcq(q, i, onDone) {
 export function essay(q, i, onDone) {
   const field = mathField({ label: 'Bài làm của bạn', name: `a${i}`, rows: 6, placeholder: 'Trình bày lời giải theo từng bước…' });
   const board = boardToggle();
-  let files = [];
-  const pick = h('input', { type: 'file', accept: ACCEPT, hidden: true });
-  const fileNote = h('span.muted', { style: 'font-size:13.5px' });
-  pick.addEventListener('change', async () => {
-    try { files = await readFiles([...pick.files].slice(0, 2)); fileNote.textContent = files.map((f) => f.name).join(', '); } catch (e) { toast(e.message); }
-  });
-  const attach = h('button.btn.btn-ghost', { type: 'button', onclick: () => pick.click() }, icon('upload'), 'Đính kèm ảnh/PDF/Word');
+  const up = uploader({ compact: true, title: 'Đính kèm ảnh, PDF hoặc Word bài làm', hint: 'Tối đa 3 tệp, mỗi tệp ≤ 10 MB.', label: 'Đính kèm ảnh, PDF hoặc Word bài làm' });
   const result = h('div');
   const bGrade = h('button.btn.btn-primary', { type: 'button' }, 'Chấm bài');
-  const work = h('div', {}, field, h('div.btn-row', { style: 'margin-top:10px;align-items:center' }, board.btn, attach, fileNote, pick), board.wrap, result);
+  const work = h('div', {}, field, h('div.btn-row', { style: 'margin-top:10px;align-items:center' }, board.btn), board.wrap, h('div', { style: 'margin-top:10px' }, up.el), result);
   const card = polyaCard(q, i, work, [bGrade]);
   bGrade.onclick = () => {
     const answer = field.querySelector('textarea').value.trim();
-    const all = [...files.filter((f) => f.data), ...(board.board.isEmpty() ? [] : [board.board.toFile()])];
-    const docs = files.filter((f) => f.text != null).map(({ name, text }) => ({ name, text }));
+    const all = [...up.files(), ...(board.board.isEmpty() ? [] : [board.board.toFile()])];
+    const docs = up.docs();
     if (!answer && !all.length && !docs.length) return toast('Hãy viết bài làm, viết trên bảng hoặc đính kèm ảnh.');
     run(bGrade, result, async () => {
       const d = await ai('practiceGrade', { question: q.prompt, reference: q.solution || '', answer, docs, files: all.map(({ mimeType, data }) => ({ mimeType, data })) });

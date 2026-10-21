@@ -534,3 +534,4 @@ a.row.thread-row small { display: inline; }
 .drop.drop-compact { padding: 14px; gap: 4px; }
 .drop.drop-compact svg { width: 22px; height: 22px; }
 .files:not(:empty) { margin-top: 10px; }
+.file.file-doc img { width: 44px; height: 44px; border-radius: 6px; flex: none; }

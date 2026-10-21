@@ -70,7 +70,7 @@ export default {
         const data = extractJson(text);
         // Wrong language (e.g. Vietnamese history pulled an English-mode reply back to Vietnamese): ask once more,
         // with a blunt reminder appended. The second answer is returned whatever it is.
-        if (attempt === 0 && task !== 'translate' && wrongLanguage(data, lang)) {
+        if (attempt === 0 && task !== 'translate' && task !== 'ocr' && wrongLanguage(data, lang)) {
           console.error('wrong-language', task, lang);
           req.body.contents[0].parts[0].text += LANGUAGE_RETRY[lang];
           firstData = data;

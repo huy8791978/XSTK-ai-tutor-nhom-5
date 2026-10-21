@@ -31,6 +31,12 @@ const MISTAKE = `{"topic": "<chủ đề hợp lệ>", "type": "<loại lỗi h�
 
 const TASKS = {
   // Re-render content already on screen in the other language after the EN/VI switch.
+  // Read every word in uploaded images/PDFs so the browser can read the document aloud.
+  ocr: (p) => {
+    if (!p.files?.length) throw new Error('Hãy chọn ảnh hoặc PDF cần đọc.');
+    return { text: `Nhận dạng chữ (OCR) TOÀN BỘ nội dung tệp đính kèm, đúng thứ tự từ trên xuống, giữ nguyên ngôn ngữ gốc. Không dịch, không tóm tắt, không sửa lỗi, không giải bài. Công thức viết LaTeX trong $...$. Giữ xuống dòng giữa các đoạn. Chữ không đọc được ghi [không rõ].
+Trả JSON: {"text": "<toàn bộ chữ trong tệp>"}` };
+  },
   translate: (p) => {
     const items = p.items;
     if (!Array.isArray(items) || !items.length || items.length > 40 || items.some((s) => typeof s !== 'string')) throw new Error('Danh sách cần dịch không hợp lệ.');
@@ -153,7 +159,9 @@ export function buildRequest(task, payload = {}) {
   // The task wording and the student's input are often Vietnamese, which pulls the model back to Vietnamese;
   // repeat the language rule last, in the user turn, where it wins.
   // The opposite rule matters too: after an English conversation the history pulls replies to English.
-  if (p.lang === 'en') {
+  // OCR copies the file as written: no language rule, or English mode would translate the document.
+  const verbatim = task === 'ocr';
+  if (verbatim) { /* keep the file's own language */ } else if (p.lang === 'en') {
     text += '\n\nLANGUAGE: Answer ONLY in English (every text value of the JSON), even if the student or the history uses Vietnamese.'
       + ' No Vietnamese words at all: no greetings like "Chào", no pronouns like "em", "cô", "thầy", no Vietnamese step names.'
       + ' Call Polya\'s steps: Understand the problem, Devise a plan, Carry out the plan, Look back.'
@@ -164,10 +172,10 @@ export function buildRequest(task, payload = {}) {
   return {
     body: {
       // English UI: same pedagogy and JSON keys, but every text value in English.
-      systemInstruction: { parts: [{ text: p.lang === 'en' ? `${SYSTEM}
+      systemInstruction: { parts: [{ text: p.lang === 'en' && !verbatim ? `${SYSTEM}
 LANGUAGE OVERRIDE: write every text value of the JSON in English (keep JSON keys as specified; use dot decimals; keep the topic and error-type values exactly as listed in Vietnamese).` : SYSTEM }] },
       contents: [{ role: 'user', parts: [{ text }, ...files.map((f) => ({ inlineData: { mimeType: f.mimeType, data: f.data } }))] }],
-      generationConfig: { responseMimeType: 'application/json', temperature: task === 'practice' ? 0.9 : 0.4, maxOutputTokens: 16384 },
+      generationConfig: { responseMimeType: 'application/json', temperature: task === 'practice' ? 0.9 : verbatim ? 0 : 0.4, maxOutputTokens: 16384 },
     },
     promptChars: SYSTEM.length + text.length,
     fileCount: files.length,
