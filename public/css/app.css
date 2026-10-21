@@ -549,3 +549,12 @@ kbd.key.val { background: var(--paper); color: var(--ink); border: 1px solid var
 .step-pane .empty canvas { max-width: 300px; }
 .step-pane .stage-nav { border-top: 1px solid var(--rule); padding-top: 14px; }
 .work-box { gap: 14px; padding: 16px; margin-bottom: 14px; border: 1px solid var(--rule); border-radius: var(--r); background: var(--paper); }
+
+/* Practice: each slide holds a problem and the similar problems generated under it */
+.q-slide { scroll-snap-align: start; min-width: 0; display: grid; gap: 16px; align-content: start; }
+.q-block { display: grid; gap: 16px; min-width: 0; }
+.similar-bar { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; }
+.similar-bar .muted { font-size: 13.5px; }
+.similar-list { display: grid; gap: 16px; padding-left: 18px; border-left: 3px solid var(--rule-2); }
+.similar-list:empty { display: none; }
+.similar-list .q-num { font-size: 32px; }

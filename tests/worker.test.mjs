@@ -62,6 +62,17 @@ test('buildRequest puts Word text in the prompt and counts it toward the file li
   assert.throws(() => buildRequest('grade', { docs: [{ name: 'x' }] }), /Word không hợp lệ/);
 });
 
+test('similar keeps chapter and type and changes only the numbers', () => {
+  const r = buildRequest('similar', { kind: 'mcq', question: 'Tỉ lệ 12%, chọn 3 xe…', options: ['0,1', '0,2', '0,3', '0,4'], topic: 'Phân phối thông dụng' });
+  const text = r.body.contents[0].parts[0].text;
+  assert.ok(text.includes('Tỉ lệ 12%, chọn 3 xe') && text.includes('A. 0,1 | B. 0,2'));
+  assert.ok(text.includes('GIỮ NGUYÊN: chương, chủ đề, dạng bài') && text.includes('CHỈ THAY ĐỔI số liệu'));
+  assert.ok(text.includes('"options"') && text.includes('"topic": "Phân phối thông dụng"'));
+  assert.equal(r.body.generationConfig.temperature, 0.7);
+  assert.ok(!buildRequest('similar', { kind: 'essay', question: 'Bài tự luận' }).body.contents[0].parts[0].text.includes('"options"'));
+  assert.throws(() => buildRequest('similar', { kind: 'essay' }), /Thiếu đề bài gốc/);
+});
+
 test('grade tells the AI which files are the problem and which are the work, plus the typed answer', () => {
   const f = { mimeType: 'image/png', data: 'x' };
   const text = buildRequest('grade', { problem: 'Đề', answer: 'P = 0.3', problemFiles: 1, files: [f, f] }).body.contents[0].parts[0].text;

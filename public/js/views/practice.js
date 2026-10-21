@@ -68,7 +68,7 @@ function pager(kind, qs, topic) {
     }
   };
 
-  qs.forEach((q, i) => track.append((kind === 'mcq' ? mcq : essay)(q, i, (r) => done(i, r))));
+  qs.forEach((q, i) => track.append(h('div.q-slide', {}, problemBlock(kind, q, i, topic, (r) => done(i, r)))));
   let t;
   track.addEventListener('scroll', () => { clearTimeout(t); t = setTimeout(() => { const i = Math.round(track.scrollLeft / track.clientWidth); if (i !== cur) { cur = i; paintDots(); } }, 90); });
   paintDots();
@@ -81,48 +81,81 @@ function pager(kind, qs, topic) {
 }
 
 /**
+ * A problem plus, once it has been graded, a «Tạo bài tương tự» button under it. Each click asks the AI for one
+ * new problem of the same chapter and type with different numbers, shown right below (and itself extendable).
+ * Similar problems are saved to the profile one by one; they do not change the score of the 5-problem set.
+ */
+function problemBlock(kind, q, i, topic, onResult) {
+  const num = typeof i === 'number' ? String(i + 1).padStart(2, '0') : String(i);
+  let made = 0;
+  const more = h('div.similar-list');
+  const bSimilar = h('button.btn', { type: 'button' }, 'Tạo bài tương tự');
+  const bar = h('div.similar-bar', { hidden: true }, bSimilar, h('span.muted', {}, 'Cùng chương, cùng dạng, chỉ khác số liệu.'));
+  const card = (kind === 'mcq' ? mcq : essay)(q, i, (r) => { onResult(r); bar.hidden = false; });
+  bSimilar.onclick = () => {
+    const slot = h('div');
+    more.append(slot);
+    run(bSimilar, slot, async () => {
+      const d = await ai('similar', { kind, question: q.prompt, options: kind === 'mcq' ? q.options : undefined, topic: q.topic || topic, solution: q.solution || '' });
+      const next = (d.questions || []).find((x) => x?.prompt && (kind !== 'mcq' || (Array.isArray(x.options) && x.options.length >= 2)));
+      if (!next) throw new Error('AI chưa tạo được bài tương tự. Bấm thử lại.');
+      made += 1;
+      let saved = false; // an essay can be graded again: save it to the profile once
+      return problemBlock(kind, { ...next, topic: next.topic || q.topic }, `${num}.${made}`, topic, (r) => {
+        if (!saved) { saved = true; addSession({ feature: KINDS[kind].feature, topic: next.topic || q.topic || topic, score: r.score, mistakes: r.mistakes }); }
+      });
+    }, 'Đang tạo bài tương tự…');
+  };
+  return h('div.q-block', {}, card, bar, more);
+}
+
+/**
  * One problem worked through Polya's 4 steps. `work` is the step-3 answer area, `actions` its buttons.
- * Returns { el, goto(step) } so grading can move the student on to step 4.
+ * `i` is the problem's index (shown as 01…05) or, for a generated similar problem, its label ("01.1").
+ * A step is ticked only once the student has used that step's own buttons (hint, strategy, grading, solution):
+ * merely opening a step does not tick it. Every step keeps what it revealed, so going back shows it again.
+ * Returns { el, goto(step), mark(step) }: grading marks step 3 and can move the student on to step 4.
  */
 function polyaCard(q, i, work, actions, extra4) {
   const P = q.polya || {};
-  const reveal = h('div');
-  const show = (title, node) => reveal.replaceChildren(h('div.reveal', {}, h('h3', {}, title), node));
-  const steps = [
-    () => [h('p.muted', {}, 'Đọc kĩ đề, trả lời các câu hỏi dưới đây trước khi giải.'),
+  const num = typeof i === 'number' ? String(i + 1).padStart(2, '0') : String(i);
+  const used = [false, false, false, false];
+  const reveals = POLYA.map(() => h('div'));
+  const show = (k, title, node) => { reveals[k].replaceChildren(h('div.reveal', {}, h('h3', {}, title), node)); mark(k); };
+  const strategy = q.strategy?.length ? q.strategy : P.plan;
+  const bodies = [
+    [h('p.muted', {}, 'Đọc kĩ đề, trả lời các câu hỏi dưới đây trước khi giải.'),
       list(P.understand?.length ? P.understand : ['Đề cho những gì? Cần tìm gì?', 'Đặt tên các biến cố / biến ngẫu nhiên thế nào?', 'Có điều kiện gì cần chú ý?'].map(t)),
-      h('div.btn-row', { style: 'margin-top:12px' }, h('button.btn', { type: 'button', onclick: () => show('Cái đã cho – cái phải tìm', h('div', {}, h('h3', {}, 'Cái đã cho'), list(P.given), h('h3', {}, 'Cái phải tìm'), list(P.find))) }, 'Gợi ý: đã cho – phải tìm'))],
-    () => [h('p.muted', {}, 'Đưa về bài toán quen thuộc và chọn kiến thức phù hợp.'),
-      list(P.plan?.length ? P.plan : q.strategy || [], true),
-      q.strategy?.length && P.plan?.length ? h('div.btn-row', { style: 'margin-top:12px' }, h('button.btn', { type: 'button', onclick: () => show('Chiến lược giải', list(q.strategy, true)) }, 'Chiến lược giải')) : null],
-    () => [P.present ? h('p.muted', {}, rich(P.present, 'span')) : null, work, h('div.btn-row', { style: 'margin-top:16px' }, actions)],
-    () => [h('p.muted', {}, 'Kiểm tra lại kết quả, rút ra phương pháp và mở rộng bài toán.'),
+      h('div.btn-row', { style: 'margin-top:12px' }, h('button.btn', { type: 'button', onclick: () => show(0, 'Cái đã cho – cái phải tìm', h('div', {}, h('h3', {}, 'Cái đã cho'), list(P.given), h('h3', {}, 'Cái phải tìm'), list(P.find))) }, 'Gợi ý: đã cho – phải tìm'))],
+    [h('p.muted', {}, 'Đưa về bài toán quen thuộc và chọn kiến thức phù hợp.'),
+      list(P.plan?.length ? P.plan : ['Bài toán này thuộc dạng quen thuộc nào?', 'Cần dùng công thức, định lí hay phân phối nào?'].map(t), true),
+      strategy?.length ? h('div.btn-row', { style: 'margin-top:12px' }, h('button.btn', { type: 'button', onclick: () => show(1, 'Chiến lược giải', list(strategy, true)) }, 'Chiến lược giải')) : null],
+    [P.present ? h('p.muted', {}, rich(P.present, 'span')) : null, work, h('div.btn-row', { style: 'margin-top:16px' }, actions)],
+    [h('p.muted', {}, 'Kiểm tra lại kết quả, rút ra phương pháp và mở rộng bài toán.'),
       list(P.check?.length ? P.check : ['Kết quả có hợp lí không (xác suất trong [0; 1], tổng bằng 1…)?', 'Có cách giải khác không?'].map(t)),
       P.extend ? [h('h3', {}, 'Bài tương tự / khái quát hoá'), rich(P.extend)] : null,
       h('div.btn-row', { style: 'margin-top:12px' },
-        h('button.btn', { type: 'button', onclick: () => show('Lời giải', h('div', {}, rich(q.solution || 'Không có lời giải.'), casio(q.casio))) }, 'Xem lời giải'),
+        h('button.btn', { type: 'button', onclick: () => show(3, 'Lời giải', h('div', {}, rich(q.solution || 'Không có lời giải.'), casio(q.casio))) }, 'Xem lời giải'),
         extra4?.button),
       extra4?.panel],
   ];
+  extra4?.button?.addEventListener('click', () => mark(3));
+  // Built once and only hidden/shown, so the answer area and everything revealed survive tab switches.
+  const panes = bodies.map((kids, k) => h('div.step-pane', { hidden: k !== 0 }, ...nodes(kids), reveals[k],
+    h('div.stage-nav', {},
+      k > 0 ? h('button.btn.btn-ghost', { type: 'button', onclick: () => goto(k - 1) }, `← Bước ${k}`) : h('span'),
+      k < 3 ? h('button.btn.btn-ghost', { type: 'button', onclick: () => goto(k + 1) }, `Bước ${k + 2}: ${POLYA[k + 1]} →`) : null)));
   const tabs = h('ol.detents.steps', { 'aria-label': 'Bốn bước giải toán' });
-  const body = h('div.step-body');
   let cur = 0;
-  const goto = (k) => {
-    cur = k;
-    tabs.replaceChildren(...POLYA.map((label, j) => h('li', { 'data-state': j < cur ? 'done' : j === cur ? 'current' : 'todo' },
-      h('button', { type: 'button', 'aria-current': j === cur ? 'step' : null, onclick: () => goto(j) }, h('b', {}, String(j + 1)), label))));
-    reveal.replaceChildren();
-    body.replaceChildren(...nodes(steps[cur]()),
-      h('div.stage-nav', {},
-        cur > 0 ? h('button.btn.btn-ghost', { type: 'button', onclick: () => goto(cur - 1) }, `← Bước ${cur}`) : h('span'),
-        cur < 3 ? h('button.btn.btn-ghost', { type: 'button', onclick: () => goto(cur + 1) }, `Bước ${cur + 2}: ${POLYA[cur + 1]} →`) : null));
-  };
-  // Step 3's answer area persists across tab switches, so the student's work is never lost.
-  goto(0);
-  const el = h('article.q.panel', { 'aria-label': `Câu ${i + 1}` },
-    h('div.q-head', {}, h('span.q-num', {}, String(i + 1).padStart(2, '0')), q.topic ? h('span.tag.topic', {}, q.topic) : null),
-    rich(q.prompt), chart(q.viz), tabs, body, reveal);
-  return { el, goto };
+  const paint = () => tabs.replaceChildren(...POLYA.map((label, j) => h('li', { 'data-state': j === cur ? 'current' : used[j] ? 'done' : 'todo' },
+    h('button', { type: 'button', 'aria-current': j === cur ? 'step' : null, onclick: () => goto(j) }, h('b', {}, String(j + 1)), label))));
+  function goto(k) { cur = k; panes.forEach((p, j) => { p.hidden = j !== k; }); paint(); }
+  function mark(k) { if (!used[k]) { used[k] = true; paint(); } }
+  paint();
+  const el = h('article.q.panel', { 'aria-label': `Câu ${num}` },
+    h('div.q-head', {}, h('span.q-num', {}, num), q.topic ? h('span.tag.topic', {}, q.topic) : null),
+    rich(q.prompt), chart(q.viz), tabs, h('div.step-body', {}, panes));
+  return { el, goto, mark };
 }
 
 export function mcq(q, i, onDone) {
@@ -145,13 +178,14 @@ export function mcq(q, i, onDone) {
   const askBtn = h('button.btn', { type: 'button', onclick: () => { askPanel.hidden = !askPanel.hidden; } }, 'Hỏi AI: vì sao?');
 
   const bGrade = h('button.btn.btn-primary', { type: 'button' }, 'Chấm bài');
-  const card = polyaCard(q, i, work, [bGrade, h('button.btn', { type: 'button', onclick: () => { card.goto(3); askPanel.hidden = false; } }, 'Hỏi AI: vì sao?')], { button: askBtn, panel: askPanel });
+  const card = polyaCard(q, i, work, [bGrade, h('button.btn', { type: 'button', onclick: () => { card.goto(3); askPanel.hidden = false; card.mark(3); } }, 'Hỏi AI: vì sao?')], { button: askBtn, panel: askPanel });
   bGrade.onclick = () => {
     const p = picked();
     if (p < 0) return toast('Hãy chọn một phương án.');
     const ans = Number(q.answer), ok = p === ans;
     opts.forEach((o, k) => { o.classList.toggle('right', k === ans); o.classList.toggle('wrong', k === p && !ok); o.querySelector('input').disabled = true; });
     bGrade.disabled = true;
+    card.mark(2);
     verdict.replaceChildren(h('div.reveal', {}, h('div.tags', {}, h(`span.tag${ok ? '.ok' : ''}`, {}, ok ? 'Chính xác · 10/10' : `Chưa đúng · đáp án ${'ABCD'[ans] ?? '?'}`)),
       h('p.muted', { style: 'margin-top:8px' }, ok ? 'Sang bước 4 để tự kiểm tra và mở rộng.' : 'Sang bước 4: xem lời giải hoặc bấm "Hỏi AI: vì sao?".')));
     onDone({ score: ok ? 10 : 0, mistakes: ok ? [] : [{ topic: q.topic, type: 'Chọn sai đáp án trắc nghiệm', detail: String(q.prompt).slice(0, 160) }] });
@@ -174,6 +208,7 @@ export function essay(q, i, onDone) {
     if (!answer && !all.length && !docs.length) return toast('Hãy viết bài làm, viết trên bảng hoặc đính kèm ảnh.');
     run(bGrade, result, async () => {
       const d = await ai('practiceGrade', { question: q.prompt, reference: q.solution || '', answer, docs, files: all.map(({ mimeType, data }) => ({ mimeType, data })) });
+      card.mark(2);
       onDone({ score: +d.score || 0, mistakes: d.mistakes || [] });
       return h('div.reveal.ticket', {}, h('div.board', {}, h('div.row.top-tier', {}, h('b', {}, 'Điểm'), h('span', {}, d.summary || ''), odometer(+d.score || 0)),
         ...(d.rubric || []).map((r, k) => h('div.row', {}, h('b', {}, `Bước ${k + 1}`), h('span', {}, h('strong', {}, r.step), ' ', rich(r.comment, 'span')), h('em', {}, `${r.points ?? '—'}/${r.max ?? '—'}`)))),

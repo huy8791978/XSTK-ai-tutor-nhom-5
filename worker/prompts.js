@@ -96,6 +96,20 @@ Sinh viên vừa nói: "${p.text || ''}"${p.typed ? ' (gõ bằng bàn phím)' :
 - Bài toán: dẫn dắt theo 4 bước Polya, không đưa ngay đáp số trừ khi sinh viên đã tự làm.
 Trả JSON: {"understood": true|false, "reply": "<câu trả lời hiển thị, markdown + LaTeX>", "speech": "<bản để đọc thành tiếng: ${p.lang === 'en' ? 'in plain spoken English' : 'tiếng Việt thuần'}, KHÔNG LaTeX, đọc công thức bằng lời, tối đa 4 câu>", "board": true|false, ${CASIO}, "viz": <viz hoặc null>}`,
   }),
+  // One new problem like a practice problem the student just did: same chapter and type, only the numbers change.
+  similar: (p) => {
+    if (typeof p.question !== 'string' || !p.question.trim()) throw new Error('Thiếu đề bài gốc.');
+    const mcq = p.kind === 'mcq';
+    return {
+      text: `Bài gốc (${mcq ? 'trắc nghiệm' : 'tự luận'}, chủ đề "${p.topic || 'Khác'}"):\n${p.question}${mcq && Array.isArray(p.options) ? `\nCác phương án gốc: ${p.options.slice(0, 4).map((o, i) => `${'ABCD'[i]}. ${String(o).slice(0, 400)}`).join(' | ')}` : ''}${p.solution ? `\nLời giải gốc (chỉ để tham khảo dạng bài, KHÔNG chép lại): ${p.solution}` : ''}
+Tạo đúng 1 bài TƯƠNG TỰ bài gốc theo đúng nghĩa sau:
+- GIỮ NGUYÊN: chương, chủ đề, dạng bài, cấu trúc câu hỏi, số ý hỏi, đại lượng cần tìm, phương pháp và công thức giải, bối cảnh của bài.
+- CHỈ THAY ĐỔI số liệu đề cho (các con số), sao cho số liệu mới hợp lí (xác suất trong [0; 1], tổng các xác suất bằng 1, tham số hợp lệ) và khác hẳn bài gốc.
+- Tính lại toàn bộ lời giải và đáp số theo số liệu mới, kiểm tra kĩ phép tính.${mcq ? '\n- Viết lại 4 phương án theo số liệu mới, chỉ 1 phương án đúng; vị trí đáp án đúng có thể khác bài gốc.' : ''}
+Trả JSON: {"questions": [{"prompt": "...", ${mcq ? '"options": ["A","B","C","D"], "answer": <chỉ số 0-3>, ' : ''}"topic": "${p.topic || '<chủ đề>'}", ${POLYA_Q}, "solution": "<lời giải chi tiết 4 bước Polya, markdown>", ${CASIO}, "viz": <viz hoặc null>}]}
+Bước 1, 2 và 4 là câu hỏi dẫn dắt, TUYỆT ĐỐI không lộ đáp số.`,
+    };
+  },
   practiceGrade: (p) => ({
     text: `Đề: ${p.question}\nLời giải tham khảo (để chấm, KHÔNG chép lại cho sinh viên): ${p.reference}\nBài làm sinh viên: ${p.answer || '(xem tệp đính kèm)'}\n
 Chấm thang 10 theo từng bước, chỉ nhận xét bài làm.
@@ -186,7 +200,7 @@ export function buildRequest(task, payload = {}) {
       systemInstruction: { parts: [{ text: p.lang === 'en' && !verbatim ? `${SYSTEM}
 LANGUAGE OVERRIDE: write every text value of the JSON in English (keep JSON keys as specified; use dot decimals; keep the topic and error-type values exactly as listed in Vietnamese).` : SYSTEM }] },
       contents: [{ role: 'user', parts: [{ text }, ...files.map((f) => ({ inlineData: { mimeType: f.mimeType, data: f.data } }))] }],
-      generationConfig: { responseMimeType: 'application/json', temperature: task === 'practice' ? 0.9 : verbatim ? 0 : 0.4, maxOutputTokens: 16384 },
+      generationConfig: { responseMimeType: 'application/json', temperature: task === 'practice' ? 0.9 : task === 'similar' ? 0.7 : verbatim ? 0 : 0.4, maxOutputTokens: 16384 },
     },
     promptChars: SYSTEM.length + text.length,
     fileCount: files.length,
