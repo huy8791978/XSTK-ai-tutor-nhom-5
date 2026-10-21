@@ -89,14 +89,51 @@ export const STAGES = ['Trải nghiệm', 'Hình thành', 'Củng cố', 'Vận 
 
 /** CASIO fx-580VN X key sequence: steps = [{ keys: ['MENU', '7'], note }]. Returns null when there is nothing to press. */
 export function casio(steps) {
-  const ok = (steps || []).filter((s) => s && (s.keys?.length || s.note));
+  const ok = casioSteps(steps);
   if (!ok.length) return null;
-  const cls = (k) => (k === 'SHIFT' ? 'key.shift' : k === 'ALPHA' ? 'key.alpha' : 'key');
+  const cls = (k) => (k === 'SHIFT' ? 'key.shift' : k === 'ALPHA' ? 'key.alpha' : NAMED.has(k) || [...k].length <= 3 ? 'key' : 'key.val');
   return h('section.casio', { 'aria-label': 'Cách bấm máy CASIO fx-580VN X' },
     h('h3', {}, 'Bấm máy CASIO fx-580VN X'),
     h('ol', {}, ok.map((s) => h('li', {},
-      h('span.keys', {}, (s.keys || []).map((k) => h(`kbd.${cls(String(k))}`, {}, String(k)))),
+      s.keys.length ? h('span.keys', {}, s.keys.map((k) => h(`kbd.${cls(k)}`, {}, k))) : null,
       s.note ? rich(s.note, 'span') : null))));
+}
+
+// ---- CASIO steps as the AI really sends them: keys as an array, a string ("MENU 6", "SHIFT+÷"), or objects;
+// steps as an array of objects or of plain strings; notes with math typed as text ("x_bar", "t_alpha/2(n-1)").
+const NAMED = new Set(['MENU', 'SHIFT', 'ALPHA', 'OPTN', 'CALC', 'SOLVE', 'AC', 'DEL', 'ON', 'Ans', 'ENG', 'S⇔D', 'RCL', 'STO', 'x10ˣ', 'M+', 'M−', 'CATALOG', 'SETUP', 'OK', 'EXE']);
+const KEY_TEX = [[/\\div/g, '÷'], [/\\times|\\cdot/g, '×'], [/\\sqrt\{?\}?/g, '√'], [/\\pi/g, 'π'], [/\^\{?2\}?/g, '²'], [/\^\{?-1\}?/g, '⁻¹'],
+  [/\\(?:leftarrow|gets)/g, '◀'], [/\\(?:rightarrow|to)/g, '▶'], [/\\uparrow/g, '▲'], [/\\downarrow/g, '▼'], [/\\(?:frac|dfrac)\{?\}?\{?\}?/g, '▭/▭'], [/\\left|\\right|[{}$\\]/g, '']];
+const CASE = { menu: 'MENU', shift: 'SHIFT', alpha: 'ALPHA', optn: 'OPTN', option: 'OPTN', calc: 'CALC', solve: 'SOLVE', ac: 'AC', del: 'DEL', on: 'ON', ans: 'Ans', exe: '=', enter: '=', up: '▲', down: '▼', left: '◀', right: '▶', '-': '−', '*': '×', '/': '÷' };
+function oneKey(k) {
+  let s = typeof k === 'object' && k ? (k.key ?? k.label ?? k.name ?? k.value ?? '') : k;
+  s = String(s ?? '').trim().replace(/^\[(.*)\]$/, '$1');
+  for (const [re, to] of KEY_TEX) s = s.replace(re, to);
+  return CASE[s.toLowerCase()] ?? s.trim();
+}
+function keyList(keys) {
+  const raw = Array.isArray(keys) ? keys : typeof keys === 'string' ? keys.split(/\s*(?:,|→|->|>|\s)\s*/) : keys ? [keys] : [];
+  // "SHIFT+÷" / "SHIFT ÷" in one item = two keys; a value like "0.95" stays one key.
+  return raw.flatMap((k) => (typeof k === 'string' ? k.split(/(?<=^(?:SHIFT|ALPHA|Shift|Alpha))\s*\+?\s*(?=\S)/) : [k])).map(oneKey).filter(Boolean);
+}
+const GREEK = 'alpha|beta|gamma|delta|epsilon|theta|lambda|mu|sigma|chi|rho|pi';
+/** Math typed as plain text by the AI → $…$ LaTeX, only in notes that have no $ of their own. */
+export function noteMath(note) {
+  const s = String(note ?? '');
+  if (s.includes('$')) return s;
+  const tex = (w) => (new RegExp(`^(?:${GREEK})$`, 'i').test(w) ? `\\${w.toLowerCase()}` : w);
+  return s
+    .replace(/\b([A-Za-z])_bar\b|\b([A-Za-z])bar\b(?=\s|$|[.,;)])/g, (_, a, b) => `$\\bar{${a || b}}$`)
+    .replace(new RegExp(`\\b([A-Za-z])_\\{?((?:${GREEK}|[A-Za-z0-9])+(?:\\/\\d+)?)\\}?(\\([^()\\s]*\\))?`, 'g'),
+      (_, base, sub, arg) => `$${base}_{${sub.replace(new RegExp(GREEK, 'gi'), (g) => tex(g))}}${arg || ''}$`)
+    .replace(/\b([A-Za-z])\^(\d+|\{[^}]+\})/g, (_, b, e) => `$${b}^{${e.replace(/[{}]/g, '')}}$`)
+    .replace(new RegExp(`(^|[\\s(])(${GREEK})(?=$|[\\s),.;=])`, 'gi'), (_, pre, g) => `${pre}$${tex(g)}$`);
+}
+export function casioSteps(steps) {
+  const list = Array.isArray(steps) ? steps : steps && typeof steps === 'object' ? (steps.steps || [steps]) : [];
+  return list.map((s) => (typeof s === 'string' ? { keys: [], note: s } : s && typeof s === 'object' ? { keys: keyList(s.keys ?? s.key), note: s.note ?? s.desc ?? s.description ?? '' } : null))
+    .filter((s) => s && (s.keys.length || s.note))
+    .map((s) => ({ keys: s.keys, note: noteMath(s.note) }));
 }
 
 /** Flatten view content and drop empty slots (null/undefined/false), so an absent AI field never prints "null". */

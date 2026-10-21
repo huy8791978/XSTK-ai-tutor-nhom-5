@@ -118,6 +118,20 @@ test('nodes() drops empty slots so absent AI fields never render as "null"/"unde
   assert.deepEqual(nodes(null), []);
 });
 
+test('CASIO steps survive the shapes the AI sends and turn text math into LaTeX', async () => {
+  const { casioSteps, noteMath } = await import('../public/js/ui.js');
+  const B = String.fromCharCode(92);
+  assert.equal(noteMath('Xem các giá trị thống kê mẫu x_bar và sx'), `Xem các giá trị thống kê mẫu $${B}bar{x}$ và sx`);
+  assert.equal(noteMath('hoặc tra bảng giá trị tới hạn t_alpha/2(n-1))'), `hoặc tra bảng giá trị tới hạn $t_{${B}alpha/2}(n-1)$)`);
+  assert.equal(noteMath('mức ý nghĩa alpha = 0.05, s_x và x^2'), `mức ý nghĩa $${B}alpha$ = 0.05, $s_{x}$ và $x^{2}$`);
+  assert.equal(noteMath('Đã có $s_x$ nên giữ nguyên x_bar'), 'Đã có $s_x$ nên giữ nguyên x_bar');
+  const s = casioSteps([{ keys: 'MENU 6', note: 'Thống kê' }, { keys: ['SHIFT+÷'] }, { keys: [{ key: 'shift' }, `${B}sqrt{}`, '0.95'] }, 'Đọc kết quả', null, { keys: [] }]);
+  assert.deepEqual(s.map((x) => x.keys), [['MENU', '6'], ['SHIFT', '÷'], ['SHIFT', '√', '0.95'], []]);
+  assert.equal(s[3].note, 'Đọc kết quả');
+  assert.deepEqual(casioSteps('không phải mảng'), []);
+  assert.deepEqual(casioSteps(null), []);
+});
+
 // String.fromCharCode(92) is a backslash; the shell would eat a literal one in this file.
 test('md turns literal backslash-n into line breaks outside math only', () => {
   const B = String.fromCharCode(92);

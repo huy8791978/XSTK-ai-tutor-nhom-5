@@ -535,3 +535,5 @@ a.row.thread-row small { display: inline; }
 .drop.drop-compact svg { width: 22px; height: 22px; }
 .files:not(:empty) { margin-top: 10px; }
 .file.file-doc img { width: 44px; height: 44px; border-radius: 6px; flex: none; }
+/* A typed value on the CASIO (e.g. 0.95, 1-0.05): light key, may wrap on narrow screens */
+kbd.key.val { background: var(--paper); color: var(--ink); border: 1px solid var(--ink); white-space: normal; height: auto; min-height: 30px; padding: 4px 8px; overflow-wrap: anywhere; }

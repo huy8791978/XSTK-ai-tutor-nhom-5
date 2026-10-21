@@ -21,7 +21,7 @@ Khi có ví dụ minh hoạ được bằng biểu đồ, thêm trường "viz" 
 Nếu không phù hợp thì đặt "viz": null.
 Khi lời giải có phép tính, thêm trường "casio": hướng dẫn bấm máy tính CASIO fx-580VN X từng bước, dạng
 [{"keys": ["MENU","7"], "note": "Vào chế độ Phân phối"}, {"keys": ["SHIFT","÷"], "note": "nCr"}].
-Mỗi phần tử "keys" là tên phím in trên máy (MENU, SHIFT, ALPHA, OPTN, CALC, SOLVE, =, AC, DEL, ▲, ▼, ◀, ▶, x², √, ÷, ×, +, −, (, ), x10ˣ, Ans, chữ số…) hoặc ô nhập giá trị. Dùng đúng chế độ của fx-580VN X (Tính toán, Thống kê, Phân phối, Bảng, Phương trình…), ghi kết quả máy hiện ở "note" của bước cuối. Không dùng máy tính thì "casio": [].
+Mỗi phần tử "keys" là tên phím in trên máy (MENU, SHIFT, ALPHA, OPTN, CALC, SOLVE, =, AC, DEL, ▲, ▼, ◀, ▶, x², √, ÷, ×, +, −, (, ), x10ˣ, Ans, chữ số…) hoặc ô nhập giá trị. Dùng đúng chế độ của fx-580VN X (Tính toán, Thống kê, Phân phối, Bảng, Phương trình…), ghi kết quả máy hiện ở "note" của bước cuối. Mỗi phần tử "keys" chỉ là MỘT phím (không gộp kiểu "SHIFT+÷"). Trong "note", mọi kí hiệu toán viết LaTeX trong $...$ (ví dụ $\\\\bar{x}$, $s_x$, $t_{\\\\alpha/2}(n-1)$, $\\\\sigma$), không viết dạng chữ như x_bar, alpha, t_alpha/2. Không dùng máy tính thì "casio": [].
 Chỉ trả về JSON hợp lệ đúng cấu trúc được yêu cầu.`;
 
 const CASIO = '"casio": [{"keys": ["..."], "note": "..."}]';
