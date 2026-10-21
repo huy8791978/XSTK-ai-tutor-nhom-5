@@ -60,6 +60,29 @@ function browserSpeak(text, { onStart, onEnd } = {}, retried = false) {
   speechSynthesis.speak(u);
 }
 
+/**
+ * Read a document aloud with the browser's own voice (no AI, no quota). Long text is queued sentence by sentence:
+ * Chrome stops a single long utterance after ~15 s. Starts right away so iOS keeps the tap as the user gesture.
+ */
+export function readAloud(text, { onEnd } = {}) {
+  if (!('speechSynthesis' in window)) { onEnd?.(); return false; }
+  speechSynthesis.cancel();
+  const plain = String(text).replace(/\$+/g, ' ').replace(/\\(frac|dfrac)\{([^{}]*)\}\{([^{}]*)\}/g, '$2 trên $3').replace(/\\[a-z]+/gi, ' ').replace(/[{}_^]/g, ' ');
+  const parts = plain.match(/[^.!?;\n]+[.!?;]*|\n/g)?.map((s) => s.trim()).filter(Boolean) || [];
+  const chunks = [];
+  for (const s of parts) { if (chunks.length && (chunks.at(-1) + ' ' + s).length < 220) chunks[chunks.length - 1] += ' ' + s; else chunks.push(s); }
+  if (!chunks.length) { onEnd?.(); return false; }
+  const v = /[ăâđêôơưạảấầẩẫậắằẳẵặẹẻẽếềểễệỉịọỏốồổỗộớờởỡợụủứừửữựỳỵỷỹ]/i.test(plain) ? 'vi-VN' : locale();
+  const voice = voices().find((x) => x.lang?.toLowerCase().startsWith(v.slice(0, 2)));
+  chunks.forEach((c, i) => {
+    const u = new SpeechSynthesisUtterance(c);
+    u.lang = v; if (voice) u.voice = voice;
+    if (i === chunks.length - 1) u.onend = u.onerror = () => onEnd?.();
+    speechSynthesis.speak(u);
+  });
+  return true;
+}
+
 // ---- Voice choice. Browsers expose no gender, so it is guessed from the voice name (e.g. "Microsoft An" and
 // "NamMinh" are male Vietnamese voices; "HoaiMy" and "Google Tiếng Việt" are female). Unknown → female.
 const MALE = /\b(an|nam\s?minh|namminh|minh|male|nam|david|mark|guy|andrew|brian|christopher|eric|ryan|daniel|thomas|george|james|roger|steffan|davis|tony|jason)\b/i;

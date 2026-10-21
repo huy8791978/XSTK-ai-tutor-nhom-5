@@ -48,7 +48,7 @@ Trả JSON: {"topic": "<chủ đề>", "given": ["..."], "find": ["..."], "condi
   }),
   grade: (p) => ({
     text: `Đề bài: ${p.problem || '(nếu đề nằm trong tệp, hãy tự nhận dạng)'}\n
-Tệp đính kèm là BÀI LÀM của sinh viên (ảnh hoặc PDF). Hãy nhận dạng chữ (OCR) bài làm rồi CHẤM ĐIỂM thang 10 theo từng bước.
+Tệp đính kèm là BÀI LÀM của sinh viên (ảnh, PDF hoặc văn bản Word ở cuối). Hãy nhận dạng chữ (OCR) bài làm rồi CHẤM ĐIỂM thang 10 theo từng bước.
 ${p.barem ? `BAREM ĐIỂM của giáo viên (chấm đúng theo barem này, mỗi mục barem là một dòng rubric):\n${p.barem}\n` : 'Chưa có barem: tự lập barem hợp lí theo 4 bước Polya.\n'}Bài làm có thể là ảnh chụp, PDF hoặc ảnh viết tay trên bảng (iPad).
 Chỉ chấm và nhận xét bài làm; KHÔNG viết lời giải đúng hoàn chỉnh, KHÔNG nêu đáp số đúng.
 Trả JSON: {"transcript": "<bài làm đã nhận dạng, dùng LaTeX>", "score": <0-10>, "summary": "...", "rubric": [{"step": "...", "points": <số>, "max": <số>, "comment": "..."}], "strengths": ["..."], "mistakes": [${MISTAKE}], "advice": ["..."]}`,
@@ -60,7 +60,8 @@ Trả JSON: {"topic": "<chủ đề>", "understand": "<bước 1, markdown>", "p
   }),
   practice: (p) => ({
     text: `Tạo đúng 5 bài ${p.kind === 'mcq' ? 'TRẮC NGHIỆM 4 phương án (chỉ 1 đúng)' : 'TỰ LUẬN'} mới, khác nhau, về chủ đề "${p.topic}", mức độ ${p.level || 'trung bình'}, gắn với tình huống thực tế Việt Nam khi có thể.${p.sample ? `
-Các bài phải TƯƠNG TỰ bài mẫu sau (cùng dạng, đổi số liệu và bối cảnh): ${p.sample}` : ''}
+Các bài phải TƯƠNG TỰ bài mẫu sau (cùng dạng, đổi số liệu và bối cảnh): ${p.sample}` : ''}${p.files?.length || p.docs?.length ? `
+Bài mẫu nằm trong tệp đính kèm (ảnh/PDF: hãy nhận dạng chữ OCR; Word: văn bản ở cuối). Các bài phải TƯƠNG TỰ bài mẫu đó (cùng dạng, đổi số liệu và bối cảnh); nếu tệp có nhiều bài, lấy đủ các dạng. Chủ đề khi đó theo bài mẫu.` : ''}
 Trả JSON: {"questions": [{"prompt": "...", ${p.kind === 'mcq' ? '"options": ["A","B","C","D"], "answer": <chỉ số 0-3>, ' : ''}"topic": "<chủ đề>", ${POLYA_Q}, "solution": "<lời giải chi tiết 4 bước Polya, markdown>", ${CASIO}, "viz": <viz hoặc null>}]}
 Mỗi câu đi kèm đủ 4 bước giải toán Polya để sinh viên tự củng cố. Bước 1, 2 và 4 là câu hỏi dẫn dắt, TUYỆT ĐỐI không lộ đáp số.`,
   }),
@@ -138,7 +139,17 @@ export function buildRequest(task, payload = {}) {
   }
   if (bytes > LIMITS.fileBytes) throw new Error('Tệp quá lớn (tối đa khoảng 10 MB).');
 
+  // Word files arrive as text (read in the browser); they count toward the same 3-file limit.
+  const docs = Array.isArray(p.docs) ? p.docs : [];
+  if (files.length + docs.length > LIMITS.files) throw new Error(`Tối đa ${LIMITS.files} tệp.`);
+  if (docs.some((d) => typeof d?.text !== 'string' || typeof (d.name ?? '') !== 'string')) throw new Error('Tệp Word không hợp lệ.');
+
   let { text } = TASKS[task](p);
+  if (docs.length) {
+    const what = { grade: 'BÀI LÀM của sinh viên', practiceGrade: 'BÀI LÀM của sinh viên', practice: 'BÀI MẪU' }[task] || 'Đề bài hoặc bài làm';
+    text += `\n\n${what} trong tệp Word (đã chuyển thành văn bản, công thức đặt trong $...$):\n`
+      + docs.map((d) => `--- ${String(d.name || 'tệp').slice(0, 120)} ---\n${clip(d.text)}`).join('\n');
+  }
   // The task wording and the student's input are often Vietnamese, which pulls the model back to Vietnamese;
   // repeat the language rule last, in the user turn, where it wins.
   // The opposite rule matters too: after an English conversation the history pulls replies to English.

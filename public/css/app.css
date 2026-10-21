@@ -149,7 +149,7 @@ select { appearance: none; padding-right: 40px; cursor: pointer;
 .file img { display: block; width: 100%; height: 76px; object-fit: cover; }
 .file .doc { height: 76px; display: grid; place-items: center; color: var(--ultra); }
 .file .doc svg { width: 30px; height: 30px; }
-.file span { display: block; padding: 4px 6px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.file > span { display: block; padding: 4px 6px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .file button { position: absolute; top: 4px; right: 4px; width: 26px; height: 26px; border-radius: 50%; border: 0; background: rgba(20, 24, 51, .78); color: #fff; display: grid; place-items: center; cursor: pointer; }
 .file button svg { width: 14px; height: 14px; }
 
@@ -519,3 +519,18 @@ a.row.thread-row small { display: inline; }
 .gender-toggle button[aria-pressed="true"] { background: var(--ultra); color: #fff; }
 .gender-toggle button:focus-visible { outline: 2px solid var(--gold); outline-offset: -2px; }
 @media (max-width: 600px) { .gender-toggle { position: static; } }
+
+/* Word file chip: full width, file name + "Đọc to" button, the extracted text folded below */
+.file.file-doc { width: 100%; display: flex; flex-wrap: wrap; align-items: center; gap: 8px; padding: 8px 40px 8px 10px; font-size: 13.5px; overflow: visible; }
+.file.file-doc .doc { height: auto; }
+.file.file-doc .doc svg { width: 22px; height: 22px; }
+.file.file-doc > span { flex: 1 1 140px; padding: 0; font-weight: 600; }
+.file.file-doc .btn { display: inline-flex; align-items: center; flex-direction: row; position: static; width: auto; height: auto; border-radius: var(--r); min-height: 36px; padding: 4px 12px; font-size: 13.5px; gap: 6px; background: transparent; color: var(--ultra); border: 1px solid var(--rule); }
+.file.file-doc .btn[aria-pressed="true"] { background: var(--ultra); color: #fff; border-color: var(--ultra); }
+.file.file-doc .btn svg { width: 16px; height: 16px; }
+.doc-text { flex: 1 0 100%; }
+.doc-text summary { cursor: pointer; color: var(--ink-3); font-size: 13px; }
+.doc-text .rich { margin: 6px 0 0; max-height: 220px; overflow: auto; font-size: 13px; color: var(--ink-2); background: var(--ultra-wash); padding: 8px 10px; border-radius: var(--r); }
+.drop.drop-compact { padding: 14px; gap: 4px; }
+.drop.drop-compact svg { width: 22px; height: 22px; }
+.files:not(:empty) { margin-top: 10px; }

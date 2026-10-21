@@ -1,21 +1,18 @@
 // AI Tutor: upload work (image/PDF, OCR by Gemini) → strategy / grade / detailed solution.
 import { h, icon, rich, list, run, detents, POLYA, toast, casio } from '../ui.js';
 import { ai } from '../api.js';
-import { readFiles } from '../files.js';
+import { uploader, readButton } from '../uploader.js';
 import { mathField } from '../mathinput.js';
 import { chart, odometer, galton } from '../viz.js';
 import { addSession } from '../profile.js';
 import { boardToggle } from '../board.js';
 
-export const meta = { title: 'Gia sư chấm bài', lede: 'Tải ảnh hoặc PDF bài làm.\nAI gợi ý chiến lược (không lộ đáp án), chấm điểm từng bước và chỉ hiện lời giải khi bạn yêu cầu.' };
+export const meta = { title: 'Gia sư chấm bài', lede: 'Tải ảnh, PDF hoặc file Word bài làm.\nAI gợi ý chiến lược (không lộ đáp án), chấm điểm từng bước và chỉ hiện lời giải khi bạn yêu cầu.' };
 
 export function render(root) {
-  let files = [];
   const rail = h('div', {}, detents(POLYA, ['current']));
   const problem = mathField({ label: 'Đề bài', name: 'problem', rows: 4, placeholder: 'Gõ hoặc dán đề bài. Có thể bỏ trống nếu đề đã nằm trong ảnh/PDF.' });
-  const input = h('input', { type: 'file', accept: 'image/*,application/pdf', multiple: true, 'aria-label': 'Chọn ảnh hoặc PDF bài làm' });
-  const drop = h('label.drop', {}, icon('upload'), h('span', {}, h('strong', {}, 'Chọn ảnh hoặc PDF'), ' hoặc kéo thả vào đây'), h('small.muted', {}, 'Tối đa 3 tệp, mỗi tệp ≤ 10 MB. Chụp thẳng, đủ sáng để AI đọc chính xác.'), input);
-  const thumbs = h('div.files');
+  const up = uploader({ label: 'Chọn ảnh, PDF hoặc Word bài làm' });
   const board = boardToggle();
   const barem = mathField({ label: 'Barem điểm (tuỳ chọn)', name: 'barem', rows: 3, placeholder: 'Ví dụ: Đặt biến cố 1đ; Công thức đầy đủ 2đ; Bayes 4đ; Kết luận 1đ…' });
   const baremBox = h('div', { hidden: true }, barem);
@@ -26,33 +23,15 @@ export function render(root) {
   const bGrade = h('button.btn.btn-primary', { type: 'button' }, 'Chấm điểm');
   const bSolve = h('button.btn', { type: 'button' }, 'Lời giải chi tiết');
 
-  const paint = () => thumbs.replaceChildren(...files.map((f, i) => h('div.file', {},
-    f.url ? h('img', { src: f.url, alt: f.name }) : h('div.doc', {}, icon('file')),
-    h('span', { title: f.name }, f.name),
-    h('button', { type: 'button', 'aria-label': `Bỏ ${f.name}`, onclick: () => { files.splice(i, 1); paint(); } }, icon('x')))));
-
-  async function add(list) {
-    try {
-      const next = await readFiles([...list]);
-      files = [...files, ...next].slice(0, 3);
-      if (files.length === 3 && next.length) toast('Đã đủ 3 tệp.');
-      paint();
-    } catch (e) { toast(e.message); }
-    input.value = '';
-  }
-  input.addEventListener('change', () => add(input.files));
-  drop.addEventListener('dragover', (e) => { e.preventDefault(); drop.classList.add('over'); });
-  drop.addEventListener('dragleave', () => drop.classList.remove('over'));
-  drop.addEventListener('drop', (e) => { e.preventDefault(); drop.classList.remove('over'); add(e.dataTransfer.files); });
-
   const payload = () => ({
     problem: problem.querySelector('textarea').value.trim(),
     barem: barem.querySelector('textarea').value.trim(),
-    files: [...files, ...(board.board.isEmpty() ? [] : [board.board.toFile()])].map(({ mimeType, data }) => ({ mimeType, data })),
+    files: [...up.files(), ...(board.board.isEmpty() ? [] : [board.board.toFile()]).map(({ mimeType, data }) => ({ mimeType, data }))],
+    docs: up.docs(),
   });
   const need = (p, wantFiles) => {
-    if (wantFiles && !p.files.length) { toast('Hãy tải ảnh/PDF bài làm hoặc viết trên bảng để AI chấm.'); return false; }
-    if (!p.problem && !p.files.length) { toast('Hãy nhập đề bài hoặc tải tệp lên.'); return false; }
+    if (wantFiles && !p.files.length && !p.docs.length) { toast('Hãy tải ảnh/PDF/Word bài làm hoặc viết trên bảng để AI chấm.'); return false; }
+    if (!p.problem && !p.files.length && !p.docs.length) { toast('Hãy nhập đề bài hoặc tải tệp lên.'); return false; }
     return true;
   };
   const setRail = (states) => rail.replaceChildren(detents(POLYA, states));
@@ -70,7 +49,7 @@ export function render(root) {
   }, 'Đang viết lời giải…'); };
 
   root.append(rail, h('div.work', {},
-    h('section.panel.stack', { 'aria-label': 'Bài làm' }, problem, h('div.field', {}, h('span', {}, 'Bài làm (ảnh / PDF / bảng iPad)'), drop), thumbs,
+    h('section.panel.stack', { 'aria-label': 'Bài làm' }, problem, h('div.field', {}, h('span', {}, 'Bài làm (ảnh / PDF / Word / bảng iPad)'), up.el),
       h('div.btn-row', {}, board.btn, bBarem), board.wrap, baremBox,
       h('div.btn-row', {}, bStrat, bGrade, bSolve)),
     h('section.panel.sticky-col', { 'aria-label': 'Kết quả' }, out)));
@@ -107,7 +86,7 @@ export function gradeView(d, serial) {
     d.mistakes?.length ? [h('h3', {}, 'Lỗi sai'), mistakes(d.mistakes)] : null,
     d.strengths?.length ? [h('h3', {}, 'Điểm tốt'), list(d.strengths)] : null,
     d.advice?.length ? [h('h3', {}, 'Lời khuyên'), list(d.advice)] : null,
-    d.transcript ? h('details.more', { style: 'margin-top:18px' }, h('summary', {}, 'Bài làm AI đã đọc được (OCR)', icon('down')), rich(d.transcript)) : null,
+    d.transcript ? h('details.more', { style: 'margin-top:18px' }, h('summary', {}, 'Bài làm AI đã đọc được (OCR)', icon('down')), h('div.btn-row', { style: 'margin:8px 0' }, readButton(() => d.transcript, 'Đọc to bài làm')), rich(d.transcript)) : null,
     h('p.muted', { style: 'margin-top:14px;font-size:13.5px' }, 'Đã lưu vào hồ sơ học tập.'));
 }
 

@@ -50,6 +50,18 @@ test('buildRequest rejects unknown tasks, bad files and too many files', () => {
   assert.throws(() => buildRequest('grade', { files: [f, f, f, f] }), /Tối đa/);
 });
 
+test('buildRequest puts Word text in the prompt and counts it toward the file limit', () => {
+  const doc = { name: 'mau.docx', text: 'Bài 1. Tính $P(A)$.' };
+  const { body } = buildRequest('practice', { kind: 'essay', topic: 'Khác', docs: [doc] });
+  const text = body.contents[0].parts[0].text;
+  assert.ok(text.includes('BÀI MẪU trong tệp Word') && text.includes('Bài 1. Tính $P(A)$.'));
+  assert.ok(text.includes('TƯƠNG TỰ bài mẫu đó'));
+  assert.equal(body.contents[0].parts.length, 1);
+  const f = { mimeType: 'image/png', data: 'x' };
+  assert.throws(() => buildRequest('grade', { files: [f, f], docs: [doc, doc] }), /Tối đa/);
+  assert.throws(() => buildRequest('grade', { docs: [{ name: 'x' }] }), /Word không hợp lệ/);
+});
+
 test('buildRequest attaches files and asks for JSON', () => {
   const { body, fileCount } = buildRequest('grade', { problem: 'Tính P(A)', files: [{ mimeType: 'application/pdf', data: 'QUJD' }] });
   assert.equal(fileCount, 1);

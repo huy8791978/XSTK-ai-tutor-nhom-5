@@ -4,6 +4,7 @@ import { h, icon, rich, list, run, toast, casio, POLYA, nodes } from '../ui.js';
 import { tr as t } from '../i18n.js';
 import { ai } from '../api.js';
 import { readFiles } from '../files.js';
+import { uploader, ACCEPT } from '../uploader.js';
 import { mathField } from '../mathinput.js';
 import { boardToggle } from '../board.js';
 import { chart, odometer } from '../viz.js';
@@ -24,10 +25,11 @@ function make(kind) {
       const topic = h('select', { id: `p-topic-${kind}` }, TOPICS.map((t) => h('option', {}, t)));
       const level = h('select', { id: `p-level-${kind}` }, ['Cơ bản', 'Trung bình', 'Nâng cao'].map((t) => h('option', { selected: t === 'Trung bình' }, t)));
       const similar = mathField({ label: 'Bài mẫu để tạo bài tương tự (tuỳ chọn)', name: `seed-${kind}`, rows: 2, placeholder: 'Dán một bài bạn muốn luyện thêm, AI sẽ tạo 5 bài tương tự.' });
+      const up = uploader({ compact: true, title: 'Hoặc tải bài mẫu: ảnh, PDF, Word', hint: 'AI đọc chữ trong tệp (kể cả ảnh chụp) rồi tạo bài cùng dạng. Tối đa 3 tệp, mỗi tệp ≤ 10 MB.', label: 'Tải ảnh, PDF hoặc Word bài mẫu' });
       const btn = h('button.btn.btn-primary', { type: 'button' }, K.button);
       const out = h('div', {}, h('div.panel.empty', {}, h('p', {}, 'Chọn chủ đề và mức độ, rồi bấm tạo đề. Mỗi lần tạo là một bộ bài mới.')));
       btn.onclick = () => run(btn, out, async () => {
-        const d = await ai('practice', { kind, topic: topic.value, level: level.value, sample: similar.querySelector('textarea').value.trim() });
+        const d = await ai('practice', { kind, topic: topic.value, level: level.value, sample: similar.querySelector('textarea').value.trim(), files: up.files(), docs: up.docs() });
         const qs = (d.questions || []).filter((q) => q?.prompt).slice(0, 5);
         if (!qs.length) throw new Error('AI chưa tạo được bài. Bấm tạo lại.');
         return pager(kind, qs, topic.value);
@@ -36,7 +38,7 @@ function make(kind) {
         h('label.field', { for: topic.id }, h('span', {}, 'Chủ đề'), topic),
         h('label.field', { for: level.id, style: 'max-width:200px' }, h('span', {}, 'Mức độ'), level),
         h('div.btn-row', {}, btn)),
-      h('details.more', { style: 'margin:-6px 0 22px' }, h('summary', {}, 'Tạo bài tương tự từ một bài mẫu', icon('down')), similar),
+      h('details.more', { style: 'margin:-6px 0 22px' }, h('summary', {}, 'Tạo bài tương tự từ một bài mẫu', icon('down')), similar, h('div', { style: 'margin-top:12px' }, up.el)),
       out);
     },
   };
@@ -162,22 +164,23 @@ export function essay(q, i, onDone) {
   const field = mathField({ label: 'Bài làm của bạn', name: `a${i}`, rows: 6, placeholder: 'Trình bày lời giải theo từng bước…' });
   const board = boardToggle();
   let files = [];
-  const pick = h('input', { type: 'file', accept: 'image/*,application/pdf', hidden: true });
+  const pick = h('input', { type: 'file', accept: ACCEPT, hidden: true });
   const fileNote = h('span.muted', { style: 'font-size:13.5px' });
   pick.addEventListener('change', async () => {
     try { files = await readFiles([...pick.files].slice(0, 2)); fileNote.textContent = files.map((f) => f.name).join(', '); } catch (e) { toast(e.message); }
   });
-  const attach = h('button.btn.btn-ghost', { type: 'button', onclick: () => pick.click() }, icon('upload'), 'Đính kèm ảnh/PDF');
+  const attach = h('button.btn.btn-ghost', { type: 'button', onclick: () => pick.click() }, icon('upload'), 'Đính kèm ảnh/PDF/Word');
   const result = h('div');
   const bGrade = h('button.btn.btn-primary', { type: 'button' }, 'Chấm bài');
   const work = h('div', {}, field, h('div.btn-row', { style: 'margin-top:10px;align-items:center' }, board.btn, attach, fileNote, pick), board.wrap, result);
   const card = polyaCard(q, i, work, [bGrade]);
   bGrade.onclick = () => {
     const answer = field.querySelector('textarea').value.trim();
-    const all = [...files, ...(board.board.isEmpty() ? [] : [board.board.toFile()])];
-    if (!answer && !all.length) return toast('Hãy viết bài làm, viết trên bảng hoặc đính kèm ảnh.');
+    const all = [...files.filter((f) => f.data), ...(board.board.isEmpty() ? [] : [board.board.toFile()])];
+    const docs = files.filter((f) => f.text != null).map(({ name, text }) => ({ name, text }));
+    if (!answer && !all.length && !docs.length) return toast('Hãy viết bài làm, viết trên bảng hoặc đính kèm ảnh.');
     run(bGrade, result, async () => {
-      const d = await ai('practiceGrade', { question: q.prompt, reference: q.solution || '', answer, files: all.map(({ mimeType, data }) => ({ mimeType, data })) });
+      const d = await ai('practiceGrade', { question: q.prompt, reference: q.solution || '', answer, docs, files: all.map(({ mimeType, data }) => ({ mimeType, data })) });
       onDone({ score: +d.score || 0, mistakes: d.mistakes || [] });
       return h('div.reveal.ticket', {}, h('div.board', {}, h('div.row.top-tier', {}, h('b', {}, 'Điểm'), h('span', {}, d.summary || ''), odometer(+d.score || 0)),
         ...(d.rubric || []).map((r, k) => h('div.row', {}, h('b', {}, `Bước ${k + 1}`), h('span', {}, h('strong', {}, r.step), ' ', rich(r.comment, 'span')), h('em', {}, `${r.points ?? '—'}/${r.max ?? '—'}`)))),
