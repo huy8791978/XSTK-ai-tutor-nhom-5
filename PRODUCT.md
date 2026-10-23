@@ -8,7 +8,7 @@ web
 
 ## Stack
 
-Static HTML/CSS/JS (ES modules, no build step) served by a Cloudflare Worker. The Worker proxies Gemini (`gemini-3.5-flash-lite`) so the API key stays server-side; a Durable Object enforces global RPM/TPM/RPD. Deployed from GitHub Actions; the key lives in a GitHub Secret. No Python.
+Static HTML/CSS/JS (ES modules, no build step) served by a Cloudflare Worker. The Worker proxies Gemini (`gemini-3.8-flash`, falling back silently to weaker models) so the API key stays server-side; a Durable Object enforces global RPM/TPM/RPD. Deployed from GitHub Actions; the key lives in a GitHub Secret. No Python.
 
 ## Users
 

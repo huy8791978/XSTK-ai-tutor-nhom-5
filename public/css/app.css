@@ -405,7 +405,7 @@ kbd.key.alpha { background: var(--red); }
   .lang-btn:hover { background: rgba(255, 255, 255, .12); color: #fff; border-color: #fff; }
 }
 
-/* 11-item nav: desktop rail scrolls if short; phone bottom bar scrolls sideways */
+/* 12-item nav: desktop rail scrolls if short; phone bottom bar scrolls sideways */
 .nav { overflow-y: auto; min-height: 0; scrollbar-width: none; }
 .rail { gap: 0; }
 @media (max-width: 860px) {
@@ -555,6 +555,49 @@ kbd.key.val { background: var(--paper); color: var(--ink); border: 1px solid var
 .q-block { display: grid; gap: 16px; min-width: 0; }
 .similar-bar { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; }
 .similar-bar .muted { font-size: 13.5px; }
-.similar-list { display: grid; gap: 16px; padding-left: 18px; border-left: 3px solid var(--rule-2); }
+.similar-list { display: grid; gap: 16px; padding-left: 18px; border-left: 1px solid var(--rule-2); }
 .similar-list:empty { display: none; }
 .similar-list .q-num { font-size: 32px; }
+
+/* Forum role bar: student by default, lecturer-moderator after the password */
+.role-bar { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; margin-bottom: 18px; padding-bottom: 14px; border-bottom: 1px solid var(--rule); }
+.role-bar .muted { font-size: 13.5px; }
+.role-form { flex: 1 0 100%; display: grid; gap: 10px; max-width: 420px; }
+.thread-mod { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 12px; border-bottom: 1px solid #EEF0F8; }
+.thread-mod:last-child { border-bottom: 0; }
+.thread-mod > .row { border-bottom: 0; }
+
+/* Mini-game: one question per frame; the countdown is a draw-style numeral over a hairline that drains */
+.quiz-head { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 12px 20px; padding-bottom: 14px; margin-bottom: 16px; border-bottom: 1px solid var(--rule-2); }
+.quiz-count b { font: 800 40px/1 var(--display); color: var(--ultra); font-variant-numeric: tabular-nums; }
+.quiz-count span { font: 700 18px/1 var(--display); color: var(--ink-3); margin-left: 2px; }
+.quiz-head .tags { align-items: center; }
+.quiz-head .tags .muted { font-size: 13.5px; }
+.quiz-clock { display: grid; grid-template-columns: auto auto; align-items: baseline; justify-content: end; column-gap: 4px; min-width: 112px; }
+.quiz-secs { font: 800 44px/1 var(--display); color: var(--ink); font-variant-numeric: tabular-nums; text-align: right; }
+.quiz-clock small { font: 600 13px/1 var(--body); color: var(--ink-3); }
+.quiz-bar { grid-column: 1 / -1; display: block; height: 3px; margin-top: 8px; background: var(--rule); overflow: hidden; }
+.quiz-bar i { display: block; height: 100%; background: var(--gold); transform-origin: left; transition: transform .2s linear; }
+.quiz-clock.low .quiz-secs { color: var(--red); }
+.quiz-clock.low .quiz-bar i { background: var(--red); }
+.quiz-clock.stopped { opacity: .55; }
+.quiz-foot { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px 16px; }
+.quiz-status { margin: 0; color: var(--ink-2); font-size: 14.5px; }
+.quiz-review { display: grid; border-top: 1px solid var(--rule); }
+.quiz-item { border-bottom: 1px solid var(--rule); padding: 10px 0; }
+.quiz-item summary { display: grid; grid-template-columns: 64px auto minmax(0, 1fr); align-items: center; gap: 12px; cursor: pointer; list-style: none; }
+.quiz-item summary::-webkit-details-marker { display: none; }
+.quiz-item summary b { font: 700 13.5px/1.3 var(--display); letter-spacing: .14em; text-transform: uppercase; color: var(--ink-3); }
+.quiz-sum { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--ink-2); }
+.quiz-item[open] { padding-bottom: 16px; }
+.quiz-item[open] > :not(summary) { margin-top: 10px; }
+.quiz-item summary:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
+@media (prefers-reduced-motion: reduce) { .quiz-bar i { transition: none; } }
+@media (max-width: 620px) {
+  .quiz-head { grid-template-columns: auto minmax(0, 1fr); }
+  .quiz-head .tags { grid-column: 1 / -1; grid-row: 2; }
+  .quiz-count b { font-size: 32px; }
+  .quiz-secs { font-size: 36px; }
+  .quiz-item summary { grid-template-columns: 52px auto; }
+  .quiz-sum { grid-column: 1 / -1; }
+}

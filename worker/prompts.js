@@ -1,6 +1,6 @@
 // Task-based prompts: the browser never sends a raw prompt, so the key can't be used as a general chatbot.
 
-import { TOPICS, ERROR_TYPES } from '../public/js/topics.js';
+import { TOPICS, ERROR_TYPES, QUIZ_LEVELS, QUIZ_SIZE } from '../public/js/topics.js';
 
 export { TOPICS, ERROR_TYPES };
 const LIMITS = { text: 8000, files: 7, fileBytes: 14_000_000, history: 24 }; // files: 3 for the problem + 3 for the work + the iPad board
@@ -96,6 +96,17 @@ Sinh viên vừa nói: "${p.text || ''}"${p.typed ? ' (gõ bằng bàn phím)' :
 - Bài toán: dẫn dắt theo 4 bước Polya, không đưa ngay đáp số trừ khi sinh viên đã tự làm.
 Trả JSON: {"understood": true|false, "reply": "<câu trả lời hiển thị, markdown + LaTeX>", "speech": "<bản để đọc thành tiếng: ${p.lang === 'en' ? 'in plain spoken English' : 'tiếng Việt thuần'}, KHÔNG LaTeX, đọc công thức bằng lời, tối đa 4 câu>", "board": true|false, ${CASIO}, "viz": <viz hoặc null>}`,
   }),
+  // Mini-game: the whole 20-question set in one call, so play never waits on the AI.
+  quiz: (p) => {
+    const level = QUIZ_LEVELS.includes(p.level) ? p.level : 'Trung bình';
+    return {
+      text: `Tạo đúng ${QUIZ_SIZE} câu hỏi TRẮC NGHIỆM 4 phương án (chỉ 1 phương án đúng) cho mini-game ôn tập môn Xác suất Thống kê, mức độ «${level}», trải đều 7 bài của học phần: xác suất và công thức tính xác suất; biến ngẫu nhiên; phân phối thông dụng (nhị thức, Poisson, chuẩn); mẫu và đặc trưng mẫu; ước lượng khoảng; kiểm định giả thiết; so sánh 2 tham số.
+Thứ tự: câu 1–7 LÍ THUYẾT (khái niệm, định nghĩa, tính chất, nhận diện công thức); câu 8–14 BÀI TẬP tính nhanh; câu 15–20 LIÊN HỆ THỰC TIỄN (tình huống kinh tế, ngân hàng, y tế, sản xuất ở Việt Nam).
+Mỗi câu sinh viên phải đọc và trả lời được trong TỐI ĐA 30 GIÂY: đề 1–2 câu ngắn, số liệu tròn, phép tính nhẩm được hoặc một bước bấm máy, 4 phương án ngắn và cùng dạng (cùng đơn vị, cùng số chữ số), phương án sai là sai lầm hay gặp chứ không vô lí.
+Không lặp ý giữa các câu. Vị trí đáp án đúng phân bố đều A, B, C, D.
+Trả JSON: {"questions": [{"kind": "Lí thuyết" | "Bài tập" | "Thực tiễn", "topic": "<chủ đề hợp lệ>", "prompt": "<đề>", "options": ["<A>", "<B>", "<C>", "<D>"], "answer": <chỉ số 0-3 của phương án đúng>, "explain": "<1–3 câu: vì sao đúng, công thức hoặc phép tính, vì sao phương án dễ nhầm là sai>"}]}`,
+    };
+  },
   // One new problem like a practice problem the student just did: same chapter and type, only the numbers change.
   similar: (p) => {
     if (typeof p.question !== 'string' || !p.question.trim()) throw new Error('Thiếu đề bài gốc.');
@@ -200,7 +211,7 @@ export function buildRequest(task, payload = {}) {
       systemInstruction: { parts: [{ text: p.lang === 'en' && !verbatim ? `${SYSTEM}
 LANGUAGE OVERRIDE: write every text value of the JSON in English (keep JSON keys as specified; use dot decimals; keep the topic and error-type values exactly as listed in Vietnamese).` : SYSTEM }] },
       contents: [{ role: 'user', parts: [{ text }, ...files.map((f) => ({ inlineData: { mimeType: f.mimeType, data: f.data } }))] }],
-      generationConfig: { responseMimeType: 'application/json', temperature: task === 'practice' ? 0.9 : task === 'similar' ? 0.7 : verbatim ? 0 : 0.4, maxOutputTokens: 16384 },
+      generationConfig: { responseMimeType: 'application/json', temperature: task === 'practice' || task === 'quiz' ? 0.9 : task === 'similar' ? 0.7 : verbatim ? 0 : 0.4, maxOutputTokens: 16384 },
     },
     promptChars: SYSTEM.length + text.length,
     fileCount: files.length,

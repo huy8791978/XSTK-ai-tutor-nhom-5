@@ -12,10 +12,11 @@ import * as mistakes from './views/mistakes.js';
 import * as forum from './views/forum.js';
 import * as oral from './views/oral.js';
 import * as mindmap from './views/mindmap.js';
+import * as quiz from './views/quiz.js';
 import * as profile from './views/profile.js';
 
 const ROUTES = {
-  'cham-bai': tutor, 'ly-thuyet': concept, 'dinh-li': theorem, 'tu-luan': essayPage, 'trac-nghiem': mcqPage, 'van-dap': oral,
+  'cham-bai': tutor, 'ly-thuyet': concept, 'dinh-li': theorem, 'tu-luan': essayPage, 'trac-nghiem': mcqPage, 'mini-game': quiz, 'van-dap': oral,
   'giong-noi': voice, 'thong-ke': mistakes, 'ban-do': mindmap, 'dien-dan': forum, 'ho-so': profile,
 };
 const routeKey = () => location.hash.slice(1).split('?')[0];

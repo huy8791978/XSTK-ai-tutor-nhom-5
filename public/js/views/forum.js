@@ -1,6 +1,7 @@
 // Forum: students discuss XSTK. Threads + replies stored on the server (Durable Object); math via the formula editor.
 import { h, rich, run, toast } from '../ui.js';
 import { mathField } from '../mathinput.js';
+import { isMod, modToken, setMod, clearMod } from '../role.js';
 
 export const meta = { title: 'Diễn đàn XSTK', lede: 'Nơi người học trao đổi về Xác suất Thống kê: đặt câu hỏi, chia sẻ cách giải, thảo luận đề thi.\nHãy lịch sự và không đăng thông tin cá nhân.' };
 
@@ -17,15 +18,66 @@ async function api(path, body) {
     res = await fetch(`/api/forum${path}`, body ? { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(body) } : {});
   } catch { throw new Error('Mất kết nối mạng. Thử lại sau.'); }
   const d = await res.json().catch(() => ({}));
-  if (!res.ok) throw new Error(d.error || `Máy chủ lỗi (${res.status}).`);
+  if (!res.ok) throw Object.assign(new Error(d.error || `Máy chủ lỗi (${res.status}).`), { modExpired: d.modExpired });
   return d;
 }
 // The server returns a delete token per post; keep it so the author can remove their own posts.
 const keep = (kind, id, token) => store.set(TOKENS_KEY, { ...store.get(TOKENS_KEY, {}), [`${kind}:${id}`]: token });
 const tokenOf = (kind, id) => store.get(TOKENS_KEY, {})[`${kind}:${id}`];
 
+/**
+ * Role bar: student by default; a lecturer enters the moderator password to delete any post or reply.
+ * onChange re-renders the page so the moderation buttons appear or disappear.
+ */
+function roleBar(onChange) {
+  if (isMod()) {
+    return h('div.role-bar.is-mod', { role: 'group', 'aria-label': 'Vai trò' },
+      h('span.tag.gold', {}, 'Vai trò: Giảng viên kiểm duyệt'),
+      h('span.muted', {}, 'Bạn có thể xoá mọi bài viết và trả lời vi phạm.'),
+      h('button.btn.btn-ghost', { type: 'button', onclick: () => { clearMod(); toast('Đã về vai trò sinh viên.'); onChange(); } }, 'Về vai trò sinh viên'));
+  }
+  const pass = h('input', { type: 'password', id: 'mod-pass', autocomplete: 'current-password', placeholder: 'Mật khẩu giảng viên' });
+  const msg = h('div');
+  const bOk = h('button.btn.btn-primary', { type: 'button' }, 'Xác nhận');
+  const form = h('form.role-form', { hidden: true },
+    h('label.field', { for: pass.id }, h('span', {}, 'Mật khẩu kiểm duyệt'), pass),
+    h('div.btn-row', {}, bOk, h('button.btn.btn-ghost', { type: 'button', onclick: () => { form.hidden = true; bSwitch.hidden = false; } }, 'Huỷ')), msg);
+  const bSwitch = h('button.btn.btn-ghost', { type: 'button', onclick: () => { form.hidden = false; bSwitch.hidden = true; pass.focus(); } }, 'Đổi sang giảng viên kiểm duyệt');
+  form.addEventListener('submit', (e) => {
+    e.preventDefault();
+    if (!pass.value) { pass.focus(); return; }
+    run(bOk, msg, async () => {
+      const r = await api('/mod', { password: pass.value });
+      setMod(r.token, r.exp);
+      toast('Đã chuyển sang vai trò giảng viên kiểm duyệt.');
+      onChange();
+      return [];
+    }, 'Đang kiểm tra…');
+  });
+  bOk.type = 'submit';
+  return h('div.role-bar', { role: 'group', 'aria-label': 'Vai trò' }, h('span.tag.topic', {}, 'Vai trò: Sinh viên'), bSwitch, form);
+}
+
+/** Delete button: the author with their own token, a moderator for any post. */
+function delButton(kind, pid, done) {
+  const mod = !tokenOf(kind, pid) && isMod();
+  return h('button.btn.btn-danger', { type: 'button', onclick: async () => {
+    if (!confirm(mod ? 'Xoá bài này với vai trò giảng viên kiểm duyệt?' : 'Xoá bài này?')) return;
+    try {
+      await api('/delete', { kind, id: pid, token: tokenOf(kind, pid), mod: mod ? modToken() : undefined });
+      toast('Đã xoá.'); done();
+    } catch (e) {
+      if (e.modExpired) clearMod();
+      toast(e.message);
+    }
+  } }, mod ? 'Xoá (kiểm duyệt)' : 'Xoá');
+}
+const canDelete = (kind, pid) => Boolean(tokenOf(kind, pid)) || isMod();
+
 export function render(root) {
   const id = new URLSearchParams(location.hash.split('?')[1] || '').get('id');
+  const again = () => { root.replaceChildren(); render(root); };
+  root.append(roleBar(again));
   return id ? thread(root, id) : index(root);
 }
 
@@ -42,8 +94,11 @@ function index(root) {
     const d = await api(`?topic=${encodeURIComponent(filter.value)}`);
     if (filter.options.length === 1) d.topics.forEach((t) => filter.append(h('option', {}, t)));
     if (!d.threads.length) return h('div.panel.empty', {}, h('p', {}, 'Chưa có bài viết nào. Hãy mở đầu cuộc thảo luận!'));
-    return h('div.panel', {}, h('div.board', {}, d.threads.map((t) => h('a.row.thread-row', { href: `#dien-dan?id=${t.id}` },
-      h('b', {}, t.topic), h('span', {}, h('strong', {}, t.title), h('small.muted', {}, ` · ${t.author} · ${when(t.last)}`)), h('em', {}, `${t.replies}`)))));
+    return h('div.panel', {}, h('div.board', {}, d.threads.map((t) => {
+      const row = h('a.row.thread-row', { href: `#dien-dan?id=${t.id}` },
+        h('b', {}, t.topic), h('span', {}, h('strong', {}, t.title), h('small.muted', {}, ` · ${t.author} · ${when(t.last)}`)), h('em', {}, `${t.replies}`));
+      return isMod() ? h('div.thread-mod', {}, row, delButton('thread', t.id, () => load())) : row;
+    })));
   }, 'Đang tải diễn đàn…');
   const bReload = h('button.btn.btn-ghost', { type: 'button', onclick: () => load() }, 'Tải lại');
   filter.onchange = () => load();
@@ -83,10 +138,7 @@ function thread(root, id) {
   const name = nameField();
   const msg = h('div');
   const bReply = h('button.btn.btn-primary', { type: 'button' }, 'Gửi trả lời');
-  const del = (kind, pid) => h('button.btn.btn-danger', { type: 'button', onclick: async () => {
-    if (!confirm('Xoá bài này?')) return;
-    try { await api('/delete', { kind, id: pid, token: tokenOf(kind, pid) }); toast('Đã xoá.'); kind === 'thread' ? (location.hash = 'dien-dan') : show(); } catch (e) { toast(e.message); }
-  } }, 'Xoá');
+  const del = (kind, pid) => delButton(kind, pid, () => (kind === 'thread' ? (location.hash = 'dien-dan') : show()));
   const show = () => run(bReply, out, async () => {
     const { thread: t, replies } = await api(`/${encodeURIComponent(id)}`);
     return h('div.stack', {},
@@ -94,11 +146,11 @@ function thread(root, id) {
         h('div.tags', {}, h('span.tag.topic', {}, t.topic)),
         h('h2', { style: 'margin:10px 0 4px;font-size:30px' }, t.title),
         h('p.muted', { style: 'font-size:13.5px;margin-bottom:12px' }, `${t.author} · ${when(t.created)}`),
-        rich(t.body), tokenOf('thread', t.id) ? h('div.btn-row', { style: 'margin-top:12px' }, del('thread', t.id)) : null),
+        rich(t.body), canDelete('thread', t.id) ? h('div.btn-row', { style: 'margin-top:12px' }, del('thread', t.id)) : null),
       h('h3', {}, `${replies.length} trả lời`),
       ...replies.map((r) => h('article.panel.reply', {},
         h('p.muted', { style: 'font-size:13.5px;margin-bottom:6px' }, `${r.author} · ${when(r.created)}`), rich(r.body),
-        tokenOf('reply', r.id) ? h('div.btn-row', { style: 'margin-top:8px' }, del('reply', r.id)) : null)));
+        canDelete('reply', r.id) ? h('div.btn-row', { style: 'margin-top:8px' }, del('reply', r.id)) : null)));
   }, 'Đang tải bài viết…');
   bReply.onclick = () => run(bReply, msg, async () => {
     store.set(NAME_KEY, name.input.value.trim());

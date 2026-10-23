@@ -19,3 +19,24 @@ export function validatePost(p = {}, { reply = false } = {}) {
   return out;
 }
 
+
+// ---- Moderator (giảng viên kiểm duyệt). The password is the MODERATOR_PASSWORD secret; a correct password
+// returns a signed token "expiry.signature" (HMAC keyed by the password, so changing it logs every moderator out).
+export const MOD_TTL = 12 * 3600_000;
+const enc = new TextEncoder();
+const toHex = (buf) => [...new Uint8Array(buf)].map((b) => b.toString(16).padStart(2, '0')).join('');
+const hmac = async (secret, msg) => toHex(await crypto.subtle.sign('HMAC',
+  await crypto.subtle.importKey('raw', enc.encode(secret), { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']), enc.encode(msg)));
+/** Compare without leaking where the strings differ. */
+export function sameText(a, b) {
+  const x = enc.encode(String(a)), y = enc.encode(String(b));
+  let d = x.length ^ y.length;
+  for (let i = 0; i < Math.max(x.length, y.length); i++) d |= (x[i] ?? 0) ^ (y[i] ?? 0);
+  return d === 0;
+}
+export async function signMod(secret, exp) { return `${exp}.${await hmac(secret, `mod:${exp}`)}`; }
+export async function verifyMod(secret, token, now = Date.now()) {
+  const [exp, sig] = String(token || '').split('.');
+  if (!secret || !sig || !(Number(exp) > now) || Number(exp) > now + MOD_TTL) return false;
+  return sameText(sig, await hmac(secret, `mod:${exp}`));
+}

@@ -210,3 +210,16 @@ test('md keeps the number of an ordered list that resumes after bullets', () => 
   assert.equal(md('1. Tìm hiểu đề\n- Đã cho\n2. Lập kế hoạch\n- Công thức'),
     '<ol><li>Tìm hiểu đề</li></ol><ul><li>Đã cho</li></ul><ol start="2"><li>Lập kế hoạch</li></ol><ul><li>Công thức</li></ul>');
 });
+
+test('mini-game keeps only playable questions and scores out of 10', async () => {
+  const { cleanQuestions, scoreGame } = await import('../public/js/quiz.js');
+  const ok = { kind: 'Lí thuyết', topic: 'Phân phối thông dụng', prompt: 'E(X) của B(n,p)?', options: ['A. np', 'npq', 'p', 'n'], answer: 0, explain: 'E(X)=np' };
+  const qs = cleanQuestions([ok, { ...ok }, { ...ok, prompt: 'Câu 2', answer: 'C' }, { ...ok, prompt: 'x', options: ['1', '2', '3'] },
+    { ...ok, prompt: 'y', answer: 4 }, { ...ok, prompt: 'z', options: ['1', '', '3', '4'] }, null, { ...ok, prompt: 'w', kind: 'lạ' }]);
+  assert.deepEqual(qs.map((q) => q.prompt), ['E(X) của B(n,p)?', 'Câu 2', 'w']); // duplicate and broken ones dropped
+  assert.equal(qs[0].options[0], 'np'); // "A. " prefix removed
+  assert.equal(qs[1].answer, 2);
+  assert.equal(qs[2].kind, 'Bài tập');
+  assert.deepEqual(scoreGame(qs, [0, null, 1]), { correct: 1, total: 3, score: 3.3 });
+  assert.deepEqual(scoreGame([], []), { correct: 0, total: 0, score: 0 });
+});

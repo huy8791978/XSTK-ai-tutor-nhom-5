@@ -1,8 +1,9 @@
 import { DurableObject } from 'cloudflare:workers';
 import { admit, settle, estimateTokens } from './limits.js';
 import { buildRequest, extractJson, wrongLanguage, LANGUAGE_RETRY } from './prompts.js';
-import { validatePost, FORUM_TOPICS } from './forum.js';
+import { validatePost, FORUM_TOPICS, signMod, verifyMod, sameText, MOD_TTL } from './forum.js';
 import { buildTts, ttsAudio } from './tts.js';
+import { modelList, benchFor, usable, AI_MODELS, TTS_MODELS } from './models.js';
 
 const json = (data, status = 200, headers = {}) =>
   new Response(JSON.stringify(data), { status, headers: { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store', ...headers } });
@@ -33,38 +34,17 @@ export default {
 
     // Reserve a typical reply size, not the maximum; settle() corrects it with Gemini's real count.
     const tokens = estimateTokens(req.promptChars, req.fileCount, 3000);
-    const limiter = env.LIMITER.get(env.LIMITER.idFromName('global'));
     const ip = request.headers.get('cf-connecting-ip') || 'unknown';
-    const model = env.GEMINI_MODEL || 'gemini-3.5-flash-lite';
+    // Per-visitor speed limit only; the shared quota is counted per model, so one exhausted model never blocks the others.
+    const mine = await env.LIMITER.get(env.LIMITER.idFromName('global')).acquire(ip, 0, false, { rpm: 1e9, tpm: 1e15, rpd: 1e9 });
+    if (!mine.ok) return json({ error: `Bạn gửi quá nhanh. Vui lòng thử lại sau ${mine.retryAfter} giây.`, retryAfter: mine.retryAfter, reason: 'ip' }, 429, { 'retry-after': String(mine.retryAfter) });
 
-    // One automatic retry for a transient Gemini error or an unreadable/cut-off reply.
+    // One automatic retry for an unreadable/cut-off reply or a reply in the wrong language.
     let failure, firstData;
     for (let attempt = 0; attempt < 2; attempt++) {
-      const slot = await limiter.acquire(ip, tokens, attempt > 0);
-      if (!slot.ok) {
-        if (attempt > 0) break;
-        const msg = { ip: 'Bạn gửi quá nhanh', rpm: 'Hệ thống đang nhiều người dùng', tpm: 'Hệ thống đang xử lí nhiều dữ liệu', rpd: 'Đã hết lượt dùng AI hôm nay' }[slot.reason];
-        return json({ error: `${msg}. Vui lòng thử lại sau ${slot.retryAfter} giây.`, retryAfter: slot.retryAfter, reason: slot.reason }, 429, { 'retry-after': String(slot.retryAfter) });
-      }
-      // The call to Google goes out from a Durable Object pinned to North America: visitors in Vietnam are often
-      // served from Cloudflare's Hong Kong edge, and Gemini rejects requests from there ("User location is not supported").
-      const res = await gateway(env).generate(model, req.body);
-      if (res.status === 0) {
-        failure = json({ error: 'Không kết nối được tới Gemini. Thử lại sau.' }, 502);
-        continue;
-      }
-      const data = res.data;
-      const actual = data.usageMetadata?.totalTokenCount;
-      if (actual) ctx.waitUntil(limiter.settle(slot.t, actual));
-
-      if (res.status === 429) return json({ error: 'Gemini đang quá tải. Vui lòng thử lại sau 30 giây.', retryAfter: 30, reason: 'upstream' }, 429);
-      if (res.status < 200 || res.status >= 300) {
-        console.error('gemini', res.status, data.error?.message);
-        failure = json({ error: 'AI tạm thời không phản hồi được. Thử lại sau.' }, 502);
-        if (res.status >= 500) continue;
-        return failure;
-      }
-      const cand = data.candidates?.[0];
+      const got = await callModels(env, ctx, req.body, tokens);
+      if (!got.ok) { failure = got.response; break; }
+      const cand = got.data.candidates?.[0];
       const text = (cand?.content?.parts || []).filter((p) => !p.thought).map((p) => p.text || '').join('');
       try {
         const data = extractJson(text);
@@ -81,7 +61,7 @@ export default {
         // Log the parser's reason and the text around the failing position, not just the start of the reply.
         const pos = Number(/position (\d+)/.exec(e.detail || '')?.[1]);
         const around = Number.isFinite(pos) ? (e.text || text).slice(Math.max(0, pos - 150), pos + 150) : text.slice(-300);
-        console.error('unparsable', task, cand?.finishReason, e.detail, `len=${text.length}`, `…${around}…`);
+        console.error('unparsable', got.model, task, cand?.finishReason, e.detail, `len=${text.length}`, `…${around}…`);
         failure = json({ error: 'AI trả về nội dung không đọc được. Bấm thử lại.' }, 502);
       }
     }
@@ -89,6 +69,36 @@ export default {
     return failure || json({ error: 'AI tạm thời không phản hồi được. Thử lại sau.' }, 502);
   },
 };
+
+/**
+ * Ask the strongest model that can answer now. A model that is out of quota (ours or Google's), unavailable or
+ * erroring is skipped silently and the next, weaker one answers instead; the student only sees an error when
+ * every model has failed. Returns { ok, data, model } or { ok: false, response }.
+ */
+async function callModels(env, ctx, body, tokens) {
+  let wait = Infinity, lastStatus = 0;
+  for (const model of usable(modelList(env.GEMINI_MODELS, AI_MODELS), aiBenched, Date.now())) {
+    const limiter = env.LIMITER.get(env.LIMITER.idFromName(`model:${model}`));
+    const slot = await limiter.acquire('-', tokens, true);
+    if (!slot.ok) { wait = Math.min(wait, slot.retryAfter); continue; } // our cap for this model: try the next one
+    // The call to Google goes out from a Durable Object pinned to North America: visitors in Vietnam are often
+    // served from Cloudflare's Hong Kong edge, and Gemini rejects requests from there ("User location is not supported").
+    const res = await gateway(env).generate(model, body);
+    const actual = res.data?.usageMetadata?.totalTokenCount;
+    if (actual) ctx.waitUntil(limiter.settle(slot.t, actual));
+    if (res.status >= 200 && res.status < 300) return { ok: true, data: res.data, model };
+    console.error('gemini', model, res.status, res.data?.error?.message);
+    lastStatus = res.status || 599; // 0 = network error
+    const bench = benchFor(res.status);
+    if (bench) aiBenched.set(model, Date.now() + bench);
+  }
+  if (lastStatus === 400) return { ok: false, response: json({ error: 'AI không xử lí được yêu cầu này (tệp hoặc nội dung không hợp lệ).' }, 400) };
+  if (Number.isFinite(wait) && !lastStatus) {
+    return { ok: false, response: json({ error: `Hệ thống đang nhiều người dùng. Vui lòng thử lại sau ${wait} giây.`, retryAfter: wait, reason: 'busy' }, 429, { 'retry-after': String(wait) }) };
+  }
+  return { ok: false, response: json({ error: 'AI tạm thời không phản hồi được. Vui lòng thử lại sau ít phút.', retryAfter: 30, reason: 'upstream' }, 503) };
+}
+const aiBenched = new Map(); // model → time it may be tried again (per Worker isolate; best effort)
 
 /** One global instance: every request across all visitors passes through it, so RPM/TPM/RPD are exact. */
 export class Limiter extends DurableObject {
@@ -165,7 +175,7 @@ async function tts(request, env) {
   // Newest model first; each has its own Google quota. A model that is out of quota (429) or unavailable
   // (400/403/404) is skipped and the next, older one is tried.
   const now = Date.now();
-  for (const model of ttsModels(env)) {
+  for (const model of modelList(env.GEMINI_TTS_MODELS, TTS_MODELS)) {
     if ((ttsBenched.get(model) || 0) > now) continue;
     let res = await gateway(env).generate(model, body);
     // A model that rejects systemInstruction (400) still reads fine without the style hint.
@@ -176,22 +186,21 @@ async function tts(request, env) {
     const audio = res.status === 200 ? ttsAudio(res.data) : null;
     if (audio) return json({ ...audio, model });
     console.error('tts', model, res.status, res.data?.error?.message);
-    // Out of quota: skip this model for a minute (per-minute limits) so we don't pay a round trip each time.
-    if (res.status === 429) ttsBenched.set(model, now + 60_000);
-    else if ([400, 403, 404].includes(res.status)) ttsBenched.set(model, now + 10 * 60_000);
+    // Skip a model that is out of quota or unavailable for a while, so we don't pay a round trip each time.
+    // A 400 here (even without the style hint) means the model cannot read aloud at all.
+    const bench = res.status === 400 ? 10 * 60_000 : benchFor(res.status);
+    if (bench) ttsBenched.set(model, now + bench);
   }
   return json({ error: 'Không tạo được giọng đọc.' }, 502);
 }
 
-// Comma-separated in wrangler.toml so models can be added or reordered without code changes.
-const ttsModels = (env) => String(env.GEMINI_TTS_MODELS || 'gemini-3.8-flash-tts,gemini-3.8-flash-lite-tts,gemini-3.1-flash-tts-preview,gemini-2.5-flash-preview-tts')
-  .split(',').map((s) => s.trim()).filter(Boolean);
 const ttsBenched = new Map(); // model → time it may be tried again (per Worker isolate; best effort)
 
 /** /api/forum routes:
  *  GET  /api/forum?topic=&before=   list threads     GET  /api/forum/:id          thread + replies
  *  POST /api/forum                  new thread       POST /api/forum/:id/reply    reply
- *  POST /api/forum/delete {kind,id,token}            author deletes own post */
+  *  POST /api/forum/delete {kind,id,token|mod}        author deletes own post; a moderator deletes any post
+ *  POST /api/forum/mod {password}                    moderator login → {token, exp} */
 async function forum(request, env, url) {
   const db = env.FORUM.get(env.FORUM.idFromName('global'));
   const ip = request.headers.get('cf-connecting-ip') || 'unknown';
@@ -204,7 +213,19 @@ async function forum(request, env, url) {
     if (request.method !== 'POST') return json({ error: 'Method not allowed' }, 405);
     if (Number(request.headers.get('content-length') || 0) > 32_000) return json({ error: 'Bài viết quá dài.' }, 413);
     const body = await request.json();
-    if (id === 'delete') return json(await db.remove(body.kind, body.id, body.token));
+    if (id === 'mod') {
+      if (!env.MODERATOR_PASSWORD) return json({ error: 'Máy chủ chưa đặt mật khẩu giảng viên (MODERATOR_PASSWORD).' }, 503);
+      await db.guardLogin(ip); // throws after too many wrong passwords from this IP
+      if (!sameText(await sha(String(body.password ?? '')), await sha(env.MODERATOR_PASSWORD))) return json({ error: 'Mật khẩu không đúng.' }, 403);
+      await db.loginOk(ip);
+      const exp = Date.now() + MOD_TTL;
+      return json({ token: await signMod(env.MODERATOR_PASSWORD, exp), exp });
+    }
+    if (id === 'delete') {
+      const mod = body.mod ? await verifyMod(env.MODERATOR_PASSWORD, body.mod) : false;
+      if (body.mod && !mod) return json({ error: 'Phiên giảng viên đã hết hạn. Hãy nhập lại mật khẩu.', modExpired: true }, 403);
+      return json(await db.remove(body.kind, body.id, body.token, mod));
+    }
     if (id && action === 'reply') return json(await db.reply(id, body, ip));
     if (!id) return json(await db.create(body, ip));
     return json({ error: 'Không tìm thấy.' }, 404);
@@ -265,10 +286,21 @@ export class Forum extends DurableObject {
     return { id: rid, token };
   }
 
-  async remove(kind, id, token) {
+  // Wrong moderator passwords: 5 tries per IP per 15 minutes, then wait (stops guessing the password).
+  guardLogin(ip) {
+    const now = Date.now(), tries = (this.logins?.get(ip) || []).filter((t) => now - t < 15 * 60_000);
+    if (tries.length >= 5) throw new Error(`Nhập sai quá nhiều lần. Thử lại sau ${Math.ceil((tries[0] + 15 * 60_000 - now) / 60_000)} phút.`);
+    (this.logins ??= new Map()).set(ip, [...tries, now]);
+    if (this.logins.size > 5000) this.logins.clear();
+  }
+
+  loginOk(ip) { this.logins?.delete(ip); }
+
+  /** The author deletes with their token; a verified moderator (mod = true) deletes any post. */
+  async remove(kind, id, token, mod = false) {
     const table = kind === 'reply' ? 'replies' : 'threads', hash = await sha(String(token || ''));
-    const [row] = this.sql.exec(`SELECT id, ${kind === 'reply' ? 'thread' : 'id AS thread'} FROM ${table} WHERE id = ? AND token = ?`, Number(id), hash).toArray();
-    if (!row) throw new Error('Bạn chỉ xoá được bài của chính mình.');
+    const [row] = this.sql.exec(`SELECT id, ${kind === 'reply' ? 'thread' : 'id AS thread'} FROM ${table} WHERE id = ?${mod ? '' : ' AND token = ?'}`, ...(mod ? [Number(id)] : [Number(id), hash])).toArray();
+    if (!row) throw new Error(mod ? 'Bài viết không còn tồn tại.' : 'Bạn chỉ xoá được bài của chính mình.');
     this.sql.exec(`DELETE FROM ${table} WHERE id = ?`, Number(id));
     if (kind === 'reply') this.sql.exec('UPDATE threads SET replies = replies - 1 WHERE id = ?', row.thread);
     else this.sql.exec('DELETE FROM replies WHERE thread = ?', Number(id));

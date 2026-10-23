@@ -1,7 +1,7 @@
 // Pure profile analytics (unit-tested). Sessions: { serial, at, feature, topic, score (0-10|null), mistakes: [{topic,type,detail}] }
 
 export const FEATURES = {
-  tutor: 'Chấm bài', concept: 'Lí thuyết', theorem: 'Định lí', 'practice-mcq': 'Trắc nghiệm', 'practice-essay': 'Tự luận', oral: 'Vấn đáp',
+  tutor: 'Chấm bài', concept: 'Lí thuyết', theorem: 'Định lí', 'practice-mcq': 'Trắc nghiệm', 'practice-essay': 'Tự luận', quiz: 'Mini-game', oral: 'Vấn đáp',
 };
 
 const round1 = (x) => Math.round(x * 10) / 10;

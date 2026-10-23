@@ -284,3 +284,32 @@ test('wrongLanguage spots a Vietnamese reply in English mode and an English repl
   assert.equal(wrongLanguage(vi, 'vi'), false);
   assert.equal(wrongLanguage({ score: 7, reply: 'OK' }, 'vi'), false); // too short to judge
 });
+
+test('model fallback: strongest first, benched models skipped, all-benched still tries', async () => {
+  const { modelList, benchFor, usable, AI_MODELS } = await import('../worker/models.js');
+  const list = modelList(undefined, AI_MODELS);
+  assert.equal(list[0], 'gemini-3.8-flash');
+  assert.deepEqual(modelList(' a , b ,,c', 'x'), ['a', 'b', 'c']);
+  assert.equal(benchFor(429), 60_000);
+  assert.equal(benchFor(404), 600_000);
+  assert.equal(benchFor(503), 0);
+  assert.equal(benchFor(400), 0);
+  const benched = new Map([['a', 2000], ['b', 500]]);
+  assert.deepEqual(usable(['a', 'b', 'c'], benched, 1000), ['b', 'c']);
+  assert.deepEqual(usable(['a'], benched, 1000), ['a']);
+});
+
+test('moderator token: signed with the password, expires, cannot be forged', async () => {
+  const { signMod, verifyMod, sameText, MOD_TTL } = await import('../worker/forum.js');
+  const now = 1_000_000, exp = now + MOD_TTL;
+  const tok = await signMod('mat-khau', exp);
+  assert.equal(await verifyMod('mat-khau', tok, now), true);
+  assert.equal(await verifyMod('mat-khau', tok, exp + 1), false); // expired
+  assert.equal(await verifyMod('khac', tok, now), false); // password changed
+  assert.equal(await verifyMod('mat-khau', `${exp + 1}.${tok.split('.')[1]}`, now), false); // expiry edited
+  assert.equal(await verifyMod('mat-khau', 'rac', now), false);
+  assert.equal(await verifyMod('', tok, now), false);
+  assert.equal(sameText('abc', 'abc'), true);
+  assert.equal(sameText('abc', 'abd'), false);
+  assert.equal(sameText('abc', 'abcd'), false);
+});

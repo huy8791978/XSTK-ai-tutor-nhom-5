@@ -8,3 +8,6 @@ export const ERROR_TYPES = [
   'Hiểu sai khái niệm', 'Chọn sai công thức/mô hình', 'Sai tính toán', 'Thiếu điều kiện/giả thiết',
   'Đọc sai đề', 'Lập luận/trình bày thiếu chặt chẽ',
 ];
+// Mini-game: difficulty names (sent to the AI as written) and the size of one question set.
+export const QUIZ_LEVELS = ['Dễ', 'Trung bình', 'Khó'];
+export const QUIZ_SIZE = 20;

@@ -1,6 +1,6 @@
 # XSTK·AI — Gia sư AI môn Xác suất Thống kê
 
-Web tĩnh (HTML/CSS/JS, không cần build) chạy trên **Cloudflare Workers (miễn phí)**. Worker làm proxy tới **Gemini `gemini-3.5-flash-lite`**: API key chỉ nằm ở server (lấy từ GitHub Secret), trình duyệt không bao giờ thấy key.
+Web tĩnh (HTML/CSS/JS, không cần build) chạy trên **Cloudflare Workers (miễn phí)**. Worker làm proxy tới **Gemini `gemini-3.8-flash`** (hết lượt hoặc lỗi thì tự chuyển ngầm sang model yếu hơn): API key chỉ nằm ở server (lấy từ GitHub Secret), trình duyệt không bao giờ thấy key.
 
 ## Tính năng
 
@@ -38,6 +38,7 @@ Mọi ô nhập văn bản đều có nút **Nhập công thức**: mở bàn ph
    - `GEMINI_API_KEY`
 5. Vào tab **Actions** → chạy workflow *Test & Deploy* (hoặc push lên `main`). Workflow chạy test, deploy, và đẩy `GEMINI_API_KEY` vào Worker dưới dạng secret mã hoá.
 6. Trang chạy tại `https://xstk-ai.<subdomain>.workers.dev`.
+7. **Mật khẩu giảng viên kiểm duyệt diễn đàn**: Cloudflare → *Workers & Pages → xstk-ai → Settings → Variables and Secrets → Add* → loại **Secret**, tên `MODERATOR_PASSWORD`, giá trị là mật khẩu bạn chọn. Chưa đặt thì nút đổi vai trò báo "Máy chủ chưa đặt mật khẩu giảng viên". Đổi mật khẩu là mọi giảng viên đang đăng nhập bị đăng xuất; phiên giảng viên tự hết hạn sau 12 giờ; nhập sai 5 lần thì khoá 15 phút.
 
 ### Đổi tên miền
 - **Tên miền riêng**: Cloudflare → *Workers & Pages → xstk-ai → Settings → Domains & Routes → Add → Custom domain*. Tên miền phải dùng DNS của Cloudflare (thêm site miễn phí, đổi nameserver ở nhà đăng kí).
@@ -57,7 +58,7 @@ Mọi yêu cầu đi qua **một Durable Object toàn cục**, nên các giới 
 | `GEMINI_TTS_MODELS` | 3.8 → 3.1 → 2.5 | Các mô hình đọc giọng (giọng nam/nữ thật), thử từ mới đến cũ: mô hình nào hết lượt thì dùng mô hình kế tiếp; hết cả thì dùng giọng của máy |
 | `LIMIT_TTS_RPM` / `LIMIT_TTS_RPD` | 30 / 400 | Giới hạn riêng cho đọc giọng (tính chung các mô hình TTS), không ăn vào lượt AI trả lời |
 
-Khi vượt giới hạn, người dùng thấy thông báo tiếng Việt và nút tự đếm ngược tới lúc thử lại. Đặt các số này thấp hơn khoảng 10% so với hạn mức của dự án trong Google AI Studio (*Usage & limits*), vì hạn mức free tier thay đổi theo model và theo thời gian. Đổi model bằng biến `GEMINI_MODEL`.
+Khi vượt giới hạn, người dùng thấy thông báo tiếng Việt và nút tự đếm ngược tới lúc thử lại. Đặt các số này thấp hơn khoảng 10% so với hạn mức của dự án trong Google AI Studio (*Usage & limits*), vì hạn mức free tier thay đổi theo model và theo thời gian. Danh sách model (mạnh → yếu) nằm ở biến `GEMINI_MODELS`; giới hạn được đếm riêng cho từng model.
 
 ## Bảo mật
 
