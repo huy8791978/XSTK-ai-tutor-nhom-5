@@ -313,3 +313,11 @@ test('moderator token: signed with the password, expires, cannot be forged', asy
   assert.equal(sameText('abc', 'abd'), false);
   assert.equal(sameText('abc', 'abcd'), false);
 });
+
+test('mathNotes asks for written formulas and a full reading in words', () => {
+  const t = (p) => buildRequest('mathNotes', p).body.contents[0].parts[0].text;
+  assert.ok(t({ kind: 'spoken', text: 'p của a hợp b' }).includes('p của a hợp b') && t({ kind: 'spoken', text: 'x' }).includes('"speech"'));
+  assert.ok(t({ kind: 'document', text: '$P(A)$' }).includes('MỌI công thức'));
+  assert.ok(t({ kind: 'turn', question: 'q', reply: 'r' }).includes('Gia sư đã trả lời bằng lời: r'));
+  assert.ok(t({ kind: 'lạ', text: 'y' }).includes('đọc công thức bằng lời'));
+});

@@ -96,6 +96,22 @@ Sinh viên vừa nói: "${p.text || ''}"${p.typed ? ' (gõ bằng bàn phím)' :
 - Bài toán: dẫn dắt theo 4 bước Polya, không đưa ngay đáp số trừ khi sinh viên đã tự làm.
 Trả JSON: {"understood": true|false, "reply": "<câu trả lời hiển thị, markdown + LaTeX>", "speech": "<bản để đọc thành tiếng: ${p.lang === 'en' ? 'in plain spoken English' : 'tiếng Việt thuần'}, KHÔNG LaTeX, đọc công thức bằng lời, tối đa 4 câu>", "board": true|false, ${CASIO}, "viz": <viz hoặc null>}`,
   }),
+  // Written formulas (and, for documents or spoken formulas, the full reading in words) next to the real-time voice.
+  // kind: 'turn' (a voice exchange: question + reply), 'spoken' (a formula said in words), 'document' (text from a file).
+  mathNotes: (p) => {
+    const kind = ['turn', 'spoken', 'document'].includes(p.kind) ? p.kind : 'spoken';
+    const src = kind === 'turn' ? `Sinh viên hỏi (giọng nói, có thể nhận dạng sai chính tả): ${p.question || '(không rõ)'}\nGia sư đã trả lời bằng lời: ${p.reply || ''}`
+      : kind === 'spoken' ? `Sinh viên đọc công thức bằng lời (nhận dạng giọng nói, có thể sai chính tả): ${p.text || ''}`
+      : `Văn bản lấy từ tệp của sinh viên (công thức trong $...$):\n${p.text || ''}`;
+    const job = kind === 'turn' ? `Viết lại ĐẦY ĐỦ ở dạng LaTeX mọi công thức được nhắc tới trong lượt trao đổi trên (không thêm công thức không được nhắc); nếu có phép tính thì thêm cách bấm CASIO. Không có công thức thì "math": "". "speech": "".`
+      : kind === 'spoken' ? 'Hiểu đúng công thức sinh viên muốn nói (chọn cách hiểu hợp lí nhất trong môn học), viết nó ở dạng LaTeX chuẩn, rồi viết "speech": đọc lại ĐẦY ĐỦ công thức bằng lời và một câu ngắn về ý nghĩa.'
+      : 'Liệt kê theo thứ tự MỌI công thức trong văn bản ở dạng LaTeX chuẩn (sửa lỗi nhận dạng rõ ràng), rồi viết "speech": đọc ĐẦY ĐỦ từng công thức bằng lời theo thứ tự, không bỏ sót, mỗi công thức một câu, kèm tên công thức nếu có.';
+    return {
+      text: `${src}\n\n${job}
+Trong "speech": tiếng Việt thuần (hoặc tiếng Anh khi được yêu cầu), KHÔNG LaTeX, KHÔNG kí hiệu; đọc kí hiệu bằng lời (ví dụ «P của A hợp B», «x gạch ngang», «căn bậc hai của n», «sigma bình phương»).
+Trả JSON: {"math": "<markdown: mỗi công thức một dòng, dạng **tên** (nếu có) rồi $$...$$>", "speech": "<đọc bằng lời>", ${CASIO}, "viz": <viz hoặc null>}`,
+    };
+  },
   // Mini-game: the whole 20-question set in one call, so play never waits on the AI.
   quiz: (p) => {
     const level = QUIZ_LEVELS.includes(p.level) ? p.level : 'Trung bình';

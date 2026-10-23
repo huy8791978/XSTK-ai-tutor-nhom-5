@@ -4,6 +4,7 @@ import { buildRequest, extractJson, wrongLanguage, LANGUAGE_RETRY } from './prom
 import { validatePost, FORUM_TOPICS, signMod, verifyMod, sameText, MOD_TTL } from './forum.js';
 import { buildTts, ttsAudio } from './tts.js';
 import { modelList, benchFor, usable, AI_MODELS, TTS_MODELS } from './models.js';
+import { LiveRelay, orderLive, LIVE_MODELS, LIVE_URL } from './live.js';
 
 const json = (data, status = 200, headers = {}) =>
   new Response(JSON.stringify(data), { status, headers: { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store', ...headers } });
@@ -18,6 +19,12 @@ export default {
     if (origin && new URL(origin).host !== url.host) return json({ error: 'Nguồn không hợp lệ.' }, 403);
     if (url.pathname.startsWith('/api/forum')) return forum(request, env, url);
     if (url.pathname === '/api/tts' && request.method === 'POST') return tts(request, env);
+    // Real-time voice: the WebSocket is handled by the gateway instance (North America), like every Gemini call.
+    if (url.pathname === '/api/live') {
+      if (request.headers.get('upgrade')?.toLowerCase() !== 'websocket') return json({ error: 'Cần kết nối WebSocket.' }, 426);
+      if (!env.GEMINI_API_KEY) return json({ error: 'Máy chủ chưa cấu hình GEMINI_API_KEY.' }, 500);
+      return gateway(env).fetch(request);
+    }
     if (url.pathname !== '/api/ai') return json({ error: 'Không tìm thấy.' }, 404);
     if (request.method !== 'POST') return json({ error: 'Method not allowed' }, 405);
     if (!env.GEMINI_API_KEY) return json({ error: 'Máy chủ chưa cấu hình GEMINI_API_KEY.' }, 500);
@@ -133,6 +140,63 @@ export class Limiter extends DurableObject {
   async settle(t, actual) {
     this.s = settle(this.s, { t, actual });
     await this.ctx.storage.put('s', this.s);
+  }
+
+  /**
+   * GET /api/live (WebSocket), on the gateway instance only: one real-time voice conversation, relayed to the
+   * Gemini Live model that works now. Query: mode=voice|formula, gender, lang.
+   */
+  async fetch(request) {
+    const url = new URL(request.url);
+    if (url.pathname !== '/api/live' || request.headers.get('upgrade')?.toLowerCase() !== 'websocket') return new Response('Not found', { status: 404 });
+    const ip = request.headers.get('cf-connecting-ip') || 'unknown';
+    this.liveIps ??= new Map();
+    const mine = this.liveIps.get(ip) || 0, total = [...this.liveIps.values()].reduce((a, b) => a + b, 0);
+    const [client, server] = Object.values(new WebSocketPair());
+    server.accept();
+    // Too many open conversations: tell the page (it falls back to the ordinary voice mode) instead of failing.
+    if (mine >= Number(this.env.LIVE_PER_IP ?? 2) || total >= Number(this.env.LIVE_MAX_SESSIONS ?? 30)) {
+      server.send(JSON.stringify({ t: 'unavailable', reason: 'busy' }));
+      server.close(1013, 'busy');
+      return new Response(null, { status: 101, webSocket: client });
+    }
+    this.liveIps.set(ip, mine + 1);
+    const q = url.searchParams;
+    const relay = new LiveRelay(server, {
+      models: await this.liveModels(),
+      benched: (this.liveBenched ??= new Map()),
+      connect: (model) => this.liveConnect(model),
+      mode: q.get('mode') === 'formula' ? 'formula' : 'voice',
+      gender: q.get('gender') === 'male' ? 'male' : 'female',
+      lang: q.get('lang') === 'en' ? 'en' : 'vi',
+      onEnd: () => { const n = (this.liveIps.get(ip) || 1) - 1; if (n > 0) this.liveIps.set(ip, n); else this.liveIps.delete(ip); },
+    });
+    relay.start();
+    return new Response(null, { status: 101, webSocket: client });
+  }
+
+  /** Open a socket to Google's Live API (from this North-American instance). */
+  async liveConnect() {
+    const res = await fetch(`${LIVE_URL}?key=${encodeURIComponent(this.env.GEMINI_API_KEY)}`, { headers: { Upgrade: 'websocket' } });
+    const ws = res.webSocket;
+    if (!ws) throw new Error(`live ${res.status}`);
+    ws.accept();
+    return ws;
+  }
+
+  /** Live models to try, strongest first: GEMINI_LIVE_MODELS, checked against what Google serves (cached 1 hour). */
+  async liveModels() {
+    const configured = modelList(this.env.GEMINI_LIVE_MODELS, LIVE_MODELS);
+    if (this.liveServed && this.liveServed.at > Date.now() - 3600_000) return orderLive(configured, this.liveServed.list);
+    let list = [];
+    try {
+      const res = await fetch('https://generativelanguage.googleapis.com/v1beta/models?pageSize=1000', { headers: { 'x-goog-api-key': this.env.GEMINI_API_KEY } });
+      const d = await res.json();
+      list = (d.models || []).filter((m) => (m.supportedGenerationMethods || []).includes('bidiGenerateContent')).map((m) => String(m.name).replace(/^models\//, ''));
+    } catch { /* listing failed: use the configured names as they are */ }
+    this.liveServed = { at: list.length ? Date.now() : Date.now() - 3300_000, list }; // failed listing: retry in 5 minutes
+    const ordered = orderLive(configured, list);
+    return ordered.length ? ordered : configured;
   }
 
   /** Gemini call made from wherever this instance lives (the "gateway" instance is pinned to North America). */

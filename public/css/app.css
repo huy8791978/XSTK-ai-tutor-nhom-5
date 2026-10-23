@@ -601,3 +601,8 @@ kbd.key.val { background: var(--paper); color: var(--ink); border: 1px solid var
   .quiz-item summary { grid-template-columns: 52px auto; }
   .quiz-sum { grid-column: 1 / -1; }
 }
+
+/* Formula Q&A: the stage carries only the status and the two controls */
+.formula-stage { min-height: 0; padding-block: 22px; }
+.formula-stage[data-state="speaking"] .tutor-status { color: var(--ultra); }
+.compose-box + .compose-box { margin-top: 14px; }
