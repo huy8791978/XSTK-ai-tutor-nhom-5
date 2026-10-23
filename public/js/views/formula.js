@@ -5,7 +5,8 @@ import { h, icon, rich, run, toast } from '../ui.js';
 import { ai } from '../api.js';
 import { mathField } from '../mathinput.js';
 import { uploader } from '../uploader.js';
-import { speak, stopSpeaking } from '../voice.js';
+import { speak, stopSpeaking, getGender, setGender } from '../voice.js';
+import { teacher } from '../teacher.js';
 import { getLang } from '../i18n.js';
 import { liveSession, canLive } from '../live.js';
 import { liveThread } from '../livethread.js';
@@ -38,7 +39,18 @@ export function render(root) {
   let live = null, stopReading = null;
   const thread = h('div.thread', { 'aria-live': 'polite' });
   const status = h('p.tutor-status', { role: 'status' }, LABEL.idle);
-  const setState = (s) => { status.textContent = LABEL[s] || LABEL.idle; stage.dataset.state = s; };
+  // The same teacher as on the voice page: listens, thinks and speaks with the conversation; Nam / Nữ switches voice and face.
+  const face = teacher(getGender());
+  const genderBtns = ['female', 'male'].map((g) => h('button', { type: 'button', 'data-g': g, 'aria-pressed': String(getGender() === g) }, g === 'male' ? 'Giọng nam' : 'Giọng nữ'));
+  const genderToggle = h('div.gender-toggle', { role: 'group', 'aria-label': 'Chọn giọng đọc' }, genderBtns);
+  genderToggle.addEventListener('click', (e) => {
+    const g = e.target.closest('button')?.dataset.g;
+    if (!g || g === getGender()) return;
+    setGender(g); face.dataset.gender = g;
+    genderBtns.forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.g === g)));
+    if (live?.active) live.configure({ gender: g });
+  });
+  const setState = (s) => { status.textContent = LABEL[s] || LABEL.idle; stage.dataset.state = s; face.dataset.state = s === 'connecting' ? 'thinking' : s; };
 
   // Written formula for a spoken one, when the model did not put it on screen itself.
   const view = liveThread(thread, { onTurn: (t) => {
@@ -141,7 +153,7 @@ export function render(root) {
     }, 'Đang đọc tệp…');
   };
 
-  const stage = h('section.panel.voice-stage.formula-stage', {}, status, h('div.btn-row', { style: 'justify-content:center' }, bLive, bStop));
+  const stage = h('section.panel.voice-stage', {}, genderToggle, face, status, h('div.btn-row', { style: 'justify-content:center' }, bLive, bStop));
   root.append(stage,
     h('div', { style: 'max-width:900px;margin-top:20px' }, thread,
       h('section.panel.compose-box', { 'aria-label': 'Công thức' }, field, h('div.btn-row', { style: 'margin-top:10px' }, bRead)),
