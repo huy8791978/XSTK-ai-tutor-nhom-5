@@ -218,7 +218,7 @@ const DICT = {
 
 // Strings built at runtime.
 const RULES = [
-  [/^Máy chủ lỗi ((d+)).$/, 'Server error ($1).'],
+  [/^Máy chủ lỗi \((\d+)\)\.$/,'Server error ($1).'],
   [/^Bước (\d+)\. (.+)$/, (m, n, x) => `Step ${n}. ${DICT[x] || x}`], [/^← Bước (\d+): (.+)$/, (m, n, x) => `← Step ${n}: ${DICT[x] || x}`],
   [/^(\d+) phiên đã ghi · (\d+) phiên dưới 5 điểm$/, '$1 sessions recorded · $2 below 5 points'],
   [/^(\d+) phiên · (\d+) phiên dưới 5 điểm · điểm TB (.+)$/, '$1 sessions · $2 below 5 points · average $3'],
