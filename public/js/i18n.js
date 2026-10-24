@@ -55,6 +55,10 @@ const DICT = {
   'Barem điểm (tuỳ chọn)': 'Marking scheme (optional)', 'Cập nhật barem điểm': 'Update marking scheme',
   'Ví dụ: Đặt biến cố 1đ; Công thức đầy đủ 2đ; Bayes 4đ; Kết luận 1đ…': 'e.g. Define events 1pt; Total probability 2pt; Bayes 4pt; Conclusion 1pt…',
   'Viết trên bảng (iPad)': 'Write on the board (iPad)', 'Trình bày trên bảng (iPad)': 'Show on the board (iPad)',
+  'Mỗi viên bi rẽ trái hay phải với xác suất ½. Hàng nghìn lựa chọn ngẫu nhiên vẫn xếp thành hình chuông: đó là định lí giới hạn trung tâm.': 'Each ball goes left or right with probability ½. Thousands of random choices still stack into a bell: the central limit theorem.',
+  'Chọn một định lí gợi ý hoặc tự gõ tên, rồi bấm "Bắt đầu học".': 'Pick a suggested theorem or type its name, then press "Start learning".',
+  'Chọn một khái niệm gợi ý hoặc tự gõ tên, rồi bấm "Bắt đầu học".': 'Pick a suggested concept or type its name, then press "Start learning".',
+  'Chưa có phiên nào được chấm.': 'No graded sessions yet.', 'Chưa có lỗi nào': 'No mistakes yet',
   'Mỗi viên bi rẽ trái hay phải với xác suất ½. Hàng nghìn lựa chọn ngẫu nhiên vẫn xếp thành hình chuông: đó là định lí giới hạn trung tâm. Kết quả chấm sẽ hiện ở đây.': 'Each ball goes left or right with probability ½. Thousands of random choices still stack into a bell: the central limit theorem. Your grade will appear here.',
   'Gợi ý hướng đi, không có đáp số. Tự làm rồi bấm "Chấm điểm".': 'Directions only, no answer. Solve it, then press "Grade it".',
   'Cái đã cho': 'Given', 'Cái phải tìm': 'To find', 'Điều kiện': 'Conditions', 'Kiến thức cần dùng': 'Knowledge needed', 'Sai lầm hay gặp': 'Common pitfalls',
@@ -214,6 +218,11 @@ const DICT = {
 
 // Strings built at runtime.
 const RULES = [
+  [/^Máy chủ lỗi ((d+)).$/, 'Server error ($1).'],
+  [/^Bước (\d+)\. (.+)$/, (m, n, x) => `Step ${n}. ${DICT[x] || x}`], [/^← Bước (\d+): (.+)$/, (m, n, x) => `← Step ${n}: ${DICT[x] || x}`],
+  [/^(\d+) phiên đã ghi · (\d+) phiên dưới 5 điểm$/, '$1 sessions recorded · $2 below 5 points'],
+  [/^(\d+) phiên · (\d+) phiên dưới 5 điểm · điểm TB (.+)$/, '$1 sessions · $2 below 5 points · average $3'],
+  [/^Trung bình của (\d+) phiên có chấm điểm\.$/, 'Average of $1 graded sessions.'], [/^Nhiều nhất: (.+)$/, (m, x) => `Most frequent: ${DICT[x] || x}`],
   [/^Câu (\d+)$/, 'Question $1'], [/^Bước (\d+)$/, 'Step $1'], [/^← Bước (\d+)$/, '← Step $1'], [/^Thử lại sau (\d+)s$/, 'Retry in $1s'],
   [/^Bước (\d+): (.+) →$/, (m, n, s) => `Step ${n}: ${DICT[s] || s} →`], [/^Tiếp: (.+) →$/, (m, s) => `Next: ${DICT[s] || s} →`], [/^← (.+)$/, (m, s) => (DICT[s] ? `← ${DICT[s]}` : m)],
   [/^Chưa đúng · đáp án ([A-D?])$/, 'Wrong · answer $1'], [/^(\d+) trả lời$/, '$1 replies'], [/^MÃ HỒ SƠ (.+)$/, 'PROFILE $1'],
