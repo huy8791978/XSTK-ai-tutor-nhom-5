@@ -1,4 +1,4 @@
-# XSTK·AI — Gia sư AI môn Xác suất Thống kê
+# AI Classroom — Gia sư AI môn Xác suất Thống kê
 
 Web tĩnh (HTML/CSS/JS, không cần build) chạy trên **Cloudflare Workers (miễn phí)**. Worker làm proxy tới **Gemini `gemini-3.8-flash`** (hết lượt hoặc lỗi thì tự chuyển ngầm sang model yếu hơn): API key chỉ nằm ở server (lấy từ GitHub Secret), trình duyệt không bao giờ thấy key.
 

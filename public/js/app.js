@@ -34,7 +34,7 @@ function go() {
   document.querySelectorAll('[data-route]').forEach((a) => (a.dataset.route === key ? a.setAttribute('aria-current', 'page') : a.removeAttribute('aria-current')));
   document.querySelector('.profile-btn').hidden = key === 'ho-so';
   title.textContent = mod.meta.title; lede.textContent = mod.meta.lede;
-  document.title = `${tr(mod.meta.title)} · XSTK·AI`;
+  document.title = `${tr(mod.meta.title)} · AI Classroom`;
   document.querySelector('.nav [aria-current]')?.scrollIntoView({ block: 'nearest', inline: 'nearest' });
   // Each feature keeps its own pane, hidden while you are elsewhere, so work in progress survives switching.
   // Pages showing shared or freshly computed data are rebuilt on every visit.
@@ -67,7 +67,7 @@ go();
 // ---- EN/VI switch without reload: everything on screen stays, and is shown in the new language.
 addEventListener('langchange', () => {
   const mod = ROUTES[current];
-  if (mod) { title.textContent = mod.meta.title; lede.textContent = mod.meta.lede; document.title = `${tr(mod.meta.title)} · XSTK·AI`; }
+  if (mod) { title.textContent = mod.meta.title; lede.textContent = mod.meta.lede; document.title = `${tr(mod.meta.title)} · AI Classroom`; }
   translateContent(getLang());
 });
 

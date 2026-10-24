@@ -40,7 +40,7 @@ export function exportFile() {
 
 export async function importFile(file) {
   const data = JSON.parse(await file.text());
-  if (!data || !Array.isArray(data.sessions)) throw new Error('Tệp không phải hồ sơ XSTK·AI.');
+  if (!data || !Array.isArray(data.sessions)) throw new Error('Tệp không phải hồ sơ AI Classroom.');
   cache = { id: String(data.id || newSerial()), created: data.created || Date.now(), sessions: data.sessions, insight: data.insight || null };
   save();
 }

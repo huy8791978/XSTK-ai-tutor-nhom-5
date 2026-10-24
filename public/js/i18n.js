@@ -198,7 +198,7 @@ const DICT = {
   'Bấm nút để AI đọc toàn bộ hồ sơ và đưa ra nhận định.': 'Press the button for the AI to read your profile and give a diagnosis.',
   'Hồ sơ còn trống. Hãy chấm một bài, làm một bộ luyện tập hoặc một buổi vấn đáp.': 'Your profile is empty. Grade some work, do a practice set or an oral exam.',
   'Lỗi lặp lại': 'Recurring mistakes', 'Ưu tiên': 'Priorities', 'Lộ trình 2 tuần': '2-week plan', 'AI chưa đưa ra nhận định. Thử lại sau.': 'No diagnosis yet. Try again later.',
-  'Tệp không phải hồ sơ XSTK·AI.': 'This file is not an XSTK·AI profile.',
+  'Tệp không phải hồ sơ AI Classroom.': 'This file is not an AI Classroom profile.',
   // forum
   'Lọc theo chủ đề': 'Filter by topic', 'Tất cả chủ đề': 'All topics', 'Viết bài mới': 'New post', 'Tải lại': 'Reload', 'Bài viết mới': 'New post', 'Tiêu đề': 'Title',
   'Ví dụ: Khi nào dùng phân phối Poisson thay cho nhị thức?': 'e.g. When should I use Poisson instead of binomial?', 'Nội dung': 'Content', 'Trình bày câu hỏi hoặc chia sẻ của bạn…': 'Write your question or share your idea…',
