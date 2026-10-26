@@ -158,3 +158,10 @@ test('Live personas carry the spoken-formula guide and ask for the whole formula
   assert.ok(sys('formula', 'en').includes('WHOLE formula') && sys('formula', 'en').includes('standard normal'));
   assert.ok(!sys('formula', 'en').includes('cô giáo'));
 });
+
+test('Live waits longer for the end of speech on the formula page', () => {
+  const vad = (mode) => liveSetup('m', { mode }).setup.realtimeInputConfig.automaticActivityDetection;
+  assert.equal(vad('formula').silenceDurationMs, 2000);
+  assert.equal(vad('voice').silenceDurationMs, 1200);
+  assert.equal(vad('formula').endOfSpeechSensitivity, 'END_SENSITIVITY_LOW');
+});

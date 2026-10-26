@@ -80,6 +80,8 @@ export function liveSetup(model, { mode = 'voice', gender = 'female', lang = 'vi
       },
       systemInstruction: { parts: [{ text: persona + historyText(history, lang) }] },
       ...(tools ? { tools: [{ functionDeclarations: [SHOW_MATH] }] } : {}),
+      // A formula is read with pauses: wait longer before deciding the student has finished (formula page most).
+      realtimeInputConfig: { automaticActivityDetection: { endOfSpeechSensitivity: 'END_SENSITIVITY_LOW', silenceDurationMs: mode === 'formula' ? 2000 : 1200 } },
       inputAudioTranscription: {},
       outputAudioTranscription: {},
     },

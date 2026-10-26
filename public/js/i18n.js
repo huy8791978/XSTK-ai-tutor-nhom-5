@@ -75,7 +75,7 @@ const DICT = {
   'Mực đen': 'Black ink', 'Mực xanh': 'Blue ink', 'Mực đỏ': 'Red ink', 'Tẩy': 'Eraser', 'Hoàn tác': 'Undo', 'Xoá bảng': 'Clear board', 'Bảng viết tay': 'Handwriting board', 'Công cụ bảng': 'Board tools',
   'Viết bằng bút Apple Pencil, ngón tay hoặc chuột. AI sẽ đọc chữ viết tay trên bảng.': 'Write with an Apple Pencil, finger or mouse. The AI reads the handwriting.',
   // math input & voice
-  'Nhập công thức': 'Insert formula', 'Nói': 'Speak', 'Chèn vào bài': 'Insert', 'Đóng': 'Close', 'Công thức đang trống.': 'The formula is empty.', 'Ô soạn công thức': 'Formula editor',
+  'Nhập công thức': 'Insert formula', 'Nói': 'Speak', 'Dừng': 'Stop', 'Chèn vào bài': 'Insert', 'Đóng': 'Close', 'Công thức đang trống.': 'The formula is empty.', 'Ô soạn công thức': 'Formula editor',
   'Bấm một mẫu trên bàn phím (phân số, P(A|B), tổ hợp…) rồi điền giá trị vào các ô. Có thể gõ trực tiếp: 1/2 thành phân số, ^ là mũ, _ là chỉ số.': 'Press a template on the keyboard (fraction, P(A|B), combination…) then fill in the boxes. You can also type: 1/2 becomes a fraction, ^ for powers, _ for subscripts.',
   'Không tải được bộ soạn công thức. Kiểm tra mạng, hoặc gõ công thức giữa hai dấu $…$.': 'Could not load the formula editor. Check your connection, or type formulas between $…$.',
   'Kí hiệu Xác suất Thống kê': 'Probability & Statistics symbols', 'Bấm để nói': 'Press to speak', 'Đang nghe… bấm lần nữa để dừng': 'Listening… press again to stop',

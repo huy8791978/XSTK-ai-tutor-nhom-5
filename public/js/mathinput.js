@@ -118,21 +118,26 @@ export function micButton(ta) {
   const b = h('button.btn.btn-ghost.math-open', { type: 'button', 'aria-pressed': 'false' }, icon('mic'), 'Nói');
   const emit = (phase, text = '') => ta.dispatchEvent(new CustomEvent('dictation', { detail: { phase, text }, cancelable: true }));
   let rec;
+  const say = (s) => { b.lastChild.textContent = s; };
   b.onclick = async () => {
     if (rec) return rec.stop();
-    b.setAttribute('aria-pressed', 'true');
+    b.setAttribute('aria-pressed', 'true'); say('Dừng');
     emit('start');
+    // Keeps listening through the pauses of a long formula; ends after ~3 s of silence or on «Dừng».
+    // The words appear in the box while they are heard.
+    const before = ta.value, join = (t) => `${before}${before && !/\s$/.test(before) && t ? ' ' : ''}${t}`;
     try {
-      rec = listen();
+      rec = listen({ continuous: true, onInterim: (t) => { ta.value = join(t); } });
       const text = await rec;
       if (!text) throw { code: 'no-speech' };
-      ta.value = `${ta.value}${ta.value && !/\s$/.test(ta.value) ? ' ' : ''}${text}`;
+      ta.value = join(text);
       ta.dispatchEvent(new Event('input', { bubbles: true }));
       emit('done', text);
     } catch {
+      ta.value = before;
       if (emit('fail')) { toast(fallbackText()); ta.focus(); }
     } finally {
-      rec = null; b.setAttribute('aria-pressed', 'false');
+      rec = null; b.setAttribute('aria-pressed', 'false'); say('Nói');
     }
   };
   return b;

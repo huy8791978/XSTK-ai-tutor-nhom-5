@@ -223,3 +223,18 @@ test('mini-game keeps only playable questions and scores out of 10', async () =>
   assert.deepEqual(scoreGame(qs, [0, null, 1]), { correct: 1, total: 3, score: 3.3 });
   assert.deepEqual(scoreGame([], []), { correct: 0, total: 0, score: 0 });
 });
+
+test('continuous dictation keeps listening through pauses and restarts when the browser stops at one', async () => {
+  const made = [];
+  class FakeRec { constructor() { made.push(this); } start() {} stop() { this.onend?.(); } }
+  if (typeof window === 'undefined') globalThis.window = {};
+  window.SpeechRecognition = FakeRec;
+  const { listen } = await import(`../public/js/voice.js?rec=${Date.now()}`);
+  const p = listen({ continuous: true, silenceMs: 60 });
+  const say = (r, t) => r.onresult({ results: [[{ transcript: t }]] });
+  say(made[0], 'P của trừ z bằng một trừ an pha');
+  made[0].onend(); // the browser ends at the pause
+  assert.equal(made.length, 2, 'restarted');
+  say(made[1], 'suy ra P của F trừ z');
+  assert.equal(await p, 'P của trừ z bằng một trừ an pha suy ra P của F trừ z');
+});

@@ -21,21 +21,41 @@ const locale = () => (getLang() === 'en' ? 'en-US' : 'vi-VN');
  * Listen once. onInterim(text) streams partial text. Resolves with the final transcript ('' if nothing heard).
  * Rejects with { code } for 'unsupported', 'not-allowed', 'audio-capture', 'network'….
  */
-export function listen({ onInterim } = {}) {
+export function listen({ onInterim, continuous = false, silenceMs = 2800, maxMs = 90000 } = {}) {
   if (!Rec) return Promise.reject({ code: 'unsupported' });
-  const r = new Rec();
-  r.lang = locale(); r.interimResults = true; r.continuous = false; r.maxAlternatives = 1;
-  let text = '';
+  // continuous: a long formula is read with pauses ("… bằng một trừ an pha, suy ra …"). Keep listening across
+  // pauses and stop only after silenceMs without new words (or on stop()); browsers that end the recognition at
+  // every pause (Android, Safari) are restarted and the words so far kept.
+  let done = '', text = '', r, stopped = false, timer, lastHeard = Date.now();
+  const t0 = Date.now();
+  let finish = () => {};
   const p = new Promise((resolve, reject) => {
-    r.onresult = (e) => {
-      text = [...e.results].map((x) => x[0].transcript).join(' ').trim();
-      onInterim?.(text);
+    finish = () => { if (stopped) return; stopped = true; clearTimeout(timer); try { r.stop(); } catch { /* ended */ } resolve(text.trim()); };
+    const arm = (ms = silenceMs) => { clearTimeout(timer); if (continuous) timer = setTimeout(finish, ms); };
+    const open = () => {
+      r = new Rec();
+      r.lang = locale(); r.interimResults = true; r.continuous = continuous; r.maxAlternatives = 1;
+      r.onresult = (e) => {
+        text = `${done} ${[...e.results].map((x) => x[0].transcript).join(' ')}`.replace(/\s+/g, ' ').trim();
+        lastHeard = Date.now(); arm();
+        onInterim?.(text);
+      };
+      r.onerror = (e) => {
+        if (e.error === 'no-speech' || e.error === 'aborted') return; // onend decides
+        stopped = true; clearTimeout(timer); reject({ code: e.error });
+      };
+      r.onend = () => {
+        if (stopped) return;
+        const now = Date.now();
+        if (continuous && (now - lastHeard < silenceMs || !text) && now - t0 < maxMs) { done = text; try { open(); return; } catch { /* fall through */ } }
+        stopped = true; clearTimeout(timer); resolve(text.trim());
+      };
+      r.start();
     };
-    r.onerror = (e) => (e.error === 'no-speech' || e.error === 'aborted' ? resolve('') : reject({ code: e.error }));
-    r.onend = () => resolve(text);
+    open();
+    arm(Math.max(silenceMs, 7000)); // time to start speaking
   });
-  r.start();
-  return Object.assign(p, { stop: () => r.stop() });
+  return Object.assign(p, { stop: () => finish() });
 }
 
 /** True when the transcript is too thin to act on. */

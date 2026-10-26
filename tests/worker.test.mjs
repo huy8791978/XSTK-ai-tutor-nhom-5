@@ -329,3 +329,8 @@ test('spoken formulas: the model learns letter names, grouping, N(mean, variance
     String.raw`$F \sim N\left(p, \frac{pq}{n}\right) \Rightarrow \frac{F-p}{\sqrt{\frac{pq}{n}}} \sim N(0,1)$`]) assert.ok(s.includes(k), k);
   assert.ok(t({ kind: 'turn', question: 'q', reply: 'r' }).includes('NHÓM ĐÚNG'));
 });
+
+test('a long spoken formula with «suy ra» must come back with both sides', () => {
+  const s = buildRequest('mathNotes', { kind: 'spoken', text: 'xốc của trừ z alpha trên 2 …' }).body.contents[0].parts[0].text;
+  assert.ok(s.includes('xốc của') && s.includes('CẢ HAI vế') && s.includes(String.raw`P\left\{F - z_{\alpha/2}\sqrt{\frac{pq}{n}} \le p \le F + z_{\alpha/2}\sqrt{\frac{pq}{n}}\right\} = 1-\alpha`));
+});
