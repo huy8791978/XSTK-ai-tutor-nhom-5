@@ -10,6 +10,7 @@ import { teacher } from '../teacher.js';
 import { getLang } from '../i18n.js';
 import { liveSession, canLive } from '../live.js';
 import { liveThread } from '../livethread.js';
+import { boardToggle } from '../board.js';
 
 export const meta = { title: 'Hỏi đáp công thức', lede: 'Đọc một công thức bằng lời, gia sư viết nó ra đầy đủ và đọc lại rõ từng kí hiệu.\nHoặc gửi file Word, PDF, ảnh có công thức để nghe đọc đầy đủ mọi công thức trong đó.' };
 
@@ -23,7 +24,7 @@ const MAX_TEXT = 6000; // longer files are read up to here
 /** Read a long text aloud in pieces the TTS accepts, one after another. */
 function speakAll(text, { onStart, onEnd } = {}) {
   const parts = [];
-  for (const s of String(text).match(/[^.!?;\n]+[.!?;]*\s*/g) || []) {
+  for (const s of String(text).match(/(?:[^.!?;\n]|\.(?=\d))+[.!?;]*\s*/g) || []) {
     if (parts.length && (parts.at(-1) + s).length < 900) parts[parts.length - 1] += s; else parts.push(s);
   }
   let i = 0, started = false;
@@ -123,11 +124,25 @@ export function render(root) {
   const ta = field.querySelector('textarea');
   const bRead = h('button.btn.btn-primary', { type: 'button' }, 'Đọc công thức');
   const sendTyped = (text) => {
-    if (!text.trim()) return toast('Hãy nhập hoặc đọc một công thức.');
+    if (!text.trim()) return toast('Hãy nhập, đọc hoặc viết một công thức trên bảng.');
     ta.value = ''; ta.dispatchEvent(new Event('input'));
     read('spoken', text.trim(), text.trim());
   };
-  bRead.onclick = () => sendTyped(ta.value);
+  // Handwritten formula on the board (iPad, Apple Pencil): read by OCR into LaTeX, then read like a file.
+  const board = boardToggle('Trình bày trên bảng (iPad)');
+  const boardOut = h('div');
+  function readBoard() {
+    const img = board.board.toFile();
+    run(bRead, boardOut, async () => {
+      const text = String((await ai('ocr', { files: [{ mimeType: img.mimeType, data: img.data }] })).text || '').trim();
+      if (!text) throw new Error('Chưa đọc được chữ trên bảng. Hãy viết to, rõ hơn rồi thử lại.');
+      thread.append(h('div.msg.me', {}, h('p', {}, h('strong', {}, 'Công thức viết trên bảng:')), h('img.board-shot', { src: `data:${img.mimeType};base64,${img.data}`, alt: 'Bảng viết tay' }), rich(text)));
+      board.board.clear();
+      read('document', text, 'Đọc đầy đủ các công thức trên bảng');
+      return [];
+    }, 'Đang đọc bảng…');
+  }
+  bRead.onclick = () => (ta.value.trim() || board.board.isEmpty() ? sendTyped(ta.value) : readBoard());
   ta.addEventListener('dictation', (e) => {
     const { phase, text } = e.detail;
     if (phase === 'start') { stopReading?.(); setState('listening'); }
@@ -156,6 +171,6 @@ export function render(root) {
   const stage = h('section.panel.voice-stage', {}, genderToggle, face, status, h('div.btn-row', { style: 'justify-content:center' }, bLive, bStop));
   root.append(stage,
     h('div', { style: 'max-width:900px;margin-top:20px' }, thread,
-      h('section.panel.compose-box', { 'aria-label': 'Công thức' }, field, h('div.btn-row', { style: 'margin-top:10px' }, bRead)),
+      h('section.panel.compose-box', { 'aria-label': 'Công thức' }, field, h('div.btn-row', { style: 'margin-top:10px' }, bRead, board.btn), board.wrap, boardOut),
       h('section.panel.compose-box.stack', { 'aria-label': 'Tệp có công thức' }, up.el, h('div.btn-row', {}, bFile), fileOut)));
 }

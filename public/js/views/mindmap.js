@@ -3,13 +3,14 @@ import { h, run, loading } from '../ui.js';
 import { ai } from '../api.js';
 import { plainMath } from '../md.js';
 import { COURSE } from '../course-map.js';
+import { mindmap3d } from '../mindmap3d.js';
 
 // Safari (and every iPhone browser, all WebKit) draws KaTeX inside the map's SVG foreignObject at the wrong place:
 // the formulas pile up in the corner. There the map shows math as Unicode text instead.
 const WEBKIT = typeof navigator !== 'undefined' && /AppleWebKit/.test(navigator.userAgent) && !/Chrome\/|Chromium|Edg\//.test(navigator.userAgent);
 const forMap = (md) => (WEBKIT ? plainMath(md) : md);
 
-export const meta = { title: 'Bản đồ tư duy', lede: 'Bấm vào một nút để thu gọn hoặc mở rộng, kéo để di chuyển, cuộn hoặc chụm hai ngón để phóng to.\nAI có thể vẽ bản đồ cho bất kì chủ đề nào.' };
+export const meta = { title: 'Bản đồ tư duy', lede: 'Bấm vào một nút để thu gọn hoặc mở rộng, kéo để di chuyển, cuộn hoặc chụm hai ngón để phóng to.\nBấm «Xem 3D» để xoay bản đồ trong không gian. AI có thể vẽ bản đồ cho bất kì chủ đề nào.' };
 
 
 let lib; // markmap modules, loaded once on first visit
@@ -27,25 +28,40 @@ export function render(root) {
   svgEl.setAttribute('class', 'markmap'); svgEl.setAttribute('role', 'img'); svgEl.setAttribute('aria-label', 'Bản đồ tư duy');
   const bFit = h('button.btn.btn-ghost', { type: 'button' }, 'Vừa khung');
   const bWide = h('button.btn.btn-ghost', { type: 'button' }, 'Mở hết');
-  const stage = h('section.panel.mm-wrap', { 'aria-label': 'Bản đồ tư duy tương tác' }, h('div.mm-tools', {}, bWide, bFit), svgEl);
-  let mm, transformer, lastMd = COURSE;
+  const b3d = h('button.btn.btn-ghost', { type: 'button', 'aria-pressed': 'false' }, 'Xem 3D');
+  const m3 = mindmap3d();
+  m3.el.hidden = true;
+  const stage = h('section.panel.mm-wrap', { 'aria-label': 'Bản đồ tư duy tương tác' }, h('div.mm-tools', {}, b3d, bWide, bFit), svgEl, m3.el);
+  let mm, transformer, lastMd = COURSE, in3d = false, md3d = null;
+  // The 3D view is built from the same markdown, only when it is on screen.
+  const sync3d = () => { if (in3d && md3d !== lastMd) { md3d = lastMd; m3.show(lastMd); } };
+  b3d.onclick = () => {
+    in3d = !in3d;
+    b3d.textContent = in3d ? 'Xem 2D' : 'Xem 3D';
+    b3d.setAttribute('aria-pressed', String(in3d));
+    svgEl.style.visibility = in3d ? 'hidden' : ''; // keep its size: markmap cannot lay out a hidden svg
+    m3.el.hidden = !in3d;
+    if (in3d) { sync3d(); m3.wake(); } else mm?.fit();
+  };
 
   async function show(markdown) {
     lastMd = markdown;
+    sync3d();
     const [{ Transformer }, { Markmap, deriveOptions }] = await loadLib();
     transformer ??= new Transformer();
     const { root: tree } = transformer.transform(forMap(markdown));
     const opts = deriveOptions({ colorFreezeLevel: 2, initialExpandLevel: 2, maxWidth: 460, spacingVertical: 12, spacingHorizontal: 90, duration: 450, maxInitialScale: 1 });
     opts.color = (node) => ['#1B2A8C', '#D7263D', '#0E9F6E', '#7A5A00'][(node.state?.path?.split('.')[1] ?? 0) % 4];
+    // Markmap.create fits the map itself once it is laid out; fitting earlier measures nothing (NaN transform).
     if (!mm) mm = Markmap.create(svgEl, opts, tree);
-    else { mm.setOptions(opts); mm.setData(tree).then(() => mm.fit()); return; } // d3 transitions wait on frames; do not block the caller
-    mm.fit();
+    else { mm.setOptions(opts); mm.setData(tree).then(() => mm.fit()); } // d3 transitions wait on frames; do not block the caller
   }
 
   const showSafe = (markdown) => { if (!mm) status.replaceChildren(loading('Đang tải bản đồ tư duy…')); return show(markdown).then(() => status.replaceChildren()).catch(() => status.replaceChildren(h('div.error', { role: 'alert' }, 'Không tải được thư viện bản đồ tư duy. Kiểm tra kết nối mạng rồi tải lại trang.'))); };
   bCourse.onclick = () => { status.replaceChildren(); showSafe(COURSE); };
-  bFit.onclick = () => mm?.fit();
+  bFit.onclick = () => (in3d ? m3.fit() : mm?.fit());
   bWide.onclick = async () => {
+    if (in3d) { m3.expandAll(); return; }
     const [{ Transformer }] = await loadLib();
     const { root: tree } = new Transformer().transform(forMap(lastMd));
     mm?.setOptions({ initialExpandLevel: -1 }); await mm?.setData(tree); mm?.fit();

@@ -25,7 +25,11 @@ const DICT = {
   'AI hỏi từng câu như thầy cô vấn đáp, chấm từng câu trả lời, rồi tổng kết lỗ hổng kiến thức và sai lầm của bạn.': 'The AI asks one question at a time like an oral examiner, grades each answer, then sums up your knowledge gaps and mistakes.',
   'Bấm micro và hỏi bằng giọng nói về Xác suất Thống kê. Bài toán nhiều công thức thì viết lên bảng (iPad). AI trả lời bằng chữ và đọc thành tiếng.': 'Press the microphone and ask about Probability & Statistics by voice. Write formula-heavy problems on the board (iPad). The AI answers on screen and out loud.',
   'Thống kê các câu sai trong vấn đáp, trắc nghiệm, tự luận và chấm bài. AI đưa ra nhận định chung về lỗi sai và hướng khắc phục.': 'Statistics of wrong answers in oral exams, quizzes, essays and grading. The AI gives an overall diagnosis and how to fix it.',
-  'Bấm vào một nút để thu gọn hoặc mở rộng, kéo để di chuyển, cuộn hoặc chụm hai ngón để phóng to. AI có thể vẽ bản đồ cho bất kì chủ đề nào.': 'Click a node to fold or unfold, drag to pan, scroll or pinch to zoom. The AI can draw a map for any topic.',
+  'Bấm vào một nút để thu gọn hoặc mở rộng, kéo để di chuyển, cuộn hoặc chụm hai ngón để phóng to. Bấm «Xem 3D» để xoay bản đồ trong không gian. AI có thể vẽ bản đồ cho bất kì chủ đề nào.': 'Click a node to fold or unfold, drag to pan, scroll or pinch to zoom. Press «3D view» to turn the map around in space. The AI can draw a map for any topic.',
+  'Xem 3D': '3D view', 'Xem 2D': '2D view', 'Bản đồ tư duy 3D. Kéo để xoay, cuộn hoặc chụm hai ngón để phóng to, bấm vào một nút để mở hoặc thu gọn nhánh.': '3D mind map. Drag to turn it, scroll or pinch to zoom, tap a node to open or close its branch.',
+  'Có ảnh đã sao chép? Bấm vào trang rồi dán (Ctrl+V).': 'Copied an image? Click the page and paste (Ctrl+V).', 'Đã dán tệp từ bộ nhớ tạm.': 'Pasted from the clipboard.',
+  'Chưa đọc được chữ trên bảng. Hãy viết to, rõ hơn rồi thử lại.': 'Could not read the board. Write larger and clearer, then try again.', 'Công thức viết trên bảng:': 'Formula written on the board:',
+  'Đọc đầy đủ các công thức trên bảng': 'Read every formula on the board in full', 'Đang đọc bảng…': 'Reading the board…', 'Hãy nhập, đọc hoặc viết một công thức trên bảng.': 'Type, say or write a formula on the board.', 'Bảng viết tay': 'Handwriting board',
   'Nơi người học trao đổi về Xác suất Thống kê: đặt câu hỏi, chia sẻ cách giải, thảo luận đề thi. Hãy lịch sự và không đăng thông tin cá nhân.': 'Where learners discuss Probability & Statistics: ask questions, share solutions, discuss exams. Be polite and do not post personal information.',
   'Mọi bài chấm, bộ luyện tập và buổi vấn đáp đều được ghi lại trên trình duyệt này. AI đọc hồ sơ để tìm lỗi lặp lại và đề xuất lộ trình.': 'Every grading, practice set and oral exam is recorded in this browser. The AI reads your profile to find recurring mistakes and propose a study plan.',
   // topics & error types
@@ -218,6 +222,7 @@ const DICT = {
 
 // Strings built at runtime.
 const RULES = [
+  [/^Đang mở (\d+) nhánh con · bấm lần nữa để thu gọn$/, '$1 branches open · tap again to close'], [/^Có (\d+) nhánh con · bấm để mở$/, '$1 branches · tap to open'],
   [/^Máy chủ lỗi \((\d+)\)\.$/,'Server error ($1).'],
   [/^Bước (\d+)\. (.+)$/, (m, n, x) => `Step ${n}. ${DICT[x] || x}`], [/^← Bước (\d+): (.+)$/, (m, n, x) => `← Step ${n}: ${DICT[x] || x}`],
   [/^(\d+) phiên đã ghi · (\d+) phiên dưới 5 điểm$/, '$1 sessions recorded · $2 below 5 points'],

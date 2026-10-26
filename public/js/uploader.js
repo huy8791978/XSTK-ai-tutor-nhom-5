@@ -45,13 +45,40 @@ function fileText(f, chip) {
 }
 const preview = (text) => h('details.doc-text', {}, h('summary', {}, 'Xem chữ đã đọc từ tệp'), rich(text));
 
+// Paste (Ctrl+V / ⌘V, or Paste on a phone) puts a copied image or file into an uploader without saving it first.
+// It goes to the uploader the student is working in (focus inside it, else the one last touched), else the
+// first one on the page.
+const live = new Set();
+let lastUsed = null;
+const pastedFiles = (e) => {
+  const d = e.clipboardData;
+  if (!d) return [];
+  const files = [...(d.files || [])];
+  if (files.length) return files;
+  return [...(d.items || [])].filter((i) => i.kind === 'file').map((i) => i.getAsFile()).filter(Boolean);
+};
+if (typeof document !== 'undefined') {
+  document.addEventListener('paste', (e) => {
+    const files = pastedFiles(e);
+    if (!files.length) return; // plain text: let the field have it
+    const open = [...live].filter((u) => u.el.isConnected && u.el.offsetParent !== null);
+    const target = open.find((u) => u.el.contains(document.activeElement)) || (open.includes(lastUsed) ? lastUsed : open[0]);
+    if (!target) return;
+    e.preventDefault();
+    const stamp = new Date().toTimeString().slice(0, 8).replace(/:/g, '');
+    // Clipboard images are all called "image.png": give each its own name so the chips can be told apart.
+    target.add(files.map((f, k) => (/^image\.\w+$/i.test(f.name) || !f.name ? new File([f], `anh-dan-${stamp}${k ? `-${k + 1}` : ''}.${(f.type.split('/')[1] || 'png').replace('jpeg', 'jpg')}`, { type: f.type }) : f))
+    ).then((ok) => { if (ok) toast('Đã dán tệp từ bộ nhớ tạm.'); });
+  });
+}
+
 /**
  * @returns {{ el: HTMLElement, files: () => {mimeType,data}[], docs: () => {name,text}[], count: () => number, clear: () => void }}
  */
 export function uploader({ title = 'Chọn ảnh, PDF hoặc Word', hint = 'Tối đa 3 tệp, mỗi tệp ≤ 10 MB. Chụp thẳng, đủ sáng để AI đọc chính xác.', label = 'Chọn ảnh, PDF hoặc Word', compact = false } = {}) {
   let items = [];
   const input = h('input', { type: 'file', accept: ACCEPT, multiple: true, 'aria-label': label });
-  const drop = h(compact ? 'label.drop.drop-compact' : 'label.drop', {}, icon('upload'), h('span', {}, h('strong', {}, title), ' hoặc kéo thả vào đây'), h('small.muted', {}, hint), input);
+  const drop = h(compact ? 'label.drop.drop-compact' : 'label.drop', {}, icon('upload'), h('span', {}, h('strong', {}, title), ' hoặc kéo thả vào đây'), h('small.muted', {}, hint), h('small.muted', {}, 'Có ảnh đã sao chép? Bấm vào trang rồi dán (Ctrl+V).'), input);
   const chips = h('div.files');
   const chip = (f, i) => {
     const el = h('div.file.file-doc', {},
@@ -70,15 +97,20 @@ export function uploader({ title = 'Chọn ảnh, PDF hoặc Word', hint = 'Tố
       items = [...items, ...next].slice(0, 3);
       if (items.length === 3 && next.length) toast('Đã đủ 3 tệp.');
       paint();
-    } catch (e) { toast(e.message); }
-    input.value = '';
+      return true;
+    } catch (e) { toast(e.message); return false; } finally { input.value = ''; }
   }
   input.addEventListener('change', () => add(input.files));
   drop.addEventListener('dragover', (e) => { e.preventDefault(); drop.classList.add('over'); });
   drop.addEventListener('dragleave', () => drop.classList.remove('over'));
   drop.addEventListener('drop', (e) => { e.preventDefault(); drop.classList.remove('over'); add(e.dataTransfer.files); });
+  const el = h('div', {}, drop, chips);
+  const me = { el, add };
+  live.add(me);
+  el.addEventListener('pointerdown', () => { lastUsed = me; });
+  el.addEventListener('focusin', () => { lastUsed = me; });
   return {
-    el: h('div', {}, drop, chips),
+    el,
     files: () => items.filter((f) => f.data).map(({ mimeType, data }) => ({ mimeType, data })),
     docs: () => items.filter((f) => f.text != null).map(({ name, text }) => ({ name, text })),
     count: () => items.length,

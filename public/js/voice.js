@@ -1,5 +1,11 @@
 // Speech in and out (Web Speech API). Recognition: Chrome, Edge, Safari 14.5+ (Firefox has none → typed fallback).
 import { getLang } from './i18n.js';
+import { speakText } from './mathspeech.js';
+
+const VI = /[ăâđêôơưạảấầẩẫậắằẳẵặẹẻẽếềểễệỉịọỏốồổỗộớờởỡợụủứừửữựỳỵỷỹ]/i;
+/** Language to read a text in: Vietnamese when its words (not its formulas) carry Vietnamese letters, else the page language. */
+const textLang = (text) => (VI.test(String(text).replace(/\$[^$]*\$/g, '')) ? 'vi' : getLang());
+const hasMath = (t) => /[$\\^_]/.test(String(t));
 
 export const FALLBACK = {
   vi: 'Vì tôi nghe không rõ, nghe được hoặc chưa hiểu rõ ý của bạn, bạn hãy nhập đề bài hoặc đáp án hoặc câu trả lời của bạn dưới đây.',
@@ -50,7 +56,7 @@ function browserSpeak(text, { onStart, onEnd } = {}, retried = false) {
     setTimeout(go, 800);
     return;
   }
-  const u = new SpeechSynthesisUtterance(String(text).replace(/\$+/g, '').replace(/\\[a-z]+/gi, ' '));
+  const u = new SpeechSynthesisUtterance(hasMath(text) ? speakText(text, getLang()) : String(text));
   u.lang = locale(); u.rate = 1;
   const v = currentVoice();
   if (v) u.voice = v;
@@ -67,13 +73,13 @@ function browserSpeak(text, { onStart, onEnd } = {}, retried = false) {
 export function readAloud(text, { onEnd } = {}) {
   if (!('speechSynthesis' in window)) { onEnd?.(); return false; }
   speechSynthesis.cancel();
-  const plain = String(text).replace(/\$+/g, ' ').replace(/\\(frac|dfrac)\{([^{}]*)\}\{([^{}]*)\}/g, '$2 trên $3').replace(/\\[a-z]+/gi, ' ').replace(/[{}_^]/g, ' ');
-  const parts = plain.match(/[^.!?;\n]+[.!?;]*|\n/g)?.map((s) => s.trim()).filter(Boolean) || [];
+  const lang = textLang(text), plain = speakText(text, lang);
+  const parts = plain.match(/(?:[^.!?;\n]|\.(?=\d))+[.!?;]*|\n/g)?.map((s) => s.trim()).filter(Boolean) || [];
   const chunks = [];
   for (const s of parts) { if (chunks.length && (chunks.at(-1) + ' ' + s).length < 220) chunks[chunks.length - 1] += ' ' + s; else chunks.push(s); }
   if (!chunks.length) { onEnd?.(); return false; }
-  const v = /[ăâđêôơưạảấầẩẫậắằẳẵặẹẻẽếềểễệỉịọỏốồổỗộớờởỡợụủứừửữựỳỵỷỹ]/i.test(plain) ? 'vi-VN' : locale();
-  const voice = voices().find((x) => x.lang?.toLowerCase().startsWith(v.slice(0, 2)));
+  const v = lang === 'vi' ? 'vi-VN' : 'en-US';
+  const voice = speechSynthesis.getVoices().find((x) => x.lang?.toLowerCase().startsWith(v.slice(0, 2)));
   chunks.forEach((c, i) => {
     const u = new SpeechSynthesisUtterance(c);
     u.lang = v; if (voice) u.voice = voice;
@@ -175,6 +181,7 @@ if (typeof document !== 'undefined') {
 export function speak(text, { onStart, onEnd } = {}) {
   stopSpeaking();
   if (!text) { onEnd?.(); return; }
+  if (hasMath(text)) text = speakText(text, getLang()); // the AI voice, like the browser's, gets formulas in words
   const id = ++speakId;
   ttsUrl(text).then((url) => {
     if (id !== speakId) return; // a newer request or "Dừng đọc" won

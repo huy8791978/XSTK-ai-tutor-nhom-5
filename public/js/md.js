@@ -65,9 +65,13 @@ function wrapBare(line) {
   return tok.join('');
 }
 
+/** The text with every formula in $…$, as md() sees it (bare LaTeX wrapped, unclosed $ closed, \(…\) and \[…\] kept). */
+export const delimit = (src) => literalBreaks(String(src ?? '')).split('\n')
+  .map((l) => (bareMath(l) ? l.replace(/^(\s*(?:[-*•]|\d+[.)])?\s*)(.*?)\s*$/, '$1$$$2$$') : wrapBare(balance(l)))).join('\n');
+export const MATH_RE = MATH;
+
 export function md(src) {
-  src = literalBreaks(String(src ?? '')).split('\n')
-    .map((l) => (bareMath(l) ? l.replace(/^(\s*(?:[-*•]|\d+[.)])?\s*)(.*?)\s*$/, '$1$$$2$$') : wrapBare(balance(l)))).join('\n');
+  src = delimit(src);
   const math = [];
   // Protect math so * and _ inside formulas are not treated as markdown.
   let s = String(src ?? '').replace(/\r/g, '').replace(MATH, (m) => `\u0000${math.push(m) - 1}\u0000`);
