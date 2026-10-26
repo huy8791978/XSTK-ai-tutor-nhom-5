@@ -1,6 +1,7 @@
 // Task-based prompts: the browser never sends a raw prompt, so the key can't be used as a general chatbot.
 
 import { TOPICS, ERROR_TYPES, QUIZ_LEVELS, QUIZ_SIZE } from '../public/js/topics.js';
+import { SPOKEN_MATH } from './spoken.js';
 
 export { TOPICS, ERROR_TYPES };
 const LIMITS = { text: 8000, files: 7, fileBytes: 14_000_000, history: 24 }; // files: 3 for the problem + 3 for the work + the iPad board
@@ -103,8 +104,10 @@ Trả JSON: {"understood": true|false, "reply": "<câu trả lời hiển thị,
     const src = kind === 'turn' ? `Sinh viên hỏi (giọng nói, có thể nhận dạng sai chính tả): ${p.question || '(không rõ)'}\nGia sư đã trả lời bằng lời: ${p.reply || ''}`
       : kind === 'spoken' ? `Sinh viên đọc công thức bằng lời (nhận dạng giọng nói, có thể sai chính tả): ${p.text || ''}`
       : `Văn bản lấy từ tệp của sinh viên (công thức trong $...$):\n${p.text || ''}`;
-    const job = kind === 'turn' ? `Viết lại ĐẦY ĐỦ ở dạng LaTeX mọi công thức được nhắc tới trong lượt trao đổi trên (không thêm công thức không được nhắc); nếu có phép tính thì thêm cách bấm CASIO. Không có công thức thì "math": "". "speech": "".`
-      : kind === 'spoken' ? 'Hiểu đúng công thức sinh viên muốn nói (chọn cách hiểu hợp lí nhất trong môn học), viết nó ở dạng LaTeX chuẩn, rồi viết "speech": đọc lại ĐẦY ĐỦ công thức bằng lời và một câu ngắn về ý nghĩa.'
+    const job = kind === 'turn' ? `Viết lại ĐẦY ĐỦ ở dạng LaTeX mọi công thức được nhắc tới trong lượt trao đổi trên, mỗi công thức trọn vẹn mọi vế (không thêm công thức không được nhắc); nếu có phép tính thì thêm cách bấm CASIO. Không có công thức thì "math": "". "speech": "".
+${SPOKEN_MATH.vi}`
+      : kind === 'spoken' ? `Hiểu đúng công thức sinh viên muốn nói (chọn cách hiểu hợp lí nhất trong môn học) và viết TOÀN BỘ công thức ở dạng LaTeX chuẩn, đủ mọi vế; nếu sinh viên chỉ đọc một phần của một công thức đã biết thì viết đủ cả công thức và ghi «(phần bổ sung)» cạnh phần thêm vào. Rồi viết "speech": đọc lại ĐẦY ĐỦ công thức bằng lời và một câu ngắn về ý nghĩa.
+${SPOKEN_MATH.vi}`
       : 'Liệt kê theo thứ tự MỌI công thức trong văn bản ở dạng LaTeX chuẩn (sửa lỗi nhận dạng rõ ràng), rồi viết "speech": đọc ĐẦY ĐỦ từng công thức bằng lời theo thứ tự, không bỏ sót, mỗi công thức một câu, kèm tên công thức nếu có.';
     return {
       text: `${src}\n\n${job}

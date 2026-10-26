@@ -150,3 +150,11 @@ test('changing the voice opens a new session with the conversation kept', async 
   assert.ok(s.systemInstruction.parts[0].text.includes('chào em'));
   r.end();
 });
+
+test('Live personas carry the spoken-formula guide and ask for the whole formula on screen', () => {
+  const sys = (mode, lang) => liveSetup('m', { mode, lang }).setup.systemInstruction.parts[0].text;
+  assert.ok(sys('formula', 'vi').includes('ép/phờ = F') && sys('formula', 'vi').includes('TRỌN VẸN'));
+  assert.ok(sys('voice', 'vi').includes('NHÓM ĐÚNG'));
+  assert.ok(sys('formula', 'en').includes('WHOLE formula') && sys('formula', 'en').includes('standard normal'));
+  assert.ok(!sys('formula', 'en').includes('cô giáo'));
+});

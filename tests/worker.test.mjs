@@ -321,3 +321,11 @@ test('mathNotes asks for written formulas and a full reading in words', () => {
   assert.ok(t({ kind: 'turn', question: 'q', reply: 'r' }).includes('Gia sư đã trả lời bằng lời: r'));
   assert.ok(t({ kind: 'lạ', text: 'y' }).includes('đọc công thức bằng lời'));
 });
+
+test('spoken formulas: the model learns letter names, grouping, N(mean, variance) and to complete a partial formula', () => {
+  const t = (p) => buildRequest('mathNotes', p).body.contents[0].parts[0].text;
+  const s = t({ kind: 'spoken', text: 'ép có phân phối chuẩn pê, pê quy chia nờ suy ra ép trừ pê chia căn pê quy chia nờ có phân phối chuẩn tắc không một' });
+  for (const k of ['ép/phờ = F', 'quy/cu = q', 'nờ/en nờ = n', 'PHƯƠNG SAI', 'chuẩn tắc', 'NHÓM ĐÚNG', 'MỘT PHẦN', 'phần bổ sung',
+    String.raw`$F \sim N\left(p, \frac{pq}{n}\right) \Rightarrow \frac{F-p}{\sqrt{\frac{pq}{n}}} \sim N(0,1)$`]) assert.ok(s.includes(k), k);
+  assert.ok(t({ kind: 'turn', question: 'q', reply: 'r' }).includes('NHÓM ĐÚNG'));
+});
