@@ -456,67 +456,66 @@ a.row.thread-row small { display: inline; }
 .lede { grid-row: 2; grid-column: 1 / -1; margin-top: 6px; }
 
 
-/* AI tutor (robot, screen face) on the voice and formula pages. data-gender: male | female; data-state: idle | listening | thinking | speaking */
-.teacher { --led: #6EE7F2; --accent: var(--gold); width: clamp(170px, 20vw, 230px); aspect-ratio: 220 / 230; }
-.teacher[data-gender="female"] { --led: #FF9AC8; --accent: var(--red); }
+/* AI tutor (friendly white robot) on the voice and formula pages. data-gender: male | female; data-state: idle | listening | thinking | speaking */
+.teacher { --accent: #378ADD; --accent-soft: #B5D4F4; width: clamp(170px, 20vw, 230px); aspect-ratio: 220 / 230; }
+.teacher[data-gender="female"] { --accent: #D4537E; --accent-soft: #F4C0D1; }
 .teacher-svg { width: 100%; height: 100%; display: block; overflow: visible; }
-.teacher[data-gender="male"] .r-f, .teacher[data-gender="female"] .r-m { display: none; }
-.r-bot { animation: r-float 4s ease-in-out infinite; }
-.r-stalk { fill: none; stroke: var(--ultra-deep); stroke-width: 4; stroke-linecap: round; }
-.r-tip { fill: var(--accent); transform-box: fill-box; transform-origin: center; animation: r-pulse 2.4s ease-in-out infinite; }
-.r-ear { fill: var(--ultra-deep); }
-.r-frame { fill: var(--ultra); }
-.r-screen { fill: #0E1440; }
-.r-glare { fill: #fff; opacity: .14; }
-.r-eye { fill: var(--led); transform-box: fill-box; transform-origin: center; transition: transform .4s var(--ease), opacity .3s; filter: drop-shadow(0 0 3px var(--led)); }
-.r-lash { fill: none; stroke: var(--led); stroke-width: 2; stroke-linecap: round; }
-.r-eyes { transform-box: fill-box; transform-origin: center; animation: t-blink 5s infinite; transition: opacity .3s; }
-.r-dots circle { fill: var(--led); opacity: 0; transition: opacity .3s; }
-.r-wave rect { fill: var(--led); transform-box: fill-box; transform-origin: center; transform: scaleY(.25); transition: transform .3s var(--ease); }
-.r-neck { fill: var(--rule-2); }
-.r-body { fill: var(--ultra-2); }
-.r-seam { fill: none; stroke: var(--ultra-deep); stroke-width: 2; opacity: .5; }
-.r-ring { fill: none; stroke: var(--ultra-dim); stroke-width: 2.5; }
-.r-core { fill: var(--accent); transform-box: fill-box; transform-origin: center; transition: fill .3s; }
-.t-waves circle { fill: none; stroke: var(--gold); stroke-width: 2; opacity: 0; transform-origin: 110px 82px; }
+.teacher[data-gender="male"] .c-f, .teacher[data-gender="female"] .c-m { display: none; }
+.c-bot { animation: c-bob 3.6s ease-in-out infinite; }
+.c-shell { fill: #fff; stroke: #C9CCD8; stroke-width: 2.5; }
+.c-arm rect { fill: #fff; stroke: #C9CCD8; stroke-width: 2.5; }
+.c-arm { transform-box: fill-box; transition: transform .5s var(--ease); }
+.c-arm-l { transform-origin: 70% 10%; } .c-arm-r { transform-origin: 30% 10%; }
+.c-stalk { fill: none; stroke: #9A9DAE; stroke-width: 3.5; stroke-linecap: round; }
+.c-tip, .c-ear, .c-light, .c-tie, .c-bow { fill: var(--accent); }
+.c-tip, .c-light, .c-ear { transform-box: fill-box; transform-origin: center; }
+.c-head { transform-origin: 110px 130px; transition: transform .5s var(--ease); }
+.c-eye circle:first-child { fill: #2C2C3A; }
+.c-shine { fill: #fff; }
+.c-eye { transform-box: fill-box; transform-origin: center; transition: transform .4s var(--ease); }
+.c-eyes { transform-box: fill-box; transform-origin: center; animation: t-blink 5s infinite; }
+.c-cheek { fill: var(--accent-soft); opacity: .8; }
+.c-smile { fill: none; stroke: #2C2C3A; stroke-width: 3; stroke-linecap: round; transition: opacity .2s; }
+.c-mouth { fill: #E07A5F; opacity: 0; transform-box: fill-box; transform-origin: center; }
+.t-waves circle { fill: none; stroke: var(--accent-soft); stroke-width: 2; opacity: 0; transform-origin: 110px 84px; }
+.t-bubbles circle { fill: #fff; stroke: var(--accent); stroke-width: 2.5; opacity: 0; }
 
-/* listening: eyes open wide, the antenna glows, gold ripples */
-.teacher[data-state="listening"] .r-eye { transform: scale(1.12, 1.2); }
-.teacher[data-state="listening"] .r-tip { animation-duration: 1s; }
-.teacher[data-state="listening"] .r-wave rect { animation: r-hear 1.2s ease-in-out infinite alternate; }
-.teacher[data-state="listening"] .r-wave rect:nth-child(even) { animation-delay: .4s; }
+/* listening: head tilts, eyes open wide, ears and antenna glow, soft ripples */
+.teacher[data-state="listening"] .c-head { transform: rotate(-6deg); }
+.teacher[data-state="listening"] .c-eye { transform: scale(1.15); }
+.teacher[data-state="listening"] .c-ear, .teacher[data-state="listening"] .c-tip { animation: c-pulse 1s ease-in-out infinite; }
+.teacher[data-state="listening"] .c-arm-r { transform: rotate(-20deg); }
 .teacher[data-state="listening"] .t-waves circle { animation: t-wave 1.6s var(--ease) infinite; }
 .teacher[data-state="listening"] .t-waves circle:nth-child(2) { animation-delay: .5s; }
 .teacher[data-state="listening"] .t-waves circle:nth-child(3) { animation-delay: 1s; }
-/* thinking: the eyes become loading dots, the antenna blinks fast */
-.teacher[data-state="thinking"] .r-eyes { opacity: 0; }
-.teacher[data-state="thinking"] .r-dots circle { opacity: 1; animation: r-dot 1s ease-in-out infinite; }
-.teacher[data-state="thinking"] .r-dots circle:nth-child(2) { animation-delay: .15s; }
-.teacher[data-state="thinking"] .r-dots circle:nth-child(3) { animation-delay: .3s; }
-.teacher[data-state="thinking"] .r-tip { animation: r-pulse .5s ease-in-out infinite; }
-.teacher[data-state="thinking"] .r-core { animation: r-pulse 1s ease-in-out infinite; }
-/* speaking: the sound wave on the screen moves, the chest light beats, waves spread out */
-.teacher[data-state="speaking"] .r-eye { transform: scaleY(.7); }
-.teacher[data-state="speaking"] .r-wave rect { animation: r-talk .42s ease-in-out infinite alternate; }
-.teacher[data-state="speaking"] .r-wave rect:nth-child(2) { animation-duration: .31s; animation-delay: .1s; }
-.teacher[data-state="speaking"] .r-wave rect:nth-child(3) { animation-duration: .37s; animation-delay: .05s; }
-.teacher[data-state="speaking"] .r-wave rect:nth-child(4) { animation-duration: .28s; }
-.teacher[data-state="speaking"] .r-wave rect:nth-child(5) { animation-duration: .35s; animation-delay: .12s; }
-.teacher[data-state="speaking"] .r-wave rect:nth-child(6) { animation-duration: .3s; animation-delay: .07s; }
-.teacher[data-state="speaking"] .r-wave rect:nth-child(7) { animation-duration: .45s; animation-delay: .02s; }
-.teacher[data-state="speaking"] .r-core { animation: r-pulse .6s ease-in-out infinite; }
-.teacher[data-state="speaking"] .t-waves circle { stroke: var(--ultra-dim); animation: t-wave 1.3s var(--ease) infinite; }
+/* thinking: looks up, head tilts the other way, thought bubbles, antenna blinks */
+.teacher[data-state="thinking"] .c-head { transform: rotate(5deg); }
+.teacher[data-state="thinking"] .c-eye { transform: translate(3px, -4px); }
+.teacher[data-state="thinking"] .c-smile { d: path("M100 107 Q110 109 120 106"); }
+.teacher[data-state="thinking"] .c-arm-r { transform: rotate(-28deg); }
+.teacher[data-state="thinking"] .c-tip { animation: c-pulse .5s ease-in-out infinite; }
+.teacher[data-state="thinking"] .t-bubbles circle { opacity: .5; animation: t-bubble 1.5s ease-in-out infinite both; }
+.teacher[data-state="thinking"] .t-bubbles circle:nth-child(2) { animation-delay: .25s; }
+.teacher[data-state="thinking"] .t-bubbles circle:nth-child(3) { animation-delay: .5s; }
+/* speaking: the mouth moves, the chest light beats, arms gesture, waves spread out */
+.teacher[data-state="speaking"] .c-smile { opacity: 0; }
+.teacher[data-state="speaking"] .c-mouth { opacity: 1; animation: t-talk .28s ease-in-out infinite alternate; }
+.teacher[data-state="speaking"] .c-light { animation: c-pulse .6s ease-in-out infinite; }
+.teacher[data-state="speaking"] .c-arm-l { animation: c-wave-l 1.8s ease-in-out infinite; }
+.teacher[data-state="speaking"] .c-arm-r { animation: c-wave-r 1.8s ease-in-out .3s infinite; }
+.teacher[data-state="speaking"] .t-waves circle { animation: t-wave 1.3s var(--ease) infinite; }
 .teacher[data-state="speaking"] .t-waves circle:nth-child(2) { animation-delay: .45s; }
 .teacher[data-state="speaking"] .t-waves circle:nth-child(3) { animation-delay: .9s; }
 
 @keyframes t-blink { 0%, 94%, 100% { transform: scaleY(1); } 97% { transform: scaleY(.1); } }
 @keyframes t-wave { from { opacity: .8; transform: scale(1); } to { opacity: 0; transform: scale(1.5); } }
-@keyframes r-float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-3px); } }
-@keyframes r-pulse { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: .55; transform: scale(.85); } }
-@keyframes r-dot { 0%, 100% { transform: translateY(0); opacity: .45; } 40% { transform: translateY(-6px); opacity: 1; } }
-@keyframes r-hear { from { transform: scaleY(.2); } to { transform: scaleY(.45); } }
-@keyframes r-talk { from { transform: scaleY(.25); } to { transform: scaleY(1.25); } }
-@media (prefers-reduced-motion: reduce) { .teacher *, .teacher *::before { animation: none !important; } }
+@keyframes t-bubble { 0%, 100% { opacity: .5; transform: translateY(0); } 50% { opacity: 1; transform: translateY(-3px); } }
+@keyframes t-talk { from { transform: scaleY(.35); } to { transform: scaleY(1.1); } }
+@keyframes c-bob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-3px); } }
+@keyframes c-pulse { 0%, 100% { transform: scale(1); opacity: 1; } 50% { transform: scale(.82); opacity: .7; } }
+@keyframes c-wave-l { 0%, 100% { transform: rotate(0); } 40% { transform: rotate(18deg); } }
+@keyframes c-wave-r { 0%, 100% { transform: rotate(0); } 40% { transform: rotate(-22deg); } }
+@media (prefers-reduced-motion: reduce) { .teacher * { animation: none !important; } }
 .voice-stage { display: grid; justify-items: center; gap: 10px; padding: 24px 20px; text-align: center; }
 .tutor-status { font-weight: 600; color: var(--ink-2); min-height: 1.6em; }
 /* Nam / Nữ toggle, top-right of the teacher panel */

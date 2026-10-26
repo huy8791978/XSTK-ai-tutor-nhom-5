@@ -1,42 +1,36 @@
-// Animated AI tutor (robot with a screen for a face) for the voice and formula pages.
-// data-gender = male | female picks the eye shape and the accent light; data-state = idle | listening | thinking |
-// speaking drives the LED eyes, the sound-wave mouth, the antenna and the chest light (all in CSS).
+// Animated AI tutor (a friendly white robot) for the voice and formula pages.
+// data-gender = male | female picks the accent colour and a bow tie or a hair bow;
+// data-state = idle | listening | thinking | speaking moves the eyes, mouth, arms and lights (all in CSS).
 import { h } from './ui.js';
 
 const SVG = `
 <svg viewBox="0 0 220 230" class="teacher-svg" role="img">
-  <g class="t-waves"><circle cx="110" cy="82" r="66"/><circle cx="110" cy="82" r="66"/><circle cx="110" cy="82" r="66"/></g>
-  <g class="r-bot">
-    <path class="r-stalk" d="M110 30 V16"/>
-    <circle class="r-tip" cx="110" cy="12" r="6"/>
-    <rect class="r-ear" x="38" y="66" width="16" height="36" rx="6"/>
-    <rect class="r-ear" x="166" y="66" width="16" height="36" rx="6"/>
-    <rect class="r-frame" x="50" y="30" width="120" height="104" rx="24"/>
-    <rect class="r-screen" x="62" y="42" width="96" height="80" rx="16"/>
-    <rect class="r-glare" x="72" y="49" width="28" height="5" rx="2.5"/>
+  <g class="t-waves"><circle cx="110" cy="84" r="62"/><circle cx="110" cy="84" r="62"/><circle cx="110" cy="84" r="62"/></g>
+  <g class="t-bubbles"><circle cx="168" cy="40" r="5"/><circle cx="182" cy="25" r="8"/><circle cx="200" cy="8" r="11"/></g>
+  <g class="c-bot">
+    <g class="c-arm c-arm-l"><rect x="52" y="146" width="22" height="46" rx="11"/></g>
+    <g class="c-arm c-arm-r"><rect x="146" y="146" width="22" height="46" rx="11"/></g>
+    <rect class="c-shell" x="74" y="134" width="72" height="74" rx="32"/>
+    <circle class="c-light" cx="110" cy="174" r="9"/>
+    <path class="c-tie c-m" d="M98 136 L110 143 L122 136 L122 150 L110 143 L98 150 Z"/>
 
-    <g class="r-eyes">
-      <rect class="r-eye r-m" x="80" y="62" width="16" height="18" rx="4"/>
-      <rect class="r-eye r-m" x="124" y="62" width="16" height="18" rx="4"/>
-      <ellipse class="r-eye r-f" cx="88" cy="71" rx="8.5" ry="10"/>
-      <ellipse class="r-eye r-f" cx="132" cy="71" rx="8.5" ry="10"/>
-      <path class="r-lash r-f" d="M79 61 l-4 -4 M84 59 l-2 -5 M141 61 l4 -4 M136 59 l2 -5"/>
+    <g class="c-head">
+      <path class="c-stalk" d="M110 38 V20"/>
+      <circle class="c-tip" cx="110" cy="16" r="7"/>
+      <circle class="c-ear" cx="54" cy="84" r="10"/>
+      <circle class="c-ear" cx="166" cy="84" r="10"/>
+      <rect class="c-shell" x="58" y="38" width="104" height="92" rx="44"/>
+      <path class="c-bow c-f" d="M136 42 L150 34 L150 52 Z M136 42 L124 32 L124 52 Z"/>
+      <circle class="c-bow c-f" cx="137" cy="42" r="4"/>
+      <g class="c-eyes">
+        <g class="c-eye"><circle cx="90" cy="80" r="8"/><circle class="c-shine" cx="93" cy="77" r="2.5"/></g>
+        <g class="c-eye"><circle cx="130" cy="80" r="8"/><circle class="c-shine" cx="133" cy="77" r="2.5"/></g>
+      </g>
+      <circle class="c-cheek" cx="76" cy="100" r="8"/>
+      <circle class="c-cheek" cx="144" cy="100" r="8"/>
+      <path class="c-smile" d="M98 104 Q110 114 122 104"/>
+      <ellipse class="c-mouth" cx="110" cy="107" rx="8" ry="6"/>
     </g>
-    <g class="r-dots"><circle cx="96" cy="71" r="4.5"/><circle cx="110" cy="71" r="4.5"/><circle cx="124" cy="71" r="4.5"/></g>
-
-    <!-- mouth: a sound wave that moves with the voice -->
-    <g class="r-wave">
-      <rect x="84" y="96" width="4" height="16" rx="2"/><rect x="92" y="96" width="4" height="16" rx="2"/>
-      <rect x="100" y="96" width="4" height="16" rx="2"/><rect x="108" y="96" width="4" height="16" rx="2"/>
-      <rect x="116" y="96" width="4" height="16" rx="2"/><rect x="124" y="96" width="4" height="16" rx="2"/>
-      <rect x="132" y="96" width="4" height="16" rx="2"/>
-    </g>
-
-    <rect class="r-neck" x="98" y="134" width="24" height="16" rx="4"/>
-    <path class="r-body" d="M44 230 C46 178 70 150 110 150 C150 150 174 178 176 230 Z"/>
-    <path class="r-seam" d="M74 200 H146"/>
-    <circle class="r-ring" cx="110" cy="184" r="17"/>
-    <circle class="r-core" cx="110" cy="184" r="10"/>
   </g>
 </svg>`;
 
