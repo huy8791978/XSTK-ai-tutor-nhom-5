@@ -20,13 +20,34 @@ export function h(sel, attrs = {}, ...kids) {
 export const icon = (id) => { const s = document.createElementNS('http://www.w3.org/2000/svg', 'svg'); s.innerHTML = `<use href="#i-${id}"/>`; s.setAttribute('aria-hidden', 'true'); s.setAttribute('class', 'ic'); return s; };
 
 /** Rich AI text block with markdown + KaTeX. */
-export function rich(text, tag = 'div') {
+export function rich(text, tag = 'div', verbatim = false) {
   const el = h(`${tag}.rich`, { html: md(text) });
   // Remember the source text per language, so the EN/VI switch can translate it and switch back for free.
-  el._tr = { [getLang()]: String(text ?? '') };
+  // In English mode, AI text that is clearly Vietnamese (a diagnosis or mistake stored before the switch) is filed
+  // under Vietnamese and the page is asked to translate it now. Not for verbatim text (what a file or a student
+  // wrote: transcripts, forum posts), and never English → Vietnamese (an English file stays English).
+  const src = String(text ?? ''), lang = !verbatim && getLang() === 'en' && textLanguage(src) === 'vi' ? 'vi' : getLang();
+  el._tr = { [lang]: src }; el._shown = lang;
+  if (lang !== getLang()) wantTranslation();
   queueMicrotask(() => typeset(el));
   return el;
 }
+
+const VI_MARKS = /[àáảãạăằắẳẵặâầấẩẫậèéẻẽẹêềếểễệìíỉĩịòóỏõọôồốổỗộơờớởỡợùúủũụưừứửữựỳýỷỹỵđ]/giu;
+/** 'vi' or 'en' when the prose (formulas left out) is clearly in that language, else null. Same rule as the server. */
+export function textLanguage(text) {
+  const s = String(text ?? '').replace(/\$\$[\s\S]*?\$\$|\$[^$]*\$/g, ' ');
+  const letters = (s.match(/\p{L}/gu) || []).length, marks = (s.match(VI_MARKS) || []).length;
+  if ((letters > 40 && marks / letters > 0.03) || (letters >= 12 && marks / letters > 0.08)) return 'vi'; // short titles carry many marks
+  if (letters > 120 && marks / letters < 0.005) return 'en';
+  return null;
+}
+let pending = false;
+const wantTranslation = () => {
+  if (pending || typeof window === 'undefined') return;
+  pending = true;
+  setTimeout(() => { pending = false; window.dispatchEvent(new Event('translate-now')); }, 50); // one batch per render
+};
 
 /** Show a .rich block in another language (text already translated). */
 export function rerich(el, text) { el.innerHTML = md(text); typeset(el); }

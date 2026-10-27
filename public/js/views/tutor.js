@@ -161,7 +161,7 @@ export function gradeView(d, serial) {
     d.mistakes?.length ? [h('h3', {}, 'Lỗi sai'), mistakes(d.mistakes)] : null,
     d.strengths?.length ? [h('h3', {}, 'Điểm tốt'), list(d.strengths)] : null,
     d.advice?.length ? [h('h3', {}, 'Lời khuyên'), list(d.advice)] : null,
-    d.transcript ? h('details.more', { style: 'margin-top:18px' }, h('summary', {}, 'Bài làm AI đã đọc được (OCR)', icon('down')), h('div.btn-row', { style: 'margin:8px 0' }, readButton(() => d.transcript, 'Đọc to bài làm')), rich(d.transcript)) : null,
+    d.transcript ? h('details.more', { style: 'margin-top:18px' }, h('summary', {}, 'Bài làm AI đã đọc được (OCR)', icon('down')), h('div.btn-row', { style: 'margin:8px 0' }, readButton(() => d.transcript, 'Đọc to bài làm')), rich(d.transcript, 'div', true)) : null,
     h('p.muted', { style: 'margin-top:14px;font-size:13.5px' }, 'Đã lưu vào hồ sơ học tập.'));
 }
 

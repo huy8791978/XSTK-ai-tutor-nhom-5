@@ -24,7 +24,9 @@ function make(kind) {
       const topic = h('select', { id: `p-topic-${kind}` }, TOPICS.map((t) => h('option', {}, t)));
       const level = h('select', { id: `p-level-${kind}` }, ['Cơ bản', 'Trung bình', 'Nâng cao'].map((t) => h('option', { selected: t === 'Trung bình' }, t)));
       const similar = mathField({ label: 'Bài mẫu để tạo bài tương tự (tuỳ chọn)', name: `seed-${kind}`, rows: 2, placeholder: 'Dán một bài bạn muốn luyện thêm, AI sẽ tạo 5 bài tương tự.' });
-      const up = uploader({ compact: true, title: 'Hoặc tải bài mẫu: ảnh, PDF, Word', hint: 'AI đọc chữ trong tệp (kể cả ảnh chụp) rồi tạo bài cùng dạng. Tối đa 3 tệp, mỗi tệp ≤ 10 MB.', label: 'Tải ảnh, PDF hoặc Word bài mẫu' });
+      const up = uploader({ compact: true, title: 'Hoặc tải bài mẫu: ảnh, PDF, Word', hint: 'AI đọc chữ trong tệp (kể cả ảnh chụp) rồi tạo bài cùng dạng. Tối đa 3 tệp, mỗi tệp ≤ 10 MB.', scope: () => sampleBox, label: 'Tải ảnh, PDF hoặc Word bài mẫu' });
+      // The sample's uploader takes a paste only when the student is working in this box; else the work uploader of the open step 3 does.
+      const sampleBox = h('details.more', { style: 'margin:-6px 0 22px' }, h('summary', {}, 'Tạo bài tương tự từ một bài mẫu', icon('down')), similar, h('div', { style: 'margin-top:12px' }, up.el));
       const btn = h('button.btn.btn-primary', { type: 'button' }, K.button);
       const out = h('div', {}, h('div.panel.empty', {}, h('p', {}, 'Chọn chủ đề và mức độ, rồi bấm tạo đề. Mỗi lần tạo là một bộ bài mới.')));
       btn.onclick = () => run(btn, out, async () => {
@@ -37,7 +39,7 @@ function make(kind) {
         h('label.field', { for: topic.id }, h('span', {}, 'Chủ đề'), topic),
         h('label.field', { for: level.id, style: 'max-width:200px' }, h('span', {}, 'Mức độ'), level),
         h('div.btn-row', {}, btn)),
-      h('details.more', { style: 'margin:-6px 0 22px' }, h('summary', {}, 'Tạo bài tương tự từ một bài mẫu', icon('down')), similar, h('div', { style: 'margin-top:12px' }, up.el)),
+      sampleBox,
       out);
     },
   };
@@ -196,7 +198,8 @@ export function mcq(q, i, onDone) {
 export function essay(q, i, onDone) {
   const field = mathField({ label: 'Bài làm của bạn', name: `a${i}`, rows: 6, placeholder: 'Trình bày lời giải theo từng bước…' });
   const board = boardToggle();
-  const up = uploader({ compact: true, title: 'Đính kèm ảnh, PDF hoặc Word bài làm', hint: 'Tối đa 3 tệp, mỗi tệp ≤ 10 MB.', label: 'Đính kèm ảnh, PDF hoặc Word bài làm' });
+  // The student's work: a paste goes here whenever this problem's step 3 is on screen (see uploader.js).
+  const up = uploader({ compact: true, title: 'Đính kèm ảnh, PDF hoặc Word bài làm', hint: 'Tối đa 3 tệp, mỗi tệp ≤ 10 MB.', label: 'Đính kèm ảnh, PDF hoặc Word bài làm', scope: () => work, pastePriority: 1 });
   const result = h('div');
   const bGrade = h('button.btn.btn-primary', { type: 'button' }, 'Chấm bài');
   const work = h('div', {}, field, h('div.btn-row', { style: 'margin-top:10px;align-items:center' }, board.btn), board.wrap, h('div', { style: 'margin-top:10px' }, up.el), result);

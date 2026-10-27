@@ -244,3 +244,12 @@ test('Polya steps use the lecturer titles and each has its guide', async () => {
   assert.deepEqual(POLYA, ['Tìm hiểu nội dung đề bài', 'Tìm cách giải', 'Trình bày lời giải', 'Nghiên cứu sâu lời giải']);
   assert.deepEqual(POLYA_GUIDE.map((g) => g.length), [3, 3, 1, 2]);
 });
+
+test('textLanguage spots Vietnamese prose (short titles too) and leaves formulas and English alone', async () => {
+  const { textLanguage } = await import('../public/js/ui.js');
+  assert.equal(textLanguage('Hiểu sai khái niệm và tính chất cơ bản'), 'vi');
+  assert.equal(textLanguage('Sinh viên hiện đang gặp khó khăn ở mức độ nền tảng trong môn Xác suất Thống kê.'), 'vi');
+  assert.equal(textLanguage('$P(A|B)=\frac{P(AB)}{P(B)}$'), null);
+  assert.equal(textLanguage('The student struggles with the basics of probability: conditional probability, independence and the addition rule for events that are not mutually exclusive.'), 'en');
+  assert.equal(textLanguage('Ti le 12%'), null);
+});

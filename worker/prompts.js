@@ -178,7 +178,7 @@ Trả JSON: {"markdown": "..."}`,
   profile: (p) => ({
     text: `Dữ liệu hồ sơ học tập của sinh viên (JSON):\n${p.stats}\n
 Phân tích các lỗi sai lặp lại xuyên suốt quá trình học, nhận định nguyên nhân, đề xuất kế hoạch cải thiện cụ thể trong 2 tuần.
-Trả JSON: {"assessment": "...", "patterns": [{"title": "...", "detail": "..."}], "priorities": ["chủ đề cần ưu tiên"], "plan": [{"when": "Ngày 1-2", "task": "..."}]}`,
+${p.lang === 'en' ? 'The data above is in Vietnamese, but write EVERY text value (assessment, titles, details, plan) in English; "priorities" are topic names copied exactly from the list of valid topics.\n' : ''}Trả JSON: {"assessment": "...", "patterns": [{"title": "...", "detail": "..."}], "priorities": ["chủ đề cần ưu tiên"], "plan": [{"when": "${p.lang === 'en' ? 'Days 1-2' : 'Ngày 1-2'}", "task": "..."}]}`,
   }),
 };
 
@@ -321,6 +321,20 @@ export function wrongLanguage(data, lang) {
   const letters = (s.match(/\p{L}/gu) || []).length, marks = (s.match(VI_MARKS) || []).length;
   if (lang === 'en') return letters > 40 && marks / letters > 0.03;
   return letters > 120 && marks / letters < 0.01;
+}
+/**
+ * The prose strings of an AI reply (not "topic"/"type", which stay as listed), with a way to put translations back:
+ * used when a reply is still in the wrong language after the retry.
+ */
+export function proseLeaves(data) {
+  const out = [];
+  const walk = (v, key, set) => {
+    if (typeof v === 'string') { if (key !== 'topic' && key !== 'type' && key !== 'priorities' && /\p{L}{2}/u.test(v)) out.push({ text: v, set }); }
+    else if (Array.isArray(v)) v.forEach((x, i) => walk(x, key, (t) => { v[i] = t; }));
+    else if (v && typeof v === 'object') for (const k of Object.keys(v)) walk(v[k], k, (t) => { v[k] = t; });
+  };
+  walk(data, '', () => {});
+  return out;
 }
 export const LANGUAGE_RETRY = {
   en: '\n\nYOUR PREVIOUS ANSWER WAS NOT IN ENGLISH. Rewrite everything in English only.',

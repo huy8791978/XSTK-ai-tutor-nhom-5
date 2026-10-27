@@ -43,13 +43,13 @@ function fileText(f, chip) {
     return f.ocr;
   });
 }
-const preview = (text) => h('details.doc-text', {}, h('summary', {}, 'Xem chữ đã đọc từ tệp'), rich(text));
+const preview = (text) => h('details.doc-text', {}, h('summary', {}, 'Xem chữ đã đọc từ tệp'), rich(text, 'div', true));
 
 // Paste (Ctrl+V / ⌘V, or Paste on a phone) puts a copied image or file into an uploader without saving it first.
 // It goes to the uploader of the part of the page the student is working in: each uploader has a `scope` (the
-// panel around it, e.g. the problem form or the step-3 pane). The scope holding the focus wins, then the one the
-// student last clicked in; else, among the uploaders on screen, the one with the highest `pastePriority` (on the
-// tutor page the work uploader of step 3 beats the problem uploader once step 3 is open).
+// panel around it, e.g. the problem form or the step-3 pane). The scope holding the student's last click or focus
+// wins; else, among the uploaders on screen, the one with the highest `pastePriority`: the work uploaders (step 3
+// of the tutor and of each practice problem) beat the problem and sample uploaders.
 const live = new Set();
 let lastTarget = null;
 const pastedFiles = (e) => {
@@ -60,14 +60,14 @@ const pastedFiles = (e) => {
   return [...(d.items || [])].filter((i) => i.kind === 'file').map((i) => i.getAsFile()).filter(Boolean);
 };
 if (typeof document !== 'undefined') {
-  document.addEventListener('pointerdown', (e) => { lastTarget = e.target; }, { capture: true, passive: true });
+  // The last place the student clicked or moved the focus to (Tab included); clicking a blank spot counts too.
+  for (const ev of ['pointerdown', 'focusin']) document.addEventListener(ev, (e) => { lastTarget = e.target; }, { capture: true, passive: true });
   document.addEventListener('paste', (e) => {
     const files = pastedFiles(e);
     if (!files.length) return; // plain text: let the field have it
     const open = [...live].filter((u) => u.el.isConnected && u.el.offsetParent !== null);
-    const inside = (node) => node && open.find((u) => u.scope().contains(node));
-    const target = inside(document.activeElement !== document.body ? document.activeElement : null) || inside(lastTarget)
-      || open.reduce((best, u) => (!best || u.priority > best.priority ? u : best), null);
+    const inside = (node) => node && node.isConnected && open.find((u) => u.scope().contains(node));
+    const target = inside(lastTarget) || open.reduce((best, u) => (!best || u.priority > best.priority ? u : best), null);
     if (!target) return;
     e.preventDefault();
     const stamp = new Date().toTimeString().slice(0, 8).replace(/:/g, '');

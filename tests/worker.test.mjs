@@ -339,3 +339,15 @@ test('the AI is told the 4 Polya steps by their new names', () => {
   const sys = buildRequest('solve', { problem: 'x' }).body.systemInstruction.parts[0].text;
   for (const k of ['Tìm hiểu nội dung đề bài', 'Tìm cách giải', 'Trình bày lời giải', 'Nghiên cứu sâu lời giải', 'lật ngược lại vấn đề']) assert.ok(sys.includes(k), k);
 });
+
+test('profile asks for English values in English mode; proseLeaves skips topics and priorities', async () => {
+  const { proseLeaves } = await import('../worker/prompts.js');
+  assert.ok(buildRequest('profile', { stats: '{}', lang: 'en' }).body.contents[0].parts[0].text.includes('write EVERY text value'));
+  const d = { assessment: 'Sinh viên yếu', priorities: ['Phân phối thông dụng'], patterns: [{ title: 'Nhầm', detail: 'Chi tiết' }], mistakes: [{ topic: 'Khác', type: 'Tính toán sai', detail: 'Sai số' }] };
+  const leaves = proseLeaves(d);
+  assert.deepEqual(leaves.map((l) => l.text), ['Sinh viên yếu', 'Nhầm', 'Chi tiết', 'Sai số']);
+  leaves.forEach((l) => l.set(`EN ${l.text}`));
+  assert.equal(d.patterns[0].detail, 'EN Chi tiết');
+  assert.equal(d.priorities[0], 'Phân phối thông dụng');
+  assert.equal(d.mistakes[0].topic, 'Khác');
+});

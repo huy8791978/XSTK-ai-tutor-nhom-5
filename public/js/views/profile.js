@@ -55,7 +55,7 @@ export function insightView(d, at) {
   return h('div', {},
     h('p.muted', { style: 'font-size:13px' }, `Cập nhật ${new Date(at).toLocaleString('vi-VN')}`),
     d.assessment ? rich(d.assessment) : null,
-    d.patterns?.length ? [h('h3', {}, 'Lỗi lặp lại'), ...d.patterns.map((x) => h('div.mistake', {}, h('strong', {}, x.title), rich(x.detail)))] : null,
+    d.patterns?.length ? [h('h3', {}, 'Lỗi lặp lại'), ...d.patterns.map((x) => h('div.mistake', {}, rich(`**${x.title}**`), rich(x.detail)))] : null,
     d.priorities?.length ? [h('h3', {}, 'Ưu tiên'), h('div.tags', {}, ...d.priorities.map((t) => h('span.tag.topic', {}, t)))] : null,
     d.plan?.length ? [h('h3', {}, 'Lộ trình 2 tuần'), h('ol.plan', {}, ...d.plan.map((x) => h('li', {}, h('b', {}, x.when), rich(x.task, 'span'))))] : null,
     !d.assessment && !d.patterns?.length ? list(['AI chưa đưa ra nhận định. Thử lại sau.']) : null);

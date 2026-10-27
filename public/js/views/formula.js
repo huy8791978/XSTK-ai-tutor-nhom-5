@@ -162,7 +162,7 @@ export function render(root) {
       for (const f of files) texts.push(String((await ai('ocr', { files: [f] })).text || ''));
       const text = texts.filter((t) => t.trim()).join('\n\n');
       if (!text.trim()) throw new Error('Không thấy chữ hay công thức nào trong tệp.');
-      thread.append(h('div.msg.me', {}, h('p', {}, h('strong', {}, 'Văn bản đọc được từ tệp:')), rich(text.slice(0, MAX_TEXT))));
+      thread.append(h('div.msg.me', {}, h('p', {}, h('strong', {}, 'Văn bản đọc được từ tệp:')), rich(text.slice(0, MAX_TEXT), 'div', true)));
       read('document', text, 'Đọc đầy đủ các công thức trong tệp');
       return [];
     }, 'Đang đọc tệp…');

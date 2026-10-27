@@ -70,13 +70,17 @@ addEventListener('langchange', () => {
   if (mod) { title.textContent = mod.meta.title; lede.textContent = mod.meta.lede; document.title = `${tr(mod.meta.title)} · AI Classroom`; }
   translateContent(getLang());
 });
+// A block shown in the other language (stored before the switch): translate what is on screen now.
+addEventListener('translate-now', () => translateContent(getLang()));
+const done = new Map(); // "lang|source" → translation, so pages rebuilt on every visit are not translated twice
 
 /** AI-written blocks already on screen: use a stored translation, or ask the AI in small batches. */
 async function translateContent(to) {
   const blocks = [...view.querySelectorAll('.rich')].filter((el) => el._tr && !el.parentElement.closest('.rich'));
   const todo = [];
   for (const el of blocks) {
-    if (el._tr[to] != null) rerich(el, el._tr[to]);
+    if (el._tr[to] != null) { if (el._shown !== to) { rerich(el, el._tr[to]); el._shown = to; } }
+    else if (done.has(`${to}|${Object.values(el._tr)[0]}`)) { el._tr[to] = done.get(`${to}|${Object.values(el._tr)[0]}`); rerich(el, el._tr[to]); el._shown = to; }
     else {
       const src = Object.values(el._tr)[0];
       if (src.trim()) todo.push({ el, src });
@@ -100,7 +104,8 @@ async function translateContent(to) {
         const text = d.items?.[i];
         if (typeof text !== 'string') return;
         b.el._tr[to] = text;
-        if (getLang() === to) rerich(b.el, text);
+        done.set(`${to}|${b.src}`, text);
+        if (getLang() === to) { rerich(b.el, text); b.el._shown = to; }
       });
     }
   } catch (e) {

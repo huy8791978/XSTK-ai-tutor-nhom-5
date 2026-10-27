@@ -1,6 +1,6 @@
 import { DurableObject } from 'cloudflare:workers';
 import { admit, settle, estimateTokens } from './limits.js';
-import { buildRequest, extractJson, wrongLanguage, LANGUAGE_RETRY } from './prompts.js';
+import { buildRequest, extractJson, wrongLanguage, LANGUAGE_RETRY, proseLeaves } from './prompts.js';
 import { validatePost, FORUM_TOPICS, signMod, verifyMod, sameText, MOD_TTL } from './forum.js';
 import { buildTts, ttsAudio } from './tts.js';
 import { modelList, benchFor, usable, AI_MODELS, TTS_MODELS } from './models.js';
@@ -63,7 +63,7 @@ export default {
           firstData = data;
           continue;
         }
-        return json({ data });
+        return json({ data: await inLanguage(env, ctx, task, data, lang) });
       } catch (e) {
         // Log the parser's reason and the text around the failing position, not just the start of the reply.
         const pos = Number(/position (\d+)/.exec(e.detail || '')?.[1]);
@@ -72,10 +72,38 @@ export default {
         failure = json({ error: 'AI trả về nội dung không đọc được. Bấm thử lại.' }, 502);
       }
     }
-    if (firstData) return json({ data: firstData }); // retry for language failed: the first answer beats an error
+    if (firstData) return json({ data: await inLanguage(env, ctx, task, firstData, lang) }); // the first answer beats an error
     return failure || json({ error: 'AI tạm thời không phản hồi được. Thử lại sau.' }, 502);
   },
 };
+
+/**
+ * Last resort for a reply still in the wrong language after the retry: translate its prose strings (formulas and
+ * markdown kept) with the translate task, in batches. If that fails too, the reply is returned as it is.
+ */
+async function inLanguage(env, ctx, task, data, lang) {
+  if (task === 'translate' || task === 'ocr' || !wrongLanguage(data, lang)) return data;
+  const leaves = proseLeaves(data);
+  const batches = [[]];
+  let size = 0;
+  for (const l of leaves) {
+    if (l.text.length > 6000) continue;
+    if (batches.at(-1).length >= 30 || size + l.text.length > 6000) { batches.push([]); size = 0; }
+    batches.at(-1).push(l); size += l.text.length;
+  }
+  try {
+    for (const batch of batches.filter((b) => b.length)) {
+      const req = buildRequest('translate', { items: batch.map((l) => l.text), to: lang, lang });
+      const got = await callModels(env, ctx, req.body, estimateTokens(req.promptChars, 0, 3000));
+      if (!got.ok) return data;
+      const text = (got.data.candidates?.[0]?.content?.parts || []).filter((p) => !p.thought).map((p) => p.text || '').join('');
+      const items = extractJson(text).items;
+      if (!Array.isArray(items) || items.length !== batch.length) return data;
+      batch.forEach((l, i) => { if (typeof items[i] === 'string' && items[i].trim()) l.set(items[i]); });
+    }
+  } catch (e) { console.error('translate-fallback', task, e.message); }
+  return data;
+}
 
 /**
  * Ask the strongest model that can answer now. A model that is out of quota (ours or Google's), unavailable or

@@ -146,10 +146,10 @@ function thread(root, id) {
         h('div.tags', {}, h('span.tag.topic', {}, t.topic)),
         h('h2', { style: 'margin:10px 0 4px;font-size:30px' }, t.title),
         h('p.muted', { style: 'font-size:13.5px;margin-bottom:12px' }, `${t.author} · ${when(t.created)}`),
-        rich(t.body), canDelete('thread', t.id) ? h('div.btn-row', { style: 'margin-top:12px' }, del('thread', t.id)) : null),
+        rich(t.body, 'div', true), canDelete('thread', t.id) ? h('div.btn-row', { style: 'margin-top:12px' }, del('thread', t.id)) : null),
       h('h3', {}, `${replies.length} trả lời`),
       ...replies.map((r) => h('article.panel.reply', {},
-        h('p.muted', { style: 'font-size:13.5px;margin-bottom:6px' }, `${r.author} · ${when(r.created)}`), rich(r.body),
+        h('p.muted', { style: 'font-size:13.5px;margin-bottom:6px' }, `${r.author} · ${when(r.created)}`), rich(r.body, 'div', true),
         canDelete('reply', r.id) ? h('div.btn-row', { style: 'margin-top:8px' }, del('reply', r.id)) : null)));
   }, 'Đang tải bài viết…');
   bReply.onclick = () => run(bReply, msg, async () => {
