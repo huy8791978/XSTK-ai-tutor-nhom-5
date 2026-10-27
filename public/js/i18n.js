@@ -48,7 +48,7 @@ const DICT = {
   'Công thức Bernoulli': 'Bernoulli formula', 'Bất đẳng thức Chebyshev': "Chebyshev's inequality", 'Luật số lớn': 'Law of large numbers',
   'Định lí giới hạn trung tâm': 'Central limit theorem', 'Định lí Moivre – Laplace': 'De Moivre–Laplace theorem',
   // Polya & stages
-  'Tìm hiểu nội dung đề bài': 'Understand the problem', 'Tìm cách giải': 'Find a way to solve it', 'Nghiên cứu sâu lời giải': 'Study the solution in depth',
+  'Tìm hiểu nội dung đề bài': 'Understand the problem', 'Tìm cách giải': 'Find a way to solve it', 'Đang tìm cách giải…': 'Finding a way to solve it…', 'Nghiên cứu sâu lời giải': 'Study the solution in depth',
   'Tìm hiểu đề bài': 'Understand the problem', 'Bước này cần làm gì': 'What this step asks of you', 'Cách giải': 'Solution path', 'Xem gợi ý cách giải': 'See hints on how to solve it',
   'Phát biểu đề bài dưới những dạng thức khác nhau để hiểu rõ nội dung bài toán.': 'Restate the problem in different forms to understand it clearly.',
   'Phân biệt cái đã cho và cái phải tìm, phải chứng minh.': 'Tell apart what is given and what must be found or proved.',
