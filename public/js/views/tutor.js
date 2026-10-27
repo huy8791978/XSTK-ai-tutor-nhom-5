@@ -13,12 +13,12 @@ export const meta = { title: 'Gia sư chấm bài', lede: 'Nhập đề bài, b�
 export function render(root) {
   // ---- Left: only the problem. One main action: "Tìm hiểu đề". The student's work is handed in at step 3.
   const problem = mathField({ label: 'Đề bài', name: 'problem', rows: 5, placeholder: 'Gõ hoặc dán đề bài. Có thể bỏ trống nếu đề nằm trong tệp bên dưới.' });
-  const upProblem = uploader({ compact: true, title: 'Tải đề bài: ảnh, PDF hoặc Word', label: 'Tải ảnh, PDF hoặc Word đề bài', hint: 'Tối đa 3 tệp, mỗi tệp ≤ 10 MB.' });
+  const upProblem = uploader({ compact: true, title: 'Tải đề bài: ảnh, PDF hoặc Word', label: 'Tải ảnh, PDF hoặc Word đề bài', hint: 'Tối đa 3 tệp, mỗi tệp ≤ 10 MB.', scope: () => problemPanel });
   const bStart = h('button.btn.btn-primary.btn-block', { type: 'button' }, 'Tìm hiểu đề bài');
 
   // ---- Step 3: the student's work: typed answer, files, or the iPad board.
   const answer = mathField({ label: 'Bài làm của bạn', name: 'answer', rows: 5, placeholder: 'Gõ lời giải, đáp án của bạn… hoặc tải tệp / viết trên bảng bên dưới.' });
-  const upWork = uploader({ compact: true, title: 'Tải bài làm: ảnh, PDF hoặc Word', label: 'Tải ảnh, PDF hoặc Word bài làm', hint: 'Chụp thẳng, đủ sáng để AI đọc chính xác. Tối đa 3 tệp.' });
+  const upWork = uploader({ compact: true, title: 'Tải bài làm: ảnh, PDF hoặc Word', label: 'Tải ảnh, PDF hoặc Word bài làm', hint: 'Chụp thẳng, đủ sáng để AI đọc chính xác. Tối đa 3 tệp.', scope: () => steps[2], pastePriority: 1 });
   const board = boardToggle();
 
   const tag = (role) => (d) => ({ ...d, name: `[${role}] ${d.name}` });
@@ -82,22 +82,31 @@ export function render(root) {
     if (reveal && (top < 0 || top > innerHeight * 0.6)) steps[cur].scrollIntoView({ block: 'start' });
   }
 
-  // One strategy call fills steps 1 and 2.
-  const understand = (btn) => { const p = problemPart(); if (!needProblem(p)) return; go(0); run(btn, out[0], async () => {
-    const d = await ai('strategy', p);
-    has[0] = has[1] = true;
-    out[1].replaceChildren(planView(d));
-    go(0);
+  // One strategy call answers steps 1 and 2, but each step is shown (and ticked) only when the student asks for it:
+  // «Tìm hiểu đề bài» fills step 1 only; step 2 waits for «Xem gợi ý cách giải», which reuses the same answer
+  // while the problem has not changed.
+  let cache = null; // { key, d }
+  const keyOf = (p) => JSON.stringify([p.problem, p.files.map((f) => f.data.length + f.data.slice(0, 64)), p.docs.map((d) => d.text)]);
+  const strategy = async (p) => {
+    const key = keyOf(p);
+    if (cache?.key !== key) {
+      const d = await ai('strategy', p);
+      if (cache?.key !== key) { has[1] = false; out[1].replaceChildren(h('div.btn-row', {}, bPlan)); } // a new problem: step 2 starts over
+      cache = { key, d };
+    }
+    return cache.d;
+  };
+  bStart.onclick = () => { const p = problemPart(); if (!needProblem(p)) return; go(0); run(bStart, out[0], async () => {
+    const d = await strategy(p);
+    has[0] = true; go(0);
     return understandView(d);
   }, 'Đang phân tích đề…'); };
-  bStart.onclick = () => understand(bStart);
   bPlan.onclick = () => { const p = problemPart(); if (!needProblem(p)) return; run(bPlan, out[1], async () => {
-    const d = await ai('strategy', p);
-    has[0] = has[1] = true;
-    out[0].replaceChildren(understandView(d));
-    go(1);
+    const d = await strategy(p);
+    if (!has[0]) { has[0] = true; out[0].replaceChildren(understandView(d)); }
+    has[1] = true; go(1);
     return planView(d);
-  }, 'Đang xây dựng chương trình giải…'); };
+  }, 'Đang tìm cách giải…'); };
   bGrade.onclick = () => { const p = workPart(); if (!needWork(p)) return; run(bGrade, out[2], async () => {
     const d = await ai('grade', p);
     const serial = addSession({ feature: 'tutor', topic: d.mistakes?.[0]?.topic || 'Khác', score: d.score, mistakes: d.mistakes });
@@ -111,8 +120,9 @@ export function render(root) {
   }, 'Đang viết lời giải…'); };
 
   go(0);
+  const problemPanel = h('section.panel.stack', { 'aria-label': 'Đề bài' }, problem, upProblem.el, bStart);
   root.append(tabs, h('div.work.tutor', {},
-    h('section.panel.stack', { 'aria-label': 'Đề bài' }, problem, upProblem.el, bStart),
+    problemPanel,
     h('section.panel.sticky-col', { 'aria-label': 'Bước đang xem' }, ...steps)));
 }
 

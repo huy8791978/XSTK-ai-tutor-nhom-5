@@ -46,10 +46,12 @@ function fileText(f, chip) {
 const preview = (text) => h('details.doc-text', {}, h('summary', {}, 'Xem chữ đã đọc từ tệp'), rich(text));
 
 // Paste (Ctrl+V / ⌘V, or Paste on a phone) puts a copied image or file into an uploader without saving it first.
-// It goes to the uploader the student is working in (focus inside it, else the one last touched), else the
-// first one on the page.
+// It goes to the uploader of the part of the page the student is working in: each uploader has a `scope` (the
+// panel around it, e.g. the problem form or the step-3 pane). The scope holding the focus wins, then the one the
+// student last clicked in; else, among the uploaders on screen, the one with the highest `pastePriority` (on the
+// tutor page the work uploader of step 3 beats the problem uploader once step 3 is open).
 const live = new Set();
-let lastUsed = null;
+let lastTarget = null;
 const pastedFiles = (e) => {
   const d = e.clipboardData;
   if (!d) return [];
@@ -58,11 +60,14 @@ const pastedFiles = (e) => {
   return [...(d.items || [])].filter((i) => i.kind === 'file').map((i) => i.getAsFile()).filter(Boolean);
 };
 if (typeof document !== 'undefined') {
+  document.addEventListener('pointerdown', (e) => { lastTarget = e.target; }, { capture: true, passive: true });
   document.addEventListener('paste', (e) => {
     const files = pastedFiles(e);
     if (!files.length) return; // plain text: let the field have it
     const open = [...live].filter((u) => u.el.isConnected && u.el.offsetParent !== null);
-    const target = open.find((u) => u.el.contains(document.activeElement)) || (open.includes(lastUsed) ? lastUsed : open[0]);
+    const inside = (node) => node && open.find((u) => u.scope().contains(node));
+    const target = inside(document.activeElement !== document.body ? document.activeElement : null) || inside(lastTarget)
+      || open.reduce((best, u) => (!best || u.priority > best.priority ? u : best), null);
     if (!target) return;
     e.preventDefault();
     const stamp = new Date().toTimeString().slice(0, 8).replace(/:/g, '');
@@ -75,7 +80,7 @@ if (typeof document !== 'undefined') {
 /**
  * @returns {{ el: HTMLElement, files: () => {mimeType,data}[], docs: () => {name,text}[], count: () => number, clear: () => void }}
  */
-export function uploader({ title = 'Chọn ảnh, PDF hoặc Word', hint = 'Tối đa 3 tệp, mỗi tệp ≤ 10 MB. Chụp thẳng, đủ sáng để AI đọc chính xác.', label = 'Chọn ảnh, PDF hoặc Word', compact = false } = {}) {
+export function uploader({ title = 'Chọn ảnh, PDF hoặc Word', hint = 'Tối đa 3 tệp, mỗi tệp ≤ 10 MB. Chụp thẳng, đủ sáng để AI đọc chính xác.', label = 'Chọn ảnh, PDF hoặc Word', compact = false, scope = null, pastePriority = 0 } = {}) {
   let items = [];
   const input = h('input', { type: 'file', accept: ACCEPT, multiple: true, 'aria-label': label });
   const drop = h(compact ? 'label.drop.drop-compact' : 'label.drop', {}, icon('upload'), h('span', {}, h('strong', {}, title), ' hoặc kéo thả vào đây'), h('small.muted', {}, hint), h('small.muted', {}, 'Có ảnh đã sao chép? Bấm vào trang rồi dán (Ctrl+V).'), input);
@@ -105,10 +110,8 @@ export function uploader({ title = 'Chọn ảnh, PDF hoặc Word', hint = 'Tố
   drop.addEventListener('dragleave', () => drop.classList.remove('over'));
   drop.addEventListener('drop', (e) => { e.preventDefault(); drop.classList.remove('over'); add(e.dataTransfer.files); });
   const el = h('div', {}, drop, chips);
-  const me = { el, add };
+  const me = { el, add, priority: pastePriority, scope: () => (typeof scope === 'function' ? scope() : scope) || el };
   live.add(me);
-  el.addEventListener('pointerdown', () => { lastUsed = me; });
-  el.addEventListener('focusin', () => { lastUsed = me; });
   return {
     el,
     files: () => items.filter((f) => f.data).map(({ mimeType, data }) => ({ mimeType, data })),
