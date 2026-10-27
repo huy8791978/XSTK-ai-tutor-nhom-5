@@ -1,6 +1,6 @@
 // AI Tutor in Polya's 4 steps: understand the problem → plan → present & grade → check with the full solution.
 // The problem and the work (image/PDF/Word, OCR by Gemini) are entered once on the left; each step keeps its result.
-import { h, icon, rich, list, run, POLYA, toast, casio } from '../ui.js';
+import { h, icon, rich, list, run, POLYA, polyaGuide, toast, casio } from '../ui.js';
 import { ai } from '../api.js';
 import { uploader, readButton } from '../uploader.js';
 import { mathField } from '../mathinput.js';
@@ -8,13 +8,13 @@ import { chart, odometer, galton } from '../viz.js';
 import { addSession } from '../profile.js';
 import { boardToggle } from '../board.js';
 
-export const meta = { title: 'Gia sư chấm bài', lede: 'Nhập đề bài, bấm «Tìm hiểu đề» rồi đi qua 4 bước giải toán; bấm vào bước nào cũng xem lại được.\nAI gợi ý chiến lược (không lộ đáp án), chấm bài ở bước Trình bày và chỉ hiện lời giải khi bạn yêu cầu.' };
+export const meta = { title: 'Gia sư chấm bài', lede: 'Nhập đề bài, bấm «Tìm hiểu đề bài» rồi đi qua 4 bước giải toán; bấm vào bước nào cũng xem lại được.\nAI gợi ý chiến lược (không lộ đáp án), chấm bài ở bước Trình bày lời giải và chỉ hiện lời giải khi bạn yêu cầu.' };
 
 export function render(root) {
   // ---- Left: only the problem. One main action: "Tìm hiểu đề". The student's work is handed in at step 3.
   const problem = mathField({ label: 'Đề bài', name: 'problem', rows: 5, placeholder: 'Gõ hoặc dán đề bài. Có thể bỏ trống nếu đề nằm trong tệp bên dưới.' });
   const upProblem = uploader({ compact: true, title: 'Tải đề bài: ảnh, PDF hoặc Word', label: 'Tải ảnh, PDF hoặc Word đề bài', hint: 'Tối đa 3 tệp, mỗi tệp ≤ 10 MB.' });
-  const bStart = h('button.btn.btn-primary.btn-block', { type: 'button' }, 'Tìm hiểu đề');
+  const bStart = h('button.btn.btn-primary.btn-block', { type: 'button' }, 'Tìm hiểu đề bài');
 
   // ---- Step 3: the student's work: typed answer, files, or the iPad board.
   const answer = mathField({ label: 'Bài làm của bạn', name: 'answer', rows: 5, placeholder: 'Gõ lời giải, đáp án của bạn… hoặc tải tệp / viết trên bảng bên dưới.' });
@@ -57,20 +57,20 @@ export function render(root) {
   const barem = mathField({ label: 'Barem điểm (tuỳ chọn)', name: 'barem', rows: 3, placeholder: 'Ví dụ: Đặt biến cố 1đ; Công thức đầy đủ 2đ; Bayes 4đ; Kết luận 1đ…' });
   const baremBox = h('div', { hidden: true }, barem);
   const bBarem = h('button.btn.btn-ghost', { type: 'button', 'aria-expanded': 'false', onclick: () => { baremBox.hidden = !baremBox.hidden; bBarem.setAttribute('aria-expanded', String(!baremBox.hidden)); } }, 'Barem điểm');
-  const bPlan = h('button.btn', { type: 'button' }, 'Xem chương trình giải');
+  const bPlan = h('button.btn', { type: 'button' }, 'Xem gợi ý cách giải');
   const bGrade = h('button.btn.btn-primary', { type: 'button' }, 'Chấm điểm');
   const bSolve = h('button.btn.btn-primary', { type: 'button' }, 'Xem lời giải chi tiết');
 
   out[0].append(empty());
   out[1].append(h('div.btn-row', {}, bPlan));
   const steps = [
-    [h('p.muted', {}, 'Đề cho gì, cần tìm gì, có điều kiện gì. Nhập đề ở khung Đề bài rồi bấm «Tìm hiểu đề».'), out[0]],
-    [h('p.muted', {}, 'Hướng đi và kiến thức cần dùng, không có đáp số.'), out[1]],
+    [h('p.muted', {}, 'Nhập đề ở khung Đề bài rồi bấm «Tìm hiểu đề bài».'), out[0]],
+    [h('p.muted', {}, 'Bấm nút dưới để xem gợi ý cách giải (không có đáp số).'), out[1]],
     [h('p.muted', {}, 'Tự trình bày lời giải: gõ vào ô dưới, tải ảnh/PDF/Word hoặc viết trên bảng, rồi bấm «Chấm điểm».'),
       h('div.stack.work-box', {}, answer, upWork.el, h('div.btn-row', {}, board.btn, bBarem), board.wrap, baremBox),
       h('div.btn-row', {}, bGrade), out[2]],
-    [h('p.muted', {}, 'Kiểm tra lại kết quả, xem lời giải đầy đủ, cách bấm máy CASIO và bài tương tự.'), h('div.btn-row', {}, bSolve), out[3]],
-  ].map((kids, i) => h('div.step-pane', { hidden: i !== 0 }, h('h2', {}, `Bước ${i + 1}. ${POLYA[i]}`), ...kids, nav(i)));
+    [h('p.muted', {}, 'Xem lời giải đầy đủ, cách bấm máy CASIO, ứng dụng của kết quả và bài tương tự.'), h('div.btn-row', {}, bSolve), out[3]],
+  ].map((kids, i) => h('div.step-pane', { hidden: i !== 0 }, h('h2', {}, `Bước ${i + 1}. ${POLYA[i]}`), polyaGuide(i), ...kids, nav(i)));
 
   function go(i, reveal = false) {
     cur = i;
@@ -136,7 +136,7 @@ export function understandView(d) {
 /** Step 2: the plan as guiding questions, the knowledge to use, common traps. No answer. */
 export function planView(d) {
   return h('div', {},
-    ...section('Chương trình giải', list(d.plan, true)),
+    ...section('Cách giải', list(d.plan, true)),
     ...section('Kiến thức cần dùng', list(d.knowledge)),
     d.pitfalls?.length ? section('Sai lầm hay gặp', list(d.pitfalls)) : [],
     chart(d.viz));
@@ -156,7 +156,7 @@ export function gradeView(d, serial) {
 }
 
 export function solveView(d) {
-  const steps = [['1', 'Tìm hiểu đề', d.understand], ['2', 'Chương trình giải', d.plan], ['3', 'Trình bày lời giải', d.solution], ['4', 'Kiểm tra & mở rộng', d.check]];
+  const steps = POLYA.map((t, k) => [String(k + 1), t, [d.understand, d.plan, d.solution, d.check][k]]);
   return h('div', {},
     h('h2', { style: 'margin-bottom:14px' }, 'Lời giải chi tiết'),
     ...steps.filter((s) => s[2]).map(([n, t, body]) => h('div.step', {}, h('div.step-h', {}, h('span.n', {}, n), h('h3', {}, t)), rich(body))),

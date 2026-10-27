@@ -238,3 +238,9 @@ test('continuous dictation keeps listening through pauses and restarts when the 
   say(made[1], 'suy ra P của F trừ z');
   assert.equal(await p, 'P của trừ z bằng một trừ an pha suy ra P của F trừ z');
 });
+
+test('Polya steps use the lecturer titles and each has its guide', async () => {
+  const { POLYA, POLYA_GUIDE } = await import('../public/js/ui.js');
+  assert.deepEqual(POLYA, ['Tìm hiểu nội dung đề bài', 'Tìm cách giải', 'Trình bày lời giải', 'Nghiên cứu sâu lời giải']);
+  assert.deepEqual(POLYA_GUIDE.map((g) => g.length), [3, 3, 1, 2]);
+});

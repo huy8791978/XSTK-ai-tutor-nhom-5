@@ -1,6 +1,6 @@
 // Practice: 5 essay or 5 MCQ problems, one per frame. Every problem is worked through Polya's 4 steps,
-// each step a visible button: Tìm hiểu đề → Chương trình giải → Trình bày (+ chấm) → Kiểm tra & nghiên cứu.
-import { h, icon, rich, list, run, toast, casio, POLYA, nodes } from '../ui.js';
+// each step a visible button: Tìm hiểu nội dung đề bài → Tìm cách giải → Trình bày lời giải (+ chấm) → Nghiên cứu sâu lời giải.
+import { h, icon, rich, list, run, toast, casio, POLYA, polyaGuide, nodes } from '../ui.js';
 import { tr as t } from '../i18n.js';
 import { ai } from '../api.js';
 import { uploader } from '../uploader.js';
@@ -124,16 +124,16 @@ function polyaCard(q, i, work, actions, extra4) {
   const show = (k, title, node) => { reveals[k].replaceChildren(h('div.reveal', {}, h('h3', {}, title), node)); mark(k); };
   const strategy = q.strategy?.length ? q.strategy : P.plan;
   const bodies = [
-    [h('p.muted', {}, 'Đọc kĩ đề, trả lời các câu hỏi dưới đây trước khi giải.'),
+    [h('p.muted', {}, 'Trả lời các câu hỏi dưới đây trước khi giải.'),
       list(P.understand?.length ? P.understand : ['Đề cho những gì? Cần tìm gì?', 'Đặt tên các biến cố / biến ngẫu nhiên thế nào?', 'Có điều kiện gì cần chú ý?'].map(t)),
       h('div.btn-row', { style: 'margin-top:12px' }, h('button.btn', { type: 'button', onclick: () => show(0, 'Cái đã cho – cái phải tìm', h('div', {}, h('h3', {}, 'Cái đã cho'), list(P.given), h('h3', {}, 'Cái phải tìm'), list(P.find))) }, 'Gợi ý: đã cho – phải tìm'))],
-    [h('p.muted', {}, 'Đưa về bài toán quen thuộc và chọn kiến thức phù hợp.'),
+    [h('p.muted', {}, 'Câu hỏi gợi mở để tự tìm cách giải.'),
       list(P.plan?.length ? P.plan : ['Bài toán này thuộc dạng quen thuộc nào?', 'Cần dùng công thức, định lí hay phân phối nào?'].map(t), true),
       strategy?.length ? h('div.btn-row', { style: 'margin-top:12px' }, h('button.btn', { type: 'button', onclick: () => show(1, 'Chiến lược giải', list(strategy, true)) }, 'Chiến lược giải')) : null],
     [P.present ? h('p.muted', {}, rich(P.present, 'span')) : null, work, h('div.btn-row', { style: 'margin-top:16px' }, actions)],
-    [h('p.muted', {}, 'Kiểm tra lại kết quả, rút ra phương pháp và mở rộng bài toán.'),
-      list(P.check?.length ? P.check : ['Kết quả có hợp lí không (xác suất trong [0; 1], tổng bằng 1…)?', 'Có cách giải khác không?'].map(t)),
-      P.extend ? [h('h3', {}, 'Bài tương tự / khái quát hoá'), rich(P.extend)] : null,
+    [h('p.muted', {}, 'Câu hỏi để nghiên cứu sâu lời giải.'),
+      list(P.check?.length ? P.check : ['Kết quả này dùng được vào những tình huống thực tế nào?', 'Nếu đổi dữ kiện, hỏi ngược lại hoặc mở rộng bài toán thì giải thế nào?'].map(t)),
+      P.extend ? [h('h3', {}, 'Bài tương tự / mở rộng / lật ngược vấn đề'), rich(P.extend)] : null,
       h('div.btn-row', { style: 'margin-top:12px' },
         h('button.btn', { type: 'button', onclick: () => show(3, 'Lời giải', h('div', {}, rich(q.solution || 'Không có lời giải.'), casio(q.casio))) }, 'Xem lời giải'),
         extra4?.button),
@@ -141,7 +141,7 @@ function polyaCard(q, i, work, actions, extra4) {
   ];
   extra4?.button?.addEventListener('click', () => mark(3));
   // Built once and only hidden/shown, so the answer area and everything revealed survive tab switches.
-  const panes = bodies.map((kids, k) => h('div.step-pane', { hidden: k !== 0 }, ...nodes(kids), reveals[k],
+  const panes = bodies.map((kids, k) => h('div.step-pane', { hidden: k !== 0 }, polyaGuide(k), ...nodes(kids), reveals[k],
     h('div.stage-nav', {},
       k > 0 ? h('button.btn.btn-ghost', { type: 'button', onclick: () => goto(k - 1) }, `← Bước ${k}`) : h('span'),
       k < 3 ? h('button.btn.btn-ghost', { type: 'button', onclick: () => goto(k + 1) }, `Bước ${k + 2}: ${POLYA[k + 1]} →`) : null)));
@@ -214,7 +214,7 @@ export function essay(q, i, onDone) {
         ...(d.rubric || []).map((r, k) => h('div.row', {}, h('b', {}, `Bước ${k + 1}`), h('span', {}, h('strong', {}, r.step), ' ', rich(r.comment, 'span')), h('em', {}, `${r.points ?? '—'}/${r.max ?? '—'}`)))),
         d.mistakes?.length ? [h('h3', {}, 'Lỗi sai'), mistakes(d.mistakes)] : null,
         d.advice?.length ? [h('h3', {}, 'Lời khuyên'), list(d.advice)] : null,
-        h('div.btn-row', { style: 'margin-top:12px' }, h('button.btn', { type: 'button', onclick: () => card.goto(3) }, 'Sang bước 4: Kiểm tra →')));
+        h('div.btn-row', { style: 'margin-top:12px' }, h('button.btn', { type: 'button', onclick: () => card.goto(3) }, 'Sang bước 4: Nghiên cứu sâu lời giải →')));
     }, 'Đang chấm bài…');
   };
   return card.el;

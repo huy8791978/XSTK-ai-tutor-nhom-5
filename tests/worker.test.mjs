@@ -334,3 +334,8 @@ test('a long spoken formula with «suy ra» must come back with both sides', () 
   const s = buildRequest('mathNotes', { kind: 'spoken', text: 'xốc của trừ z alpha trên 2 …' }).body.contents[0].parts[0].text;
   assert.ok(s.includes('xốc của') && s.includes('CẢ HAI vế') && s.includes(String.raw`P\left\{F - z_{\alpha/2}\sqrt{\frac{pq}{n}} \le p \le F + z_{\alpha/2}\sqrt{\frac{pq}{n}}\right\} = 1-\alpha`));
 });
+
+test('the AI is told the 4 Polya steps by their new names', () => {
+  const sys = buildRequest('solve', { problem: 'x' }).body.systemInstruction.parts[0].text;
+  for (const k of ['Tìm hiểu nội dung đề bài', 'Tìm cách giải', 'Trình bày lời giải', 'Nghiên cứu sâu lời giải', 'lật ngược lại vấn đề']) assert.ok(sys.includes(k), k);
+});

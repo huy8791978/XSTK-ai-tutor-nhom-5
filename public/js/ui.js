@@ -84,7 +84,21 @@ export function detents(labels, states) {
   return h('ol.detents', { 'aria-label': 'Tiến trình' },
     labels.map((l, i) => h('li', { 'data-state': states[i] || 'todo', 'aria-current': states[i] === 'current' ? 'step' : null }, h('b', {}, String(i + 1)), l)));
 }
-export const POLYA = ['Tìm hiểu đề', 'Chương trình giải', 'Trình bày', 'Kiểm tra'];
+export const POLYA = ['Tìm hiểu nội dung đề bài', 'Tìm cách giải', 'Trình bày lời giải', 'Nghiên cứu sâu lời giải'];
+// What each of Polya's 4 steps asks of the student (the lecturer's wording), shown at the top of each step.
+export const POLYA_GUIDE = [
+  ['Phát biểu đề bài dưới những dạng thức khác nhau để hiểu rõ nội dung bài toán.',
+    'Phân biệt cái đã cho và cái phải tìm, phải chứng minh.',
+    'Có thể dùng công thức, kí hiệu, hình vẽ để hỗ trợ cho việc diễn tả đề bài.'],
+  ['Tìm tòi, phát hiện cách giải nhờ những suy nghĩ có tính chất tìm đoán: biến đổi cái đã cho, biến đổi cái phải tìm hay phải chứng minh, liên hệ cái đã cho hoặc cái phải tìm với những tri thức đã biết, liên hệ bài toán cần giải với một bài toán cũ tương tự, một trường hợp riêng, một bài toán tổng quát hơn hay một bài toán nào đó có liên quan, sử dụng những phương pháp đặc thù với từng dạng toán như chứng minh phản chứng, quy nạp toán học, toán dựng hình, toán quỹ tích v.v.',
+    'Kiểm tra lời giải bằng cách xem lại kĩ từng bước thực hiện hoặc đặc biệt hoá kết quả tìm được hoặc đối chiếu kết quả với một số tri thức có liên quan.',
+    'Tìm tòi những cách giải khác, so sánh chúng để chọn được cách giải hợp lí nhất.'],
+  ['Từ cách giải đã được phát hiện, sắp xếp các việc phải làm thành một chương trình gồm các bước theo một trình tự thích hợp và thực hiện các bước đó.'],
+  ['Nghiên cứu khả năng ứng dụng kết quả của lời giải.',
+    'Nghiên cứu giải những bài toán tương tự, mở rộng hay lật ngược lại vấn đề.'],
+];
+/** The step's guide as a box the student can fold away. */
+export const polyaGuide = (k) => h('details.polya-guide', { open: true }, h('summary', {}, 'Bước này cần làm gì'), h('ul', {}, POLYA_GUIDE[k].map((t) => h('li', {}, t)))); // plain text: the EN/VI switch translates it
 export const STAGES = ['Trải nghiệm', 'Hình thành', 'Củng cố', 'Vận dụng'];
 
 /** CASIO fx-580VN X key sequence: steps = [{ keys: ['MENU', '7'], note }]. Returns null when there is nothing to press. */

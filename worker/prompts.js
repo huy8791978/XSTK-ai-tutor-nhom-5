@@ -11,7 +11,7 @@ const SYSTEM = `Bạn là gia sư môn Xác suất Thống kê (XSTK) cho sinh v
 Viết công thức bằng LaTeX: $...$ trong dòng, $$...$$ riêng dòng; MỌI công thức phải nằm trong cặp dấu $. Phần trăm trong công thức viết \\%.
 Trong chuỗi JSON, mỗi dấu \\ của LaTeX phải nhân đôi (ví dụ "\\\\frac{1}{2}", "\\\\sqrt{x}"). Trong nội dung không dùng dấu ngoặc kép, hãy dùng « » hoặc ' ' (ví dụ «giỏi»). Trong chữ và công thức hiển thị dùng dấu phẩy thập phân kiểu Việt Nam (0,25); nhưng giá trị SỐ của JSON (pA, n, p, lambda, mu, sigma, values, score, points, max, answer…) bắt buộc dùng dấu chấm: 0.25.
 Sư phạm bắt buộc:
-- Giải toán theo 4 bước Polya: (1) Tìm hiểu đề: cái đã cho, cái phải tìm, điều kiện, kí hiệu; (2) Xây dựng chương trình giải: đưa về bài toán quen thuộc, chọn kiến thức, dự đoán; (3) Trình bày lời giải; (4) Kiểm tra & nghiên cứu: kiểm tra kết quả, rút ra phương pháp, cách khác, bài tương tự/khái quát.
+- Giải toán theo 4 bước Polya, gọi đúng tên các bước: (1) Tìm hiểu nội dung đề bài: phát biểu đề bài dưới những dạng thức khác nhau; phân biệt cái đã cho và cái phải tìm, phải chứng minh; dùng công thức, kí hiệu, hình vẽ để diễn tả đề bài. (2) Tìm cách giải: tìm đoán cách giải (biến đổi cái đã cho, cái phải tìm; liên hệ với tri thức đã biết, với bài toán cũ tương tự, trường hợp riêng, bài toán tổng quát hơn hay có liên quan; phương pháp đặc thù của dạng toán); kiểm tra lời giải bằng cách xem lại từng bước, đặc biệt hoá kết quả hoặc đối chiếu với tri thức liên quan; tìm các cách giải khác và so sánh để chọn cách hợp lí nhất. (3) Trình bày lời giải: từ cách giải đã phát hiện, sắp xếp các việc phải làm thành chương trình gồm các bước theo trình tự thích hợp và thực hiện các bước đó. (4) Nghiên cứu sâu lời giải: nghiên cứu khả năng ứng dụng kết quả của lời giải; giải những bài toán tương tự, mở rộng hay lật ngược lại vấn đề.
 - Dạy khái niệm và định lí theo: Trải nghiệm → Hình thành → Củng cố → Vận dụng.
 Chủ đề hợp lệ: ${TOPICS.join('; ')}.
 Loại lỗi hợp lệ: ${ERROR_TYPES.join('; ')}.
@@ -26,7 +26,7 @@ Mỗi phần tử "keys" là tên phím in trên máy (MENU, SHIFT, ALPHA, OPTN,
 Chỉ trả về JSON hợp lệ đúng cấu trúc được yêu cầu.`;
 
 const CASIO = '"casio": [{"keys": ["..."], "note": "..."}]';
-const POLYA_Q = '"polya": {"understand": ["câu hỏi dẫn dắt bước 1: cái đã cho, cái phải tìm, điều kiện, kí hiệu"], "given": ["cái đã cho"], "find": ["cái phải tìm"], "plan": ["câu hỏi dẫn dắt bước 2: đưa về bài toán quen thuộc, chọn công thức"], "present": "<gợi ý cách trình bày bước 3, không có đáp số>", "check": ["câu hỏi tự kiểm tra bước 4"], "extend": "<bài tương tự hoặc khái quát hoá>"}';
+const POLYA_Q = '"polya": {"understand": ["câu hỏi dẫn dắt bước 1 Tìm hiểu nội dung đề bài: phát biểu lại đề, cái đã cho, cái phải tìm, kí hiệu, công thức, hình vẽ"], "given": ["cái đã cho"], "find": ["cái phải tìm"], "plan": ["câu hỏi dẫn dắt bước 2 Tìm cách giải: liên hệ tri thức đã biết, bài toán tương tự, cách kiểm tra, cách giải khác"], "present": "<gợi ý bước 3 Trình bày lời giải: các bước theo trình tự thích hợp, không có đáp số>", "check": ["câu hỏi bước 4 Nghiên cứu sâu lời giải: ứng dụng của kết quả, bài tương tự, mở rộng, lật ngược vấn đề"], "extend": "<bài tương tự, mở rộng hoặc lật ngược vấn đề>"}';
 
 // Where the student's work is: the typed answer, the images/PDFs after the problem's own files, Word files marked [Bài làm].
 function workSource(p) {
@@ -61,7 +61,7 @@ Trả JSON: {"items": ["bản dịch mục 1", "..."]} với đúng ${items.leng
   },
   strategy: (p) => ({
     text: `Đề bài (có thể kèm ảnh/PDF):\n${p.problem || '(xem tệp đính kèm)'}\n
-Nhiệm vụ: CHỈ đưa ra chiến lược giải (bước 1 và 2 Polya). TUYỆT ĐỐI KHÔNG đưa đáp số, KHÔNG thay số tính ra kết quả cuối, KHÔNG viết lời giải hoàn chỉnh.
+Nhiệm vụ: CHỈ đưa ra chiến lược giải (bước 1 Tìm hiểu nội dung đề bài và bước 2 Tìm cách giải). TUYỆT ĐỐI KHÔNG đưa đáp số, KHÔNG thay số tính ra kết quả cuối, KHÔNG viết lời giải hoàn chỉnh.
 Trả JSON: {"topic": "<chủ đề>", "given": ["..."], "find": ["..."], "conditions": ["..."], "plan": ["bước gợi ý dạng câu hỏi dẫn dắt..."], "knowledge": ["công thức/định lí cần dùng"], "pitfalls": ["sai lầm hay gặp"], "viz": null}`,
   }),
   grade: (p) => ({
@@ -74,7 +74,7 @@ Trả JSON: {"transcript": "<bài làm đã nhận dạng, dùng LaTeX>", "score
   solve: (p) => ({
     text: `Đề bài (có thể kèm ảnh/PDF):\n${p.problem || '(xem tệp đính kèm)'}\n
 Viết lời giải chi tiết đủ 4 bước Polya.
-Trả JSON: {"topic": "<chủ đề>", "understand": "<bước 1, markdown>", "plan": "<bước 2>", "solution": "<bước 3, lời giải chi tiết từng dòng>", "check": "<bước 4: kiểm tra, phương pháp rút ra, cách khác>", "similar": ["2 bài tương tự/khái quát hoá"], ${CASIO}, "viz": <viz hoặc null>}`,
+Trả JSON: {"topic": "<chủ đề>", "understand": "<bước 1, markdown>", "plan": "<bước 2>", "solution": "<bước 3, lời giải chi tiết từng dòng>", "check": "<bước 4 Nghiên cứu sâu lời giải: ứng dụng của kết quả, bài tương tự, mở rộng hay lật ngược vấn đề>", "similar": ["2 bài tương tự/khái quát hoá"], ${CASIO}, "viz": <viz hoặc null>}`,
   }),
   practice: (p) => ({
     text: `Tạo đúng 5 bài ${p.kind === 'mcq' ? 'TRẮC NGHIỆM 4 phương án (chỉ 1 đúng)' : 'TỰ LUẬN'} mới, khác nhau, về chủ đề "${p.topic}", mức độ ${p.level || 'trung bình'}, gắn với tình huống thực tế Việt Nam khi có thể.${p.sample ? `
@@ -219,7 +219,7 @@ export function buildRequest(task, payload = {}) {
   if (verbatim) { /* keep the file's own language */ } else if (p.lang === 'en') {
     text += '\n\nLANGUAGE: Answer ONLY in English (every text value of the JSON), even if the student or the history uses Vietnamese.'
       + ' No Vietnamese words at all: no greetings like "Chào", no pronouns like "em", "cô", "thầy", no Vietnamese step names.'
-      + ' Call Polya\'s steps: Understand the problem, Devise a plan, Carry out the plan, Look back.'
+      + ' Call Polya\'s steps: Understand the problem, Find a way to solve it, Present the solution, Study the solution in depth.'
       + ' Only the "topic" and error "type" values stay exactly as listed in Vietnamese.';
   } else if (task !== 'translate') {
     text += '\n\nNGÔN NGỮ: Trả lời HOÀN TOÀN bằng tiếng Việt (mọi chuỗi trong JSON), kể cả khi câu hỏi hoặc lịch sử hội thoại bằng tiếng Anh. Không chèn tiếng Anh, trừ thuật ngữ thật cần thiết đặt trong ngoặc.';
