@@ -83,7 +83,7 @@ function pager(kind, qs, topic) {
 }
 
 /**
- * A problem plus, once it has been graded, a «Tạo bài tương tự» button under it. Each click asks the AI for one
+ * A problem plus a «Tạo bài tương tự» button under it. Each click asks the AI for one
  * new problem of the same chapter and type with different numbers, shown right below (and itself extendable).
  * Similar problems are saved to the profile one by one; they do not change the score of the 5-problem set.
  */
@@ -92,8 +92,8 @@ function problemBlock(kind, q, i, topic, onResult) {
   let made = 0;
   const more = h('div.similar-list');
   const bSimilar = h('button.btn', { type: 'button' }, 'Tạo bài tương tự');
-  const bar = h('div.similar-bar', { hidden: true }, bSimilar, h('span.muted', {}, 'Cùng chương, cùng dạng, chỉ khác số liệu.'));
-  const card = (kind === 'mcq' ? mcq : essay)(q, i, (r) => { onResult(r); bar.hidden = false; });
+  const bar = h('div.similar-bar', bSimilar, h('span.muted', {}, 'Cùng chương, cùng dạng, chỉ khác số liệu.'));
+  const card = (kind === 'mcq' ? mcq : essay)(q, i, onResult);
   bSimilar.onclick = () => {
     const slot = h('div');
     more.append(slot);
