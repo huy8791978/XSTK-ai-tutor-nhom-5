@@ -108,12 +108,24 @@ export function render(root) {
     }
     return cache.d;
   };
-  bStart.onclick = () => { const p = problemPart(); if (!needProblem(p)) return; go(0); run(bStart, out[0], async () => {
+  // The full solution (step 4) is written in the background as soon as the problem is sent, in parallel with
+  // step 1, but shown and ticked only when the student presses «Xem lời giải chi tiết»: by then it is usually ready.
+  let solved = null; // { key, promise }
+  const solution = (p) => {
+    const key = keyOf(p);
+    if (solved?.key !== key) {
+      const promise = ai('solve', p);
+      solved = { key, promise };
+      promise.catch(() => { if (solved?.promise === promise) solved = null; }); // failed: the button asks again
+    }
+    return solved.promise;
+  };
+  bStart.onclick = () => { const p = problemPart(); if (!needProblem(p)) return; go(0); solution(p); run(bStart, out[0], async () => {
     const d = await strategy(p);
     has[0] = true; go(0);
     return understandView(d);
   }, 'Đang phân tích đề…'); };
-  bPlan.onclick = () => { const p = problemPart(); if (!needProblem(p)) return; run(bPlan, out[1], async () => {
+  bPlan.onclick = () => { const p = problemPart(); if (!needProblem(p)) return; solution(p); run(bPlan, out[1], async () => {
     const d = await strategy(p);
     if (!has[0]) { has[0] = true; out[0].replaceChildren(understandView(d)); }
     has[1] = true; go(1);
@@ -126,7 +138,7 @@ export function render(root) {
     return gradeView(d, serial);
   }, 'Đang đọc bài làm và chấm điểm…'); };
   bSolve.onclick = () => { const p = problemPart(); if (!needProblem(p)) return; run(bSolve, out[3], async () => {
-    const d = await ai('solve', p);
+    const d = await solution(p);
     has[3] = true; go(3);
     return solveView(d);
   }, 'Đang viết lời giải…'); };
