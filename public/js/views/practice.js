@@ -92,7 +92,7 @@ function problemBlock(kind, q, i, topic, onResult) {
   let made = 0;
   const more = h('div.similar-list');
   const bSimilar = h('button.btn', { type: 'button' }, 'Tạo bài tương tự');
-  const bar = h('div.similar-bar', bSimilar, h('span.muted', {}, 'Cùng chương, cùng dạng, chỉ khác số liệu.'));
+  const bar = h('div.similar-bar', {}, bSimilar, h('span.muted', {}, 'Cùng chương, cùng dạng, chỉ khác số liệu.'));
   const card = (kind === 'mcq' ? mcq : essay)(q, i, onResult);
   bSimilar.onclick = () => {
     const slot = h('div');
