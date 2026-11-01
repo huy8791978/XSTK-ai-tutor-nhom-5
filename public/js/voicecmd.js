@@ -1,5 +1,5 @@
 // The voice-command button (bottom right) and what each command does on the page. Parsing lives in command.js.
-import { parseCommand, bestMatch, needsConfirm } from './command.js';
+import { parseCommand, quickCommand, bestMatch, needsConfirm } from './command.js';
 import { listen, canListen, micBusy, isSpeaking, stopSpeaking } from './voice.js';
 import { getLang, setLang, tr } from './i18n.js';
 import { h, icon } from './ui.js';
@@ -102,13 +102,21 @@ export function initVoiceCommands() {
   }
 
   // ---- One command: tap (ends on silence) or hold (ends on release). Alt+V does the same as a tap.
-  let one = null, downAt = 0;
+  // Speed: a page change or fixed command («sang trắc nghiệm», «quay lại») runs as soon as its words are heard
+  // (QUICK ms without new words), without waiting for the browser to decide the sentence is over.
+  // Button labels and field values wait for a short pause.
+  const QUICK = 220;
+  let one = null, downAt = 0, quickT;
   function startOne() {
     if (one) { one.stop(); return; }
     stopBackground();
     mic.classList.add('on'); say('Đang nghe lệnh…');
-    one = listen({ continuous: true, silenceMs: 1400, maxMs: 15000, onInterim: (t) => say(`«${t}»`) });
-    one.then((t) => { if (t) run(t); else say('Không nghe thấy lệnh.', 'err'); })
+    const rec = one = listen({ continuous: true, silenceMs: 800, maxMs: 15000, onInterim: (t) => {
+      say(`«${t}»`);
+      clearTimeout(quickT);
+      if (quickCommand(t)) quickT = setTimeout(() => { if (one === rec) rec.stop(); }, QUICK);
+    } });
+    one.then((t) => { clearTimeout(quickT); if (t) run(t); else say('Không nghe thấy lệnh.', 'err'); })
       .catch((e) => say(e?.code === 'not-allowed' ? 'Trình duyệt chưa cho dùng micro.' : 'Micro đang bận hoặc lỗi.', 'err'))
       .finally(() => { one = null; mic.classList.remove('on'); resumeBackground(); });
   }
@@ -131,10 +139,24 @@ export function initVoiceCommands() {
     clearTimeout(restartT);
     if (!wanted || bg || one || micBusy() || !Rec) return;
     const r = new Rec();
-    r.lang = getLang() === 'en' ? 'en-US' : 'vi-VN'; r.continuous = true; r.interimResults = false; r.maxAlternatives = 1;
+    r.lang = getLang() === 'en' ? 'en-US' : 'vi-VN'; r.continuous = true; r.interimResults = true; r.maxAlternatives = 1;
+    // Each phrase is one result index: interim while spoken, then final. A command recognised in the interim text
+    // runs after QUICK ms without new words; its final version is then skipped.
+    const fired = new Set();
+    let timer;
     r.onresult = (e) => {
       if (isSpeaking()) return; // the page's own voice
-      for (let i = e.resultIndex; i < e.results.length; i++) if (e.results[i].isFinal) run(e.results[i][0].transcript, { wake: true });
+      for (let i = e.resultIndex; i < e.results.length; i++) {
+        if (fired.has(i)) continue;
+        const res = e.results[i], text = res[0].transcript;
+        if (res.isFinal) { clearTimeout(timer); fired.add(i); run(text, { wake: true }); continue; }
+        clearTimeout(timer);
+        const armed = Date.now() < armedUntil;
+        const q = quickCommand(text, { wake: !armed });
+        if (q && q.type !== 'wake' && q.type !== 'none') {
+          timer = setTimeout(() => { if (bg === r && !fired.has(i)) { fired.add(i); run(text, { wake: true }); } }, QUICK);
+        }
+      }
     };
     r.onerror = (e) => { if (e.error === 'not-allowed' || e.error === 'service-not-allowed') { setAlways(false); say('Trình duyệt chưa cho dùng micro.', 'err'); } };
     r.onend = () => { if (bg === r) { bg = null; restartT = setTimeout(resumeBackground, 400); } };

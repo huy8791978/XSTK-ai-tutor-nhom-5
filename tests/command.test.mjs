@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { parseCommand, bestMatch, needsConfirm, findWake, norm } from '../public/js/command.js';
+import { parseCommand, quickCommand, bestMatch, needsConfirm, findWake, norm } from '../public/js/command.js';
 
 test('navigation: with or without a verb, vi and en', () => {
   assert.deepEqual(parseCommand('Sang trắc nghiệm'), { type: 'nav', route: 'trac-nghiem', verb: true });
@@ -50,4 +50,20 @@ test('bestMatch: close labels only when said without «bấm»', () => {
   assert.ok(needsConfirm('Xoá hồ sơ'));
   assert.ok(!needsConfirm('Chấm bài'));
   assert.equal(norm('Đường – Ổn!'), 'duong on');
+});
+
+test('quickCommand: runs while still speaking only when nothing longer can follow', () => {
+  assert.equal(quickCommand('sang trắc nghiệm').route, 'trac-nghiem');
+  assert.equal(quickCommand('mở bản đồ').route, 'ban-do'); // «… tư duy» would be the same page
+  assert.equal(quickCommand('quay lại').type, 'back');
+  assert.equal(quickCommand('xuống'), null); // may become «xuống cuối trang»
+  assert.equal(quickCommand('lên'), null); // may become «lên đầu trang»
+  assert.equal(quickCommand('xuống cuối trang').to, 'bottom');
+  assert.equal(quickCommand('cuộn xuống').dir, 1);
+  assert.equal(quickCommand('sang trắc'), null);
+  assert.equal(quickCommand('bấm tạo 5 bài'), null); // labels wait for the pause
+  assert.equal(quickCommand('điền chủ đề là khoảng'), null);
+  assert.equal(quickCommand('các em mở trắc nghiệm', { wake: true }), null); // lecture: nothing to run
+  assert.equal(quickCommand('trợ lý ơi sang vấn đáp', { wake: true }).route, 'van-dap');
+  assert.equal(quickCommand('dừng').type, 'hush');
 });

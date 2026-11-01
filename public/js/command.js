@@ -47,7 +47,7 @@ const SIMPLE = [
   [['tieng anh', 'chuyen sang tieng anh', 'english', 'switch to english'], { type: 'lang', lang: 'en' }],
   [['tieng viet', 'chuyen sang tieng viet', 'vietnamese', 'switch to vietnamese'], { type: 'lang', lang: 'vi' }],
   [['tat nghe', 'ngung nghe', 'tat nghe lien tuc', 'stop listening'], { type: 'listen', on: false }],
-  [['xac nhan', 'dong y', 'dung vay', 'confirm', 'yes'], { type: 'confirm' }],
+  [['xac nhan', 'dong y', 'confirm', 'yes'], { type: 'confirm' }],
   [['huy', 'khong', 'cancel', 'no'], { type: 'cancel' }],
   [['giup', 'tro giup', 'huong dan', 'cac lenh', 'danh sach lenh', 'help', 'commands'], { type: 'help' }],
 ];
@@ -100,6 +100,30 @@ export function parseCommand(text, { wake = false } = {}) {
   for (const [route, names] of Object.entries(ROUTE_WORDS)) if (rest.some((r) => names.includes(r))) return { type: 'nav', route, verb: nv.n > 0 };
   // 5. Anything else may be a button label said without «bấm» («tạo 5 bài tự luận», «xem gợi ý»).
   return { type: 'click', label: core || flat, bare: true };
+}
+
+const QUICK_TYPES = ['nav', 'hush', 'back', 'forward', 'scroll', 'lang', 'listen', 'help', 'confirm'];
+const KNOWN = [...SIMPLE.flatMap(([p]) => p), ...Object.values(ROUTE_WORDS).flat()].map((p) => p.split(' '));
+const same = (a, b) => a?.type === b?.type && a.route === b.route && a.dir === b.dir && a.to === b.to && a.lang === b.lang && a.on === b.on;
+
+/**
+ * The command to run right now, from text still being spoken (interim), or null to keep listening.
+ * Only page changes and fixed commands qualify, and only when no longer command starts the same way
+ * («xuống» waits: it may become «xuống cuối trang»). Button labels and field values wait for the pause.
+ */
+export function quickCommand(text, { wake = false } = {}) {
+  const a = parseCommand(text, { wake });
+  if (!a || a.type === 'wake') return a;
+  if (!QUICK_TYPES.includes(a.type)) return null;
+  const w = words(text);
+  for (const p of KNOWN) {
+    for (let k = Math.min(p.length - 1, w.length); k >= 1; k--) {
+      if (!p.slice(0, k).every((x, i) => w[w.length - k + i] === x)) continue;
+      const b = parseCommand([...w, ...p.slice(k)].join(' '), { wake }); // what it would mean with more words
+      if (QUICK_TYPES.includes(b?.type) && !same(b, a)) return null;
+    }
+  }
+  return a;
 }
 
 /**
