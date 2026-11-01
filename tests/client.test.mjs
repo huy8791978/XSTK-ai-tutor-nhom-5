@@ -1,7 +1,8 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { md, esc, plainMath } from '../public/js/md.js';
-import { summarize, fmtScore, newSerial, insightPayload } from '../public/js/stats.js';
+import { summarize, fmtScore, newSerial, insightPayload, stamps } from '../public/js/stats.js';
+import { TOPICS, TOPIC_COLOR } from '../public/js/topics.js';
 import { insertLatex } from '../public/js/mathinput.js';
 
 test('md escapes HTML and keeps math untouched', () => {
@@ -252,4 +253,18 @@ test('textLanguage spots Vietnamese prose (short titles too) and leaves formulas
   assert.equal(textLanguage('$P(A|B)=\frac{P(AB)}{P(B)}$'), null);
   assert.equal(textLanguage('The student struggles with the basics of probability: conditional probability, independence and the addition rule for events that are not mutually exclusive.'), 'en');
   assert.equal(textLanguage('Ti le 12%'), null);
+});
+
+test('stamps count sessions, the day streak and mastered topics', () => {
+  const day = 864e5, now = new Date(2026, 10, 1, 12).getTime();
+  const at = (k, topic, score) => ({ at: now - k * day, topic, score });
+  const S = [at(3, 'Ước lượng tham số', 9), at(1, 'Ước lượng tham số', 8), at(1, 'Kiểm định giả thuyết', 9), at(0, 'Lạ', 10), at(0, 'Lạ', 10)];
+  assert.deepEqual(stamps(S, TOPICS, now), { n: 5, streak: 2, mastered: 1, total: 11 }); // gap on day 2; unknown topic ignored
+  assert.equal(stamps(S.filter((s) => s.at < now - day / 2), TOPICS, now).streak, 1); // nothing today: count from yesterday
+  assert.deepEqual(stamps([], TOPICS, now), { n: 0, streak: 0, mastered: 0, total: 11 });
+});
+
+test('every topic has a colour family', () => {
+  assert.equal(TOPIC_COLOR.length, TOPICS.length);
+  assert.ok(TOPIC_COLOR.every((c) => c >= 1 && c <= 5));
 });

@@ -655,3 +655,108 @@ kbd.key.val { background: var(--paper); color: var(--ink); border: 1px solid var
 @media (prefers-reduced-motion: reduce) { .vc-mic.on, .vc-always.on .vc-dot { animation: none; } }
 @media (max-width: 860px) { .vc { right: 10px; bottom: calc(96px + env(safe-area-inset-bottom)); } .vc-always span:last-child { display: none; } .vc-always { width: 34px; padding: 0; justify-content: center; } }
 @media print { .vc { display: none; } }
+
+/* ---------- Ways of learning (multiple intelligences): display only, every feature unchanged ---------- */
+:root { --g-hoc: #2637A8; --g-luyen: #F2B705; --g-hoi: #0E9F6E; --g-theo-doi: #D7263D; }
+
+/* Menu in 4 groups, each with its own colour (on the dark rail: the lighter tints) */
+.nav-g { margin: 14px 12px 4px; font: 700 11px/1 var(--body); letter-spacing: .14em; text-transform: uppercase; color: var(--ultra-dim); }
+.nav-g:first-child { margin-top: 0; }
+.nav a { padding-block: 8px; }
+.nav a[data-g="hoc"] .ic { color: #AEB9F2; }
+.nav a[data-g="luyen"] .ic { color: var(--gold); }
+.nav a[data-g="hoi"] .ic { color: #7FE0B9; }
+.nav a[data-g="theo-doi"] .ic { color: #FF8A98; }
+.nav a[data-g="hoc"] { --g: var(--g-hoc); } .nav a[data-g="luyen"] { --g: var(--gold-ink); }
+.nav a[data-g="hoi"] { --g: var(--g-hoi); } .nav a[data-g="theo-doi"] { --g: var(--g-theo-doi); }
+.nav a[aria-current="page"] .ic { color: var(--g, var(--ultra)); }
+@media (max-width: 860px) { .nav-g { display: none; } .nav a { padding-block: 7px; } }
+
+/* Page header: a card in the group's colour with a small picture of what the page is about */
+.top[data-g="hoc"] { --g: var(--g-hoc); --art: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 80'%3E%3Cg stroke='%231B2A8C' stroke-width='2' fill='none'%3E%3Cpath d='M100 40 60 16M100 40 60 64M100 40 142 18M100 40 142 62M60 16 26 8M60 16 26 26M142 18 176 8M142 62 176 72'/%3E%3C/g%3E%3Ccircle cx='100' cy='40' r='11' fill='%231B2A8C'/%3E%3Cg fill='%23AEB9F2'%3E%3Ccircle cx='60' cy='16' r='7'/%3E%3Ccircle cx='60' cy='64' r='7'/%3E%3Ccircle cx='142' cy='18' r='7'/%3E%3Ccircle cx='142' cy='62' r='7'/%3E%3C/g%3E%3Cg fill='%23F2B705'%3E%3Ccircle cx='26' cy='8' r='4'/%3E%3Ccircle cx='26' cy='26' r='4'/%3E%3Ccircle cx='176' cy='8' r='4'/%3E%3Ccircle cx='176' cy='72' r='4'/%3E%3C/g%3E%3C/svg%3E"); }
+.top[data-g="luyen"] { --g: var(--g-luyen); --art: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 80'%3E%3Cg fill='%231B2A8C'%3E%3Crect x='46' y='54' width='16' height='24'/%3E%3Crect x='66' y='38' width='16' height='40'/%3E%3Crect x='86' y='16' width='16' height='62'/%3E%3Crect x='106' y='24' width='16' height='54'/%3E%3Crect x='126' y='46' width='16' height='32'/%3E%3Crect x='146' y='64' width='16' height='14'/%3E%3C/g%3E%3Cpath d='M24 78C74 78 74 10 102 10S130 78 182 78' fill='none' stroke='%23D7263D' stroke-width='2.5'/%3E%3Cg fill='%23D7263D'%3E%3Ccircle cx='96' cy='4' r='3'/%3E%3Ccircle cx='110' cy='2' r='3'/%3E%3C/g%3E%3C/svg%3E"); }
+.top[data-g="hoi"] { --g: var(--g-hoi); --art: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 80'%3E%3Cpath d='M118 8h66a8 8 0 0 1 8 8v28a8 8 0 0 1-8 8h-40l-14 12v-12h-12a8 8 0 0 1-8-8V16a8 8 0 0 1 8-8z' fill='%23E2F5EC' stroke='%230E9F6E' stroke-width='2'/%3E%3Ctext x='151' y='37' text-anchor='middle' font-family='serif' font-style='italic' font-size='20' fill='%2308704D'%3EP(A)%3C/text%3E%3Cg fill='%231B2A8C'%3E%3Crect x='10' y='34' width='7' height='12' rx='3.5'/%3E%3Crect x='22' y='24' width='7' height='32' rx='3.5'/%3E%3Crect x='34' y='12' width='7' height='56' rx='3.5'/%3E%3Crect x='46' y='22' width='7' height='36' rx='3.5'/%3E%3Crect x='58' y='30' width='7' height='20' rx='3.5'/%3E%3Crect x='70' y='18' width='7' height='44' rx='3.5'/%3E%3Crect x='82' y='32' width='7' height='16' rx='3.5'/%3E%3C/g%3E%3C/svg%3E"); }
+.top[data-g="theo-doi"] { --g: var(--g-theo-doi); --art: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 80'%3E%3Cpath d='M20 76h168' stroke='%23C2C9E6' stroke-width='2'/%3E%3Cg fill='%23AEB9F2'%3E%3Crect x='30' y='52' width='18' height='24'/%3E%3Crect x='60' y='44' width='18' height='32'/%3E%3Crect x='90' y='48' width='18' height='28'/%3E%3Crect x='120' y='30' width='18' height='46'/%3E%3Crect x='150' y='16' width='18' height='60'/%3E%3C/g%3E%3Cpath d='M39 44 69 36 99 40 129 22 159 8' fill='none' stroke='%23D7263D' stroke-width='2.5'/%3E%3Cg fill='%23D7263D'%3E%3Ccircle cx='39' cy='44' r='3.5'/%3E%3Ccircle cx='69' cy='36' r='3.5'/%3E%3Ccircle cx='99' cy='40' r='3.5'/%3E%3Ccircle cx='129' cy='22' r='3.5'/%3E%3Ccircle cx='159' cy='8' r='3.5'/%3E%3C/g%3E%3C/svg%3E"); }
+@media (min-width: 861px) {
+  .top { padding: 18px 22px; background: linear-gradient(120deg, var(--sheet) 55%, var(--ultra-wash)); border: 1px solid var(--rule-2); border-left: 6px solid var(--g, var(--ultra)); border-radius: 6px; }
+}
+@media (min-width: 1101px) {
+  .top .lede { grid-column: 1; }
+  .top::after { content: ""; grid-row: 2; grid-column: 2; justify-self: end; align-self: end; width: 200px; height: 80px; background: var(--art) no-repeat right bottom / contain; }
+}
+
+/* Step rails as 4 lottery tickets: notched sides, the current one gold, a done one stamped; a progress bar below */
+.detents, .detents.steps { gap: 10px; border: 0; padding-bottom: 16px; position: relative; }
+.detents::after { content: ""; position: absolute; left: 0; bottom: 0; height: 6px; width: 100%; border-radius: 9px;
+  background: linear-gradient(90deg, var(--green), var(--gold)) 0 0 / calc(var(--p, 0) * 100%) 100% no-repeat, var(--rule); transition: background-size .6s var(--ease); }
+.detents li { position: relative; flex-direction: column; align-items: flex-start; gap: 2px; background: var(--sheet); border: 1.5px solid var(--rule-2); border-radius: 6px; padding: 10px 12px 10px 18px;
+  -webkit-mask: radial-gradient(circle 7px at 0 50%, #0000 98%, #000) left / 51% 100% no-repeat, radial-gradient(circle 7px at 100% 50%, #0000 98%, #000) right / 51% 100% no-repeat;
+  mask: radial-gradient(circle 7px at 0 50%, #0000 98%, #000) left / 51% 100% no-repeat, radial-gradient(circle 7px at 100% 50%, #0000 98%, #000) right / 51% 100% no-repeat;
+  transition: background .3s var(--ease), border-color .3s var(--ease); }
+.detents li::before, .detents.steps button::before { display: none; }
+.detents.steps li { padding: 0; }
+.detents.steps button { box-sizing: border-box; height: 100%; padding: 10px 12px 10px 18px; flex-direction: column; align-items: flex-start; gap: 2px; }
+.detents b { font-size: 22px; line-height: 1; color: var(--rule-2); }
+.detents li[data-state="done"] { border-color: var(--green); color: var(--green-ink); }
+.detents li[data-state="done"] b { color: var(--green); }
+.detents li[data-state="current"] { border-color: var(--gold); background: var(--gold-wash); color: var(--ink); }
+.detents li[data-state="current"] b { color: var(--gold-ink); }
+.detents li[data-state="done"]::after, .detents li[data-done]::after { content: "Đã xong"; position: absolute; top: 8px; right: 10px; transform: rotate(-12deg); border: 2px solid var(--green); color: var(--green);
+  font: 800 11px/1 var(--display); letter-spacing: .08em; text-transform: uppercase; padding: 3px 5px; border-radius: 3px; pointer-events: none; animation: stamp .45s var(--ease) both; }
+:root:lang(en) .detents li[data-state="done"]::after, :root:lang(en) .detents li[data-done]::after { content: "Done"; }
+@keyframes stamp { from { transform: rotate(-12deg) scale(1.8); opacity: 0; } }
+@media (max-width: 860px) { .detents li[data-state="done"]::after, .detents li[data-done]::after { top: 6px; right: 6px; } }
+
+/* Medal when a step is newly done (+ an optional "ting": the bell in the header) */
+.cheer { position: fixed; left: 50%; bottom: 84px; transform: translateX(-50%); z-index: 41; display: flex; gap: 12px; align-items: center;
+  max-width: min(460px, calc(100vw - 32px)); padding: 12px 18px 12px 12px; border-radius: 10px; background: var(--ink); color: #fff; font-weight: 500; line-height: 1.4;
+  box-shadow: 0 12px 32px -8px rgba(20, 24, 51, .45); }
+.cheer .medal { width: 36px; height: 36px; flex: none; border-radius: 50%; display: grid; place-items: center; background: var(--gold); color: var(--ink);
+  font: 800 18px var(--display); box-shadow: 0 0 0 3px rgba(242, 183, 5, .35); }
+.cheer.pop .medal { animation: medal .6s var(--ease) both; }
+@keyframes medal { 0% { transform: scale(.2) rotate(-40deg); } 60% { transform: scale(1.18) rotate(8deg); } }
+@media (max-width: 860px) { .cheer { bottom: calc(150px + env(safe-area-inset-bottom)); } }
+.sound-btn { min-width: 44px; padding-inline: 10px; }
+.sound-btn[aria-pressed="true"] { border-color: var(--green); color: var(--green-ink); background: var(--green-wash); }
+@media (max-width: 860px) {
+  .sound-btn { border-color: rgba(255, 255, 255, .45); color: #fff; min-height: 40px; }
+  .sound-btn:hover { background: rgba(255, 255, 255, .12); color: #fff; border-color: #fff; }
+  .sound-btn[aria-pressed="true"] { background: rgba(255, 255, 255, .18); color: #fff; border-color: #fff; }
+}
+
+/* Main buttons you can feel being pressed */
+.btn-primary { box-shadow: 0 3px 0 var(--ultra-deep); }
+.btn-primary:active { transform: translateY(2px); box-shadow: 0 1px 0 var(--ultra-deep); }
+.btn-primary[disabled] { box-shadow: none; }
+
+/* AI answers: the first paragraph shown as the key idea; bold terms like a highlighter */
+.msg.ai > .rich > p:first-child:not(:only-child) { border-left: 4px solid var(--ultra); background: var(--ultra-wash); padding: 8px 12px; border-radius: 0 4px 4px 0; font-weight: 600; color: var(--ultra-deep); }
+.msg.ai > .rich > p:first-child:not(:only-child)::before { content: "Ý chính"; display: block; font: 700 11px/1.4 var(--body); letter-spacing: .12em; text-transform: uppercase; color: var(--ultra); }
+:root:lang(en) .msg.ai > .rich > p:first-child:not(:only-child)::before { content: "Key idea"; }
+.rich strong { background: linear-gradient(transparent 62%, var(--gold-wash) 62%); border-bottom: 1.5px dotted var(--gold-ink); }
+.msg.me .rich strong { background: none; border-bottom: 0; }
+
+/* Topic tags: one fixed colour per chapter, the same on every page (data-c set by engage.js) */
+.tag.topic[data-c="2"] { background: var(--green-wash); color: var(--green-ink); }
+.tag.topic[data-c="3"] { background: var(--gold-wash); color: var(--gold-ink); }
+.tag.topic[data-c="4"] { background: var(--red-wash); color: var(--red-ink); }
+.tag.topic[data-c="5"] { background: #EFE6FB; color: #5B2A9E; }
+
+/* Robot coach on the tutor: a tip for the step in a speech bubble, with shortcuts to the page's own buttons */
+.coach { display: flex; gap: 12px; align-items: flex-end; margin: 6px 0 16px; }
+.coach .teacher { width: 70px; flex: none; }
+.coach .t-waves, .coach .t-bubbles { display: none; }
+.coach-say { min-width: 0; flex: 1; background: var(--sheet); border: 1.5px solid var(--ultra); border-radius: 14px 14px 14px 4px; padding: 10px 14px; font-size: 14px; }
+.coach-say .chips { margin-top: 8px; gap: 6px; }
+.coach-say .chip { min-height: 32px; padding: 4px 11px; border-radius: 999px; font-size: 12.5px; }
+
+/* Profile stamps */
+.stamps { display: flex; flex-wrap: wrap; gap: 14px; margin-top: 18px; }
+.stamp-c { width: 112px; height: 112px; border-radius: 50%; border: 2.5px dashed var(--ultra); display: grid; place-items: center; align-content: center; text-align: center;
+  padding: 10px; font: 700 12px/1.25 var(--body); color: var(--ultra); background: var(--sheet); transform: rotate(-6deg); }
+.stamp-c b { display: block; font: 800 26px/1 var(--display); }
+.stamp-c.g { border-color: var(--green); color: var(--green-ink); }
+.stamp-c.r { border-color: var(--red); color: var(--red-ink); transform: rotate(5deg); }
+.stamp-c.off { opacity: .4; border-style: dotted; }
+.look-back { margin-top: 16px; padding: 10px 12px; border: 1px solid var(--rule); border-radius: 6px; background: var(--paper); font-size: 14px; }
+.look-back > b { display: block; font-size: 12px; letter-spacing: .1em; text-transform: uppercase; color: var(--ultra); }

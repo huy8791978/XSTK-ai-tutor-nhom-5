@@ -16,6 +16,7 @@ import * as mindmap from './views/mindmap.js';
 import * as quiz from './views/quiz.js';
 import * as profile from './views/profile.js';
 import { initVoiceCommands } from './voicecmd.js';
+import { initEngage } from './engage.js';
 
 const ROUTES = {
   'cham-bai': tutor, 'ly-thuyet': concept, 'dinh-li': theorem, 'tu-luan': essayPage, 'trac-nghiem': mcqPage, 'mini-game': quiz, 'van-dap': oral,
@@ -27,6 +28,7 @@ const view = document.querySelector('[data-view]');
 const title = document.querySelector('[data-title]');
 const lede = document.querySelector('[data-lede]');
 const serial = document.querySelector('[data-serial]');
+const top = document.querySelector('.top');
 const ros = rosette(document.querySelector('.rosette'));
 
 function go() {
@@ -34,6 +36,7 @@ function go() {
   const mod = ROUTES[key];
   document.querySelectorAll('[data-route]').forEach((a) => (a.dataset.route === key ? a.setAttribute('aria-current', 'page') : a.removeAttribute('aria-current')));
   document.querySelector('.profile-btn').hidden = key === 'ho-so';
+  top.dataset.g = document.querySelector(`[data-route="${key}"]`).dataset.g; // header accent + picture of the menu group
   title.textContent = mod.meta.title; lede.textContent = mod.meta.lede;
   document.title = `${tr(mod.meta.title)} · AI Classroom`;
   document.querySelector('.nav [aria-current]')?.scrollIntoView({ block: 'nearest', inline: 'nearest' });
@@ -63,6 +66,7 @@ addEventListener('hashchange', go);
 addEventListener('profile-change', paintSerial);
 paintSerial();
 initI18n();
+initEngage();
 go();
 initVoiceCommands();
 

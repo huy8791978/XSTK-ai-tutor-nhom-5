@@ -11,3 +11,6 @@ export const ERROR_TYPES = [
 // Mini-game: difficulty names (sent to the AI as written) and the size of one question set.
 export const QUIZ_LEVELS = ['Dễ', 'Trung bình', 'Khó'];
 export const QUIZ_SIZE = 20;
+// Colour family (1-5) of each topic in TOPICS, so a topic tag has the same colour on every page:
+// 1 events & probability, 2 random variables, 3 distributions & limits, 4 samples & estimation, 5 testing & regression.
+export const TOPIC_COLOR = [1, 1, 2, 2, 3, 2, 3, 4, 4, 5, 5];

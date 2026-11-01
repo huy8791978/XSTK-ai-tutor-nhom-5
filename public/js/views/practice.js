@@ -149,7 +149,7 @@ function polyaCard(q, i, work, actions, extra4) {
       k < 3 ? h('button.btn.btn-ghost', { type: 'button', onclick: () => goto(k + 1) }, `Bước ${k + 2}: ${POLYA[k + 1]} →`) : null)));
   const tabs = h('ol.detents.steps', { 'aria-label': 'Bốn bước giải toán' });
   let cur = 0;
-  const paint = () => tabs.replaceChildren(...POLYA.map((label, j) => h('li', { 'data-state': j === cur ? 'current' : used[j] ? 'done' : 'todo' },
+  const paint = () => tabs.replaceChildren(...POLYA.map((label, j) => h('li', { 'data-state': j === cur ? 'current' : used[j] ? 'done' : 'todo', 'data-done': used[j] },
     h('button', { type: 'button', 'aria-current': j === cur ? 'step' : null, onclick: () => goto(j) }, h('b', {}, String(j + 1)), label))));
   function goto(k) { cur = k; panes.forEach((p, j) => { p.hidden = j !== k; }); paint(); }
   function mark(k) { if (!used[k]) { used[k] = true; paint(); } }

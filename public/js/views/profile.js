@@ -2,7 +2,8 @@
 import { h, rich, list, run, toast } from '../ui.js';
 import { ai } from '../api.js';
 import { load, setInsight, exportFile, importFile, reset } from '../profile.js';
-import { summarize, insightPayload, fmtScore, FEATURES } from '../stats.js';
+import { summarize, insightPayload, fmtScore, FEATURES, stamps } from '../stats.js';
+import { TOPICS } from '../topics.js';
 import { chart, odometer } from '../viz.js';
 
 export const meta = { title: 'Hồ sơ học tập', lede: 'Mọi bài chấm, bộ luyện tập và buổi vấn đáp đều được ghi lại trên trình duyệt này.\nAI đọc hồ sơ để tìm lỗi lặp lại và đề xuất lộ trình.' };
@@ -28,7 +29,8 @@ export function render(root) {
       h('div.board', {},
         h('div.row.top-tier', {}, h('b', {}, 'Điểm TB'), h('span', {}, s.n ? `Trung bình của ${s.n} phiên có chấm điểm.` : 'Chưa có phiên nào được chấm.'), s.avg == null ? h('em', {}, '—') : odometer(s.avg)),
         h('div.row', {}, h('b', {}, 'Số phiên'), h('span', {}, 'Chấm bài, luyện tập và vấn đáp đã ghi lại'), h('em', {}, String(s.n))),
-        h('div.row', {}, h('b', {}, 'Lỗi đã ghi'), h('span', {}, s.errorTypes[0] ? `Nhiều nhất: ${s.errorTypes[0].name}` : 'Chưa có lỗi nào'), h('em', {}, String(s.mistakeCount))))),
+        h('div.row', {}, h('b', {}, 'Lỗi đã ghi'), h('span', {}, s.errorTypes[0] ? `Nhiều nhất: ${s.errorTypes[0].name}` : 'Chưa có lỗi nào'), h('em', {}, String(s.mistakeCount)))),
+      stampRow(p)),
     h('div.work', {},
       h('div.stack', {},
         h('section.panel', { 'aria-label': 'Nhận định của AI' }, h('h2', {}, 'Nhận định & lộ trình'), h('div.btn-row', { style: 'margin:14px 0 6px' }, bInsight, h('a.btn', { href: '#thong-ke' }, 'Xem thống kê lỗi sai')), insightOut)),
@@ -46,6 +48,21 @@ export function render(root) {
             h('button.btn.btn-danger', { type: 'button', onclick: () => { if (confirm('Xoá toàn bộ hồ sơ học tập trên trình duyệt này? Không thể hoàn tác.')) { reset(); rerender(); } } }, 'Xoá hồ sơ'))))));
 }
 
+
+/** Achievements as rubber stamps; one not reached yet is faded. Below: the opening of the AI's last assessment. */
+function stampRow(p) {
+  const st = stamps(p.sessions, TOPICS);
+  const stamp = (cls, big, label, on) => h(`div.stamp-c${cls}${on ? '' : '.off'}`, { role: 'listitem' }, h('b', {}, big), label);
+  const first = String(p.insight?.data?.assessment || '').split(/(?<=[.!?])\s+/)[0];
+  return [
+    h('div.stamps', { role: 'list', 'aria-label': 'Thành tích' },
+      stamp('', String(st.n), 'phiên đã ghi', st.n > 0),
+      stamp('.g', String(st.streak), 'ngày học liên tiếp', st.streak > 0),
+      stamp('.r', `${st.mastered}/${st.total}`, 'chủ đề đã thạo', st.mastered > 0),
+      stamp('', '★', `Thạo cả ${st.total} chủ đề`, st.mastered === st.total)),
+    first ? h('div.look-back', {}, h('b', {}, 'Nhìn lại'), rich(first, 'span')) : null,
+  ];
+}
 
 export function hbar(name, label, max, value = label, cls = '') {
   return h(`div.hbar${cls ? `.${cls}` : ''}`, {}, h('span', {}, name), h('span.t', {}, h('i', { style: `width:${Math.max(3, (value / max) * 100)}%` })), h('em', {}, String(label)));

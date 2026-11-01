@@ -22,6 +22,14 @@ const DICT = {
   'Đã huỷ.': 'Cancelled.', '✓ Đã dừng': '✓ Stopped', '✓ Quay lại': '✓ Back', '✓ Tiến tới': '✓ Forward', '✓ Đã cuộn': '✓ Scrolled', '✓ Đang ở trang này': '✓ Already here',
   'Trình duyệt chưa cho dùng micro.': 'The browser has not allowed the microphone.', 'Micro đang bận hoặc lỗi.': 'The microphone is busy or failed.',
   'Nghe liên tục: nói «Trợ lý ơi» rồi ra lệnh.': 'Always listening: say «Assistant», then the command.', 'Đã tắt nghe liên tục.': 'Always listen is off.',
+  // ways of learning: menu groups, step medal, robot coach, profile stamps
+  'Học': 'Learn', 'Luyện': 'Practice', 'Hỏi': 'Ask', 'Theo dõi': 'Track', 'Âm thanh khi xong một bước': 'Sound when a step is done',
+  'Mở bản đồ tư duy': 'Open the mind map', 'Thành tích': 'Achievements', 'phiên đã ghi': 'sessions logged', 'ngày học liên tiếp': 'days in a row',
+  'chủ đề đã thạo': 'topics mastered', 'Nhìn lại': 'Looking back',
+  'Đọc kĩ đề: tìm cái đã cho, cái phải tìm và điều kiện. Xong thì bấm «Tìm hiểu đề bài».': 'Read the problem carefully: find what is given, what to find and the conditions. Then press «Understand the problem».',
+  'Đừng vội tính! Bài này giống dạng nào bạn đã gặp? Cần công thức nào?': 'Do not rush into calculating! Which kind of problem you have met does this look like? Which formula does it need?',
+  'Tự trình bày từng bước, ghi công thức trước khi thay số. Sai cũng không sao: AI sẽ chỉ chỗ cần sửa.': 'Write it out step by step, the formula before the numbers. Mistakes are fine: the AI will show what to fix.',
+  'So bài của bạn với lời giải mẫu. Có cách nào ngắn hơn? Kết quả có hợp lí không?': 'Compare your work with the model solution. Is there a shorter way? Does the result make sense?',
   // shell & nav
   'Gia sư Xác suất Thống kê': 'Probability & Statistics Tutor', 'Bỏ qua tới nội dung': 'Skip to content',
   'Gia sư chấm bài': 'AI Tutor & grading', 'Chấm bài': 'Grade', 'Học lí thuyết': 'Learn concepts', 'Lí thuyết': 'Concepts',
@@ -257,6 +265,7 @@ const DICT = {
 
 // Strings built at runtime.
 const RULES = [
+  [/^Xong bước (\d+)!$/, 'Step $1 done!'], [/^Tiếp theo: (.+)$/, (m, x) => `Next: ${DICT[x] || x}`], [/^Thạo cả (\d+) chủ đề$/, 'All $1 topics mastered'],
   [/^Đang mở (\d+) nhánh con · bấm lần nữa để thu gọn$/, '$1 branches open · tap again to close'], [/^Có (\d+) nhánh con · bấm để mở$/, '$1 branches · tap to open'],
   [/^Máy chủ lỗi \((\d+)\)\.$/,'Server error ($1).'],
   [/^Bước (\d+)\. (.+)$/, (m, n, x) => `Step ${n}. ${DICT[x] || x}`], [/^← Bước (\d+): (.+)$/, (m, n, x) => `← Step ${n}: ${DICT[x] || x}`],

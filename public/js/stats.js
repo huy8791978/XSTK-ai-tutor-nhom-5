@@ -61,3 +61,19 @@ export function byFeature(sessions = []) {
     };
   }).filter((r) => r.n);
 }
+
+const dayKey = (t) => { const d = new Date(t); return `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`; };
+
+/**
+ * Profile stamps: sessions logged, days in a row with at least one session (ending today, or yesterday if nothing
+ * yet today), and topics mastered (≥ 2 graded sessions averaging ≥ 8) out of `topics`.
+ */
+export function stamps(sessions = [], topics = [], now = Date.now()) {
+  const days = new Set(sessions.map((s) => dayKey(s.at)));
+  const d = new Date(now);
+  if (!days.has(dayKey(d))) d.setDate(d.getDate() - 1);
+  let streak = 0;
+  while (days.has(dayKey(d))) { streak += 1; d.setDate(d.getDate() - 1); }
+  const mastered = summarize(sessions).topics.filter((t) => t.n >= 2 && t.avg >= 8 && topics.includes(t.name)).length;
+  return { n: sessions.length, streak, mastered, total: topics.length };
+}
