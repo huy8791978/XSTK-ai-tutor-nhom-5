@@ -114,6 +114,8 @@ select { appearance: none; padding-right: 40px; cursor: pointer;
 
 /* ---------- layout pieces ---------- */
 .work { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.08fr); gap: 24px; align-items: start; }
+/* Grid/flex children default to min-width:auto, so one unbreakable string (long file name, pasted URL) would push the column wider than its track */
+.work > *, .stack > *, .panel { min-width: 0; }
 .panel { background: var(--sheet); border: 1px solid var(--rule-2); border-radius: var(--r-lg); padding: clamp(18px, 2vw, 26px); }
 .panel + .panel { margin-top: 0; }
 .stack { display: grid; gap: 18px; }
@@ -531,11 +533,11 @@ a.row.thread-row small { display: inline; }
 .file.file-doc { width: 100%; display: flex; flex-wrap: wrap; align-items: center; gap: 8px; padding: 8px 40px 8px 10px; font-size: 13.5px; overflow: visible; }
 .file.file-doc .doc { height: auto; }
 .file.file-doc .doc svg { width: 22px; height: 22px; }
-.file.file-doc > span { flex: 1 1 140px; padding: 0; font-weight: 600; }
+.file.file-doc > span { flex: 1 1 140px; min-width: 0; padding: 0; font-weight: 600; }
 .file.file-doc .btn { display: inline-flex; align-items: center; flex-direction: row; position: static; width: auto; height: auto; border-radius: var(--r); min-height: 36px; padding: 4px 12px; font-size: 13.5px; gap: 6px; background: transparent; color: var(--ultra); border: 1px solid var(--rule); }
 .file.file-doc .btn[aria-pressed="true"] { background: var(--ultra); color: #fff; border-color: var(--ultra); }
 .file.file-doc .btn svg { width: 16px; height: 16px; }
-.doc-text { flex: 1 0 100%; }
+.doc-text { flex: 1 0 100%; min-width: 0; overflow-wrap: anywhere; }
 .doc-text summary { cursor: pointer; color: var(--ink-3); font-size: 13px; }
 .doc-text .rich { margin: 6px 0 0; max-height: 220px; overflow: auto; font-size: 13px; color: var(--ink-2); background: var(--ultra-wash); padding: 8px 10px; border-radius: var(--r); }
 .drop.drop-compact { padding: 14px; gap: 4px; }
