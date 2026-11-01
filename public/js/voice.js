@@ -15,6 +15,16 @@ export const fallbackText = () => FALLBACK[getLang()];
 
 const Rec = typeof window !== 'undefined' && (window.SpeechRecognition || window.webkitSpeechRecognition);
 export const canListen = () => Boolean(Rec);
+
+// The microphone is shared: voice commands listen in the background and must pause while a feature (dictation,
+// Q&A, Live) uses it. claimMic() returns release(); a 'mic' event carries how many features hold it.
+let micHolders = 0;
+export const micBusy = () => micHolders > 0;
+export function claimMic() {
+  micHolders++; globalThis.dispatchEvent?.(new CustomEvent('mic', { detail: micHolders }));
+  let held = true;
+  return () => { if (!held) return; held = false; micHolders--; globalThis.dispatchEvent?.(new CustomEvent('mic', { detail: micHolders })); };
+}
 const locale = () => (getLang() === 'en' ? 'en-US' : 'vi-VN');
 
 /**
@@ -23,6 +33,7 @@ const locale = () => (getLang() === 'en' ? 'en-US' : 'vi-VN');
  */
 export function listen({ onInterim, continuous = false, silenceMs = 2800, maxMs = 90000 } = {}) {
   if (!Rec) return Promise.reject({ code: 'unsupported' });
+  const release = claimMic();
   // continuous: a long formula is read with pauses ("… bằng một trừ an pha, suy ra …"). Keep listening across
   // pauses and stop only after silenceMs without new words (or on stop()); browsers that end the recognition at
   // every pause (Android, Safari) are restarted and the words so far kept.
@@ -52,9 +63,10 @@ export function listen({ onInterim, continuous = false, silenceMs = 2800, maxMs 
       };
       r.start();
     };
-    open();
+    try { open(); } catch (e) { stopped = true; reject({ code: e?.name || 'start' }); return; }
     arm(Math.max(silenceMs, 7000)); // time to start speaking
   });
+  p.then(release, release);
   return Object.assign(p, { stop: () => finish() });
 }
 
@@ -212,6 +224,8 @@ export function speak(text, { onStart, onEnd } = {}) {
     return a.play();
   }).catch(() => { if (id === speakId) browserSpeak(text, { onStart, onEnd }); });
 }
+/** True while the page is speaking (its own voice must not be heard as a command). */
+export const isSpeaking = () => Boolean((typeof speechSynthesis !== 'undefined' && speechSynthesis.speaking) || (player && !player.paused && !player.ended && player.src !== silence));
 export function stopSpeaking() {
   speakId++;
   // Let the unlocking silence finish: cut short before it starts, iOS may not count it.

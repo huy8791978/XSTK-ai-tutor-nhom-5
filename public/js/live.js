@@ -2,7 +2,7 @@
 // back as 24 kHz PCM and plays as it arrives, with the transcript of what it says. While the tutor speaks the
 // microphone is not sent (so speakers never interrupt the tutor); «Ngắt lời» stops the voice and gives the floor back.
 import { getLang } from './i18n.js';
-import { getGender } from './voice.js';
+import { getGender, claimMic } from './voice.js';
 
 export const canLive = () => typeof WebSocket !== 'undefined' && typeof AudioWorkletNode !== 'undefined' && Boolean(navigator.mediaDevices?.getUserMedia);
 
@@ -39,7 +39,7 @@ export function pcmFloats(b64) {
  * 'turn', 'switch', 'interrupted', 'unavailable', 'nomic', 'end'. Call start() inside a tap (iOS needs it for sound).
  */
 export function liveSession({ mode = 'voice', mic = true, on }) {
-  let ws, ctx, stream, node, begun = false, ready = false, stopped = false, nextAt = 0, muted = false, state = 'idle', poll;
+  let releaseMic = null, ws, ctx, stream, node, begun = false, ready = false, stopped = false, nextAt = 0, muted = false, state = 'idle', poll;
   const sources = new Set();
   const emit = (e, d) => { try { on(e, d); } catch (err) { console.error(err); } };
   const setState = (s) => { if (s !== state) { state = s; emit('state', s); } };
@@ -72,6 +72,7 @@ export function liveSession({ mode = 'voice', mic = true, on }) {
   async function start() {
     stopped = false;
     begun = true;
+    releaseMic?.(); releaseMic = claimMic(); // voice commands pause: the tutor's voice and the student's are not commands
     setState('connecting');
     ctx = new (window.AudioContext || window.webkitAudioContext)();
     await ctx.resume().catch(() => {});
@@ -122,6 +123,7 @@ export function liveSession({ mode = 'voice', mic = true, on }) {
     try { node?.disconnect(); } catch { /* */ }
     ctx?.close().catch(() => {});
     setState('idle');
+    releaseMic?.(); releaseMic = null;
     if (!silent) emit('end');
   }
 

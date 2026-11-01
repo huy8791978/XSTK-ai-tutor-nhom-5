@@ -15,6 +15,7 @@ import * as oral from './views/oral.js';
 import * as mindmap from './views/mindmap.js';
 import * as quiz from './views/quiz.js';
 import * as profile from './views/profile.js';
+import { initVoiceCommands } from './voicecmd.js';
 
 const ROUTES = {
   'cham-bai': tutor, 'ly-thuyet': concept, 'dinh-li': theorem, 'tu-luan': essayPage, 'trac-nghiem': mcqPage, 'mini-game': quiz, 'van-dap': oral,
@@ -63,6 +64,7 @@ addEventListener('profile-change', paintSerial);
 paintSerial();
 initI18n();
 go();
+initVoiceCommands();
 
 // ---- EN/VI switch without reload: everything on screen stays, and is shown in the new language.
 addEventListener('langchange', () => {

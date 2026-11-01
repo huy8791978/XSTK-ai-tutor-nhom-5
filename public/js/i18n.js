@@ -6,6 +6,22 @@ let lang = (() => { try { return localStorage.getItem(KEY) === 'en' ? 'en' : 'vi
 export const getLang = () => lang;
 
 const DICT = {
+  // voice commands
+  'Ra lệnh bằng giọng nói (Alt+V). Giữ để nói, thả ra để chạy lệnh.': 'Voice command (Alt+V). Hold to talk, release to run it.', 'Ra lệnh bằng giọng nói': 'Voice command',
+  'Nghe liên tục: chỉ chạy lệnh bắt đầu bằng «Trợ lý ơi»': 'Always listening: only commands starting with «Assistant» run', 'Nghe liên tục': 'Always listen',
+  'Các lệnh giọng nói': 'Voice commands', 'Lệnh giọng nói': 'Voice commands',
+  '«Sang trắc nghiệm», «mở bản đồ tư duy», «về trang chủ»': '«Go to quiz», «open mind map», «home»',
+  '«Bấm tạo 5 bài», «xem gợi ý», «chấm bài»': '«Press create 5 problems», «show hint», «grade»',
+  '«Điền chủ đề là khoảng tin cậy»': '«Fill topic with confidence interval»',
+  '«Quay lại» / «hoàn tác», «tiến tới»': '«Back» / «undo», «forward»',
+  '«Cuộn xuống», «cuộn lên», «đầu trang», «cuối trang»': '«Scroll down», «scroll up», «top», «bottom»',
+  '«Dừng» (ngừng đọc), «tiếng Anh» / «tiếng Việt»': '«Stop» (stop reading), «English» / «Vietnamese»',
+  '«Tắt nghe» (tắt nghe liên tục)': '«Stop listening» (turn off always listen)',
+  'Nghe liên tục: nói «Trợ lý ơi» trước mỗi lệnh, ví dụ «Trợ lý ơi, sang trắc nghiệm». Lời giảng bình thường không bị coi là lệnh. Không dùng AI, không tốn lượt.': 'Always listen: say «Assistant» before each command, e.g. «Assistant, go to quiz». Normal lecturing is never taken as a command. No AI, no quota used.',
+  'Đang chờ lệnh…': 'Waiting for a command…', 'Đang nghe lệnh…': 'Listening for a command…', 'Không nghe thấy lệnh.': 'No command heard.',
+  'Đã huỷ.': 'Cancelled.', '✓ Đã dừng': '✓ Stopped', '✓ Quay lại': '✓ Back', '✓ Tiến tới': '✓ Forward', '✓ Đã cuộn': '✓ Scrolled', '✓ Đang ở trang này': '✓ Already here',
+  'Trình duyệt chưa cho dùng micro.': 'The browser has not allowed the microphone.', 'Micro đang bận hoặc lỗi.': 'The microphone is busy or failed.',
+  'Nghe liên tục: nói «Trợ lý ơi» rồi ra lệnh.': 'Always listening: say «Assistant», then the command.', 'Đã tắt nghe liên tục.': 'Always listen is off.',
   // shell & nav
   'Gia sư Xác suất Thống kê': 'Probability & Statistics Tutor', 'Bỏ qua tới nội dung': 'Skip to content',
   'Gia sư chấm bài': 'AI Tutor & grading', 'Chấm bài': 'Grade', 'Học lí thuyết': 'Learn concepts', 'Lí thuyết': 'Concepts',
