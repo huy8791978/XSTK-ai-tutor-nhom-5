@@ -15,16 +15,11 @@ import * as oral from './views/oral.js';
 import * as mindmap from './views/mindmap.js';
 import * as quiz from './views/quiz.js';
 import * as profile from './views/profile.js';
-import * as discover from './views/discover.js';
-import * as lab from './views/lab.js';
-import * as life from './views/life.js';
-import * as duel from './views/duel.js';
 import { initVoiceCommands } from './voicecmd.js';
 
 const ROUTES = {
   'cham-bai': tutor, 'ly-thuyet': concept, 'dinh-li': theorem, 'tu-luan': essayPage, 'trac-nghiem': mcqPage, 'mini-game': quiz, 'van-dap': oral,
   'giong-noi': voice, 'cong-thuc': formula, 'thong-ke': mistakes, 'ban-do': mindmap, 'dien-dan': forum, 'ho-so': profile,
-  'kham-pha': discover, 'phong-thi-nghiem': lab, 'thach-dau': duel, 'cuoc-doi': life,
 };
 const routeKey = () => location.hash.slice(1).split('?')[0];
 const ORDER = Object.keys(ROUTES);
@@ -46,9 +41,7 @@ function go() {
   // Pages showing shared or freshly computed data are rebuilt on every visit.
   if (current) { scrollY[current] = window.scrollY; panes[current].hidden = true; }
   window.speechSynthesis?.cancel();
-  // A challenge link (#thach-dau?c=…) opens its own game even when the page was already open.
-  const fresh = FRESH.has(key) || !panes[key] || (key === 'thach-dau' && opened[key] !== location.hash);
-  opened[key] = location.hash;
+  const fresh = FRESH.has(key) || !panes[key];
   if (fresh) {
     panes[key]?.remove();
     panes[key] = Object.assign(document.createElement('div'), { className: 'pane' });
@@ -62,7 +55,7 @@ function go() {
   scrollTo({ top: fresh ? 0 : scrollY[key] || 0 });
 }
 const FRESH = new Set(['dien-dan', 'thong-ke', 'ho-so']);
-const panes = {}, scrollY = {}, opened = {};
+const panes = {}, scrollY = {};
 let current = null;
 
 const paintSerial = () => { serial.textContent = `SERI ${load().id}`; };

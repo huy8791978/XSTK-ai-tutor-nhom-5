@@ -1,7 +1,7 @@
 // Pure profile analytics (unit-tested). Sessions: { serial, at, feature, topic, score (0-10|null), mistakes: [{topic,type,detail}] }
 
 export const FEATURES = {
-  tutor: 'Chấm bài', concept: 'Lí thuyết', theorem: 'Định lí', 'practice-mcq': 'Trắc nghiệm', 'practice-essay': 'Tự luận', quiz: 'Mini-game', oral: 'Vấn đáp', teach: 'Giảng lại', duel: 'Thách đấu',
+  tutor: 'Chấm bài', concept: 'Lí thuyết', theorem: 'Định lí', 'practice-mcq': 'Trắc nghiệm', 'practice-essay': 'Tự luận', quiz: 'Mini-game', oral: 'Vấn đáp',
 };
 
 const round1 = (x) => Math.round(x * 10) / 10;
@@ -60,16 +60,4 @@ export function byFeature(sessions = []) {
       mistakes: ss.reduce((a, s) => a + (s.mistakes?.length || 0), 0),
     };
   }).filter((r) => r.n);
-}
-
-/**
- * How sure the student said they were before submitting vs how they really did, over sessions that recorded both.
- * gap = confidence − score×10 (percentage points): above +15 over-confident, below −15 under-confident.
- */
-export function calibration(sessions = []) {
-  const ss = sessions.filter((s) => Number.isFinite(s.conf) && typeof s.score === 'number' && Number.isFinite(s.score));
-  if (!ss.length) return { n: 0, conf: null, actual: null, gap: null, verdict: null };
-  const conf = Math.round(ss.reduce((a, s) => a + s.conf, 0) / ss.length), actual = Math.round(ss.reduce((a, s) => a + s.score * 10, 0) / ss.length);
-  const gap = conf - actual;
-  return { n: ss.length, conf, actual, gap, verdict: gap > 15 ? 'over' : gap < -15 ? 'under' : 'ok' };
 }

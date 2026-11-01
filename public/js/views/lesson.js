@@ -4,8 +4,7 @@ import { ai } from '../api.js';
 import { mathField } from '../mathinput.js';
 import { chart } from '../viz.js';
 import { addSession } from '../profile.js';
-import { mcq, essay, meanConf } from './practice.js';
-import { lensBar } from '../lens.js';
+import { mcq, essay } from './practice.js';
 import { TOPICS } from '../topics.js';
 
 const KINDS = {
@@ -60,13 +59,11 @@ function lesson(kind, K, d, topicName) {
   const results = new Array((d.consolidate || []).length).fill(null);
   let logged = false;
   const topic = d.topic || topicName;
-  const f = d.formation || {};
-  const formationLens = lensBar({ topic, concept: d.name, text: `${d.name}\n${f.definition || f.statement || ''}` }); // built once: keeps what was opened
 
   const log = () => {
     if (logged || !results.length || !results.every(Boolean)) return;
     logged = true;
-    addSession({ feature: kind, topic, score: results.reduce((a, r) => a + r.score, 0) / results.length, mistakes: results.flatMap((r) => r.mistakes), conf: meanConf(results) });
+    addSession({ feature: kind, topic, score: results.reduce((a, r) => a + r.score, 0) / results.length, mistakes: results.flatMap((r) => r.mistakes) });
     toast('Đã lưu kết quả củng cố vào hồ sơ.');
   };
 
@@ -79,11 +76,11 @@ function lesson(kind, K, d, topicName) {
         h('div.btn-row', { style: 'margin-top:12px' }, h('button.btn', { type: 'button', onclick: () => insight.replaceChildren(h('div.reveal', {}, h('h3', {}, 'Điều rút ra'), rich(e.insight || ''))) }, 'Xem điều rút ra')),
         insight];
     },
-    () => [kind === 'theorem' ? theoremFormation(d.formation) : conceptFormation(d.formation), formationLens],
+    () => (kind === 'theorem' ? theoremFormation(d.formation) : conceptFormation(d.formation)),
     () => [h('h2', {}, 'Củng cố'), h('p.muted', { style: 'margin:6px 0 16px' }, 'Nhận diện trong những trường hợp đơn giản, đặc trưng. Chấm từng câu; kết quả được lưu vào hồ sơ.'),
       h('div.lesson-list', {}, (d.consolidate || []).map((q, i) => mcq({ topic, ...q }, i, (r) => { results[i] = r; log(); })))],
     () => [h('h2', {}, 'Vận dụng'), h('p.muted', { style: 'margin:6px 0 16px' }, 'Bài toán thực tế. Xem chiến lược nếu cần, tự làm, rồi bấm Chấm bài.'),
-      d.apply?.prompt ? essay({ topic, ...d.apply }, 0, (r) => addSession({ feature: kind, topic, score: r.score, mistakes: r.mistakes, conf: r.conf })) : h('p.muted', {}, 'Không có bài vận dụng.')],
+      d.apply?.prompt ? essay({ topic, ...d.apply }, 0, (r) => addSession({ feature: kind, topic, score: r.score, mistakes: r.mistakes })) : h('p.muted', {}, 'Không có bài vận dụng.')],
   ];
 
   const go = (i) => {

@@ -2,7 +2,6 @@
 
 import { TOPICS, ERROR_TYPES, QUIZ_LEVELS, QUIZ_SIZE } from '../public/js/topics.js';
 import { SPOKEN_MATH } from './spoken.js';
-import { lensById } from '../public/js/lenses.js';
 
 export { TOPICS, ERROR_TYPES };
 const LIMITS = { text: 8000, files: 7, fileBytes: 14_000_000, history: 24 }; // files: 3 for the problem + 3 for the work + the iPad board
@@ -172,63 +171,6 @@ ${formation},
 "apply": {"prompt": "...", "topic": "<chủ đề>", "strategy": ["gợi ý, KHÔNG lộ đáp án"], "solution": "<lời giải 4 bước Polya>", ${CASIO}, "viz": <viz hoặc null>}}`,
     };
   },
-  // «Học theo cách khác»: the same concept or problem explained through one of Gardner's nine intelligences.
-  lens: (p) => {
-    const L = lensById(p.lens);
-    if (!L) throw new Error('Cách học không hợp lệ.');
-    if (typeof p.text !== 'string' || !p.text.trim()) throw new Error('Thiếu nội dung cần giải thích.');
-    return {
-      text: `Nội dung sinh viên đang học (chủ đề "${p.topic || 'Khác'}"):
-${p.text}
-
-Giải thích lại ĐÚNG nội dung này theo cách «${L.name}» (trí tuệ ${L.mi} trong thuyết đa trí tuệ của Gardner) để sinh viên hứng thú và hiểu sâu hơn. Không đổi sang nội dung khác, không lộ đáp số của bài tập nếu nội dung là một đề bài chưa giải.
-${L.ask}
-Ngắn gọn, tối đa khoảng 250 chữ trong "body".
-Trả JSON: {"title": "<tiêu đề ngắn>", "body": "<markdown + LaTeX>", "ask": "<việc sinh viên tự làm>", "reveal": "<đáp án hoặc gợi ý cho ask>", "viz": <viz hoặc null>}`,
-    };
-  },
-  // «Giảng lại cho AI»: the student explains a concept in their own words; the AI plays a curious classmate.
-  teachBack: (p) => {
-    if (typeof p.explanation !== 'string' || p.explanation.trim().length < 10) throw new Error('Hãy viết lời giảng dài hơn một chút.');
-    return {
-      text: `Sinh viên tự giảng lại «${p.concept || p.topic || 'nội dung vừa học'}» (chủ đề "${p.topic || 'Khác'}") bằng lời của mình:
-${p.explanation}
-
-Bạn đóng vai Bin, một bạn học tò mò nhưng chưa biết gì về nội dung này. Đánh giá lời giảng: đúng chưa, đủ ý chưa, dễ hiểu không. Chấm thang 10 (đúng kiến thức 6 điểm, đủ ý 2 điểm, rõ ràng dễ hiểu 2 điểm).
-Hỏi vặn đúng chỗ còn mơ hồ hoặc sai, như một người thật sự muốn hiểu. Không giảng lại toàn bộ thay sinh viên.
-Trả JSON: {"score": <0-10>, "summary": "<nhận xét 1–2 câu, xưng «mình», gọi sinh viên là «bạn»>", "clear": ["chỗ bạn giảng rõ"], "gaps": ["chỗ còn thiếu hoặc sai"], "questions": ["câu hỏi vặn của Bin"], "mistakes": [${MISTAKE}]}`,
-    };
-  },
-  // «Thách đấu bạn»: five short questions, packed into a link the student sends a friend.
-  duel: (p) => ({
-    text: `Tạo đúng 5 câu TRẮC NGHIỆM 4 phương án (chỉ 1 đúng) cho trò thách đấu giữa hai sinh viên, chủ đề "${p.topic || 'tổng hợp'}", mức độ «${QUIZ_LEVELS.includes(p.level) ? p.level : 'Trung bình'}».
-Mỗi câu đọc và trả lời được trong 45 giây: đề 1–2 câu, số liệu tròn, 4 phương án ngắn cùng dạng, phương án sai là sai lầm hay gặp. Vị trí đáp án đúng phân bố đều.
-Trả JSON: {"questions": [{"topic": "<chủ đề hợp lệ>", "prompt": "<đề>", "options": ["<A>", "<B>", "<C>", "<D>"], "answer": <0-3>, "explain": "<1–2 câu vì sao đúng>"}]}`,
-  }),
-  // «Xác suất và cuộc đời»: a big question about chance, risk or evidence, answered with the course's tools.
-  life: (p) => {
-    if (typeof p.question !== 'string' || !p.question.trim()) throw new Error('Hãy nhập câu hỏi.');
-    return {
-      text: `Sinh viên hỏi một câu lớn về xác suất, rủi ro, bằng chứng hoặc ra quyết định trong cuộc sống:
-${p.question}
-
-Trả lời bằng công cụ của môn XSTK (xác suất có điều kiện, kì vọng, luật số lớn, ước lượng, kiểm định…), có một ví dụ số đơn giản. Nếu câu hỏi không liên quan đến xác suất thống kê, nhẹ nhàng liên hệ nó về một góc nhìn xác suất. Không đưa lời khuyên đầu tư, y tế hay pháp lí cụ thể cho cá nhân; nếu được hỏi thì nói rõ đây chỉ là cách nhìn bằng xác suất.
-Trả JSON: {"answer": "<markdown + LaTeX, tối đa khoảng 300 chữ>", "think": ["2–3 câu hỏi để sinh viên suy ngẫm tiếp"], "viz": <viz hoặc null>}`,
-    };
-  },
-  // Data the student collected themselves (often from nature): what kind of variable, which distribution fits.
-  classify: (p) => {
-    const values = Array.isArray(p.values) ? p.values.slice(0, 200).map((v) => String(v).slice(0, 40)) : [];
-    if (!values.length) throw new Error('Hãy nhập dữ liệu.');
-    return {
-      text: `Sinh viên tự thu thập dữ liệu. Bối cảnh: ${p.context || '(không ghi)'}
-Dữ liệu (${values.length} giá trị): ${values.join('; ')}
-${p.summary ? `Thống kê mô tả trình duyệt đã tính: ${p.summary}
-` : ''}
-Cho biết: đây là biến định tính hay định lượng (rời rạc/liên tục) và vì sao; phân phối lí thuyết nào có thể phù hợp (ví dụ Bernoulli, nhị thức, Poisson, chuẩn, đều…) và cần kiểm tra điều kiện gì; một câu hỏi ước lượng hoặc kiểm định sinh viên có thể tự làm với dữ liệu này. Nói rõ khi dữ liệu quá ít để kết luận.
-Trả JSON: {"variable": "<loại biến>", "why": "<vì sao>", "distribution": "<phân phối có thể phù hợp>", "check": "<điều kiện cần kiểm tra, markdown>", "next": "<câu hỏi ước lượng/kiểm định gợi ý>", "viz": <viz hoặc null>}`,
-    };
-  },
   mindmap: (p) => ({
     text: `Lập bản đồ tư duy cho chủ đề "${p.topic}" trong môn XSTK. Dạng markdown: một dòng "# tiêu đề", các nhánh "## ...", "### ...", lá là "- ...". 3-4 tầng, 5-7 nhánh chính, mỗi nút ngắn gọn, có công thức LaTeX khi cần.
 Trả JSON: {"markdown": "..."}`,
@@ -288,7 +230,7 @@ export function buildRequest(task, payload = {}) {
       systemInstruction: { parts: [{ text: p.lang === 'en' && !verbatim ? `${SYSTEM}
 LANGUAGE OVERRIDE: write every text value of the JSON in English (keep JSON keys as specified; use dot decimals; keep the topic and error-type values exactly as listed in Vietnamese).` : SYSTEM }] },
       contents: [{ role: 'user', parts: [{ text }, ...files.map((f) => ({ inlineData: { mimeType: f.mimeType, data: f.data } }))] }],
-      generationConfig: { responseMimeType: 'application/json', temperature: task === 'practice' || task === 'quiz' || task === 'duel' || task === 'lens' ? 0.9 : task === 'similar' ? 0.7 : verbatim ? 0 : 0.4, maxOutputTokens: 16384 },
+      generationConfig: { responseMimeType: 'application/json', temperature: task === 'practice' || task === 'quiz' ? 0.9 : task === 'similar' ? 0.7 : verbatim ? 0 : 0.4, maxOutputTokens: 16384 },
     },
     promptChars: SYSTEM.length + text.length,
     fileCount: files.length,
