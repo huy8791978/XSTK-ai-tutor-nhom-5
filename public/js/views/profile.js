@@ -2,8 +2,9 @@
 import { h, rich, list, run, toast } from '../ui.js';
 import { ai } from '../api.js';
 import { load, setInsight, exportFile, importFile, reset } from '../profile.js';
-import { summarize, insightPayload, fmtScore, FEATURES } from '../stats.js';
-import { chart, odometer } from '../viz.js';
+import { summarize, insightPayload, fmtScore, FEATURES, calibration } from '../stats.js';
+import { chart, odometer, radar } from '../viz.js';
+import { LENSES } from '../lenses.js';
 
 export const meta = { title: 'Hồ sơ học tập', lede: 'Mọi bài chấm, bộ luyện tập và buổi vấn đáp đều được ghi lại trên trình duyệt này.\nAI đọc hồ sơ để tìm lỗi lặp lại và đề xuất lộ trình.' };
 
@@ -33,6 +34,7 @@ export function render(root) {
       h('div.stack', {},
         h('section.panel', { 'aria-label': 'Nhận định của AI' }, h('h2', {}, 'Nhận định & lộ trình'), h('div.btn-row', { style: 'margin:14px 0 6px' }, bInsight, h('a.btn', { href: '#thong-ke' }, 'Xem thống kê lỗi sai')), insightOut)),
       h('div.stack', {},
+        badges(p), selfCheck(p.sessions),
         h('section.panel', { 'aria-label': 'Diễn biến điểm' }, h('h2', {}, 'Diễn biến điểm'),
           s.trend.length ? chart({ type: 'bars', labels: s.trend.map((x) => date(x.at)), values: s.trend.map((x) => x.score), caption: `${s.trend.length} phiên gần nhất` }) : h('p.muted', { style: 'margin-top:10px' }, 'Chưa có điểm.')),
         h('section.panel', { 'aria-label': 'Nhật kí' }, h('h2', {}, 'Nhật kí học tập'),
@@ -46,6 +48,28 @@ export function render(root) {
             h('button.btn.btn-danger', { type: 'button', onclick: () => { if (confirm('Xoá toàn bộ hồ sơ học tập trên trình duyệt này? Không thể hoàn tác.')) { reset(); rerender(); } } }, 'Xoá hồ sơ'))))));
 }
 
+
+/** One badge per way of learning, lit once used; the «Khám phá» radar when the quiz was taken. */
+function badges(p) {
+  const used = p.lenses || {}, lit = LENSES.filter((L) => used[L.id]).length;
+  return h('section.panel', { 'aria-label': 'Huy hiệu 9 cách học' }, h('h2', {}, 'Huy hiệu 9 cách học'),
+    h('p.muted', { style: 'margin:6px 0 12px' }, `Đã thử ${lit}/9 cách. Mở thanh «Học theo cách khác» ở bài học, bài tập, hoặc vào Phòng thí nghiệm.`),
+    h('ul.badges', {}, LENSES.map((L) => h('li', { 'data-lit': String(Boolean(used[L.id])), title: L.mi }, h('span.b-ic', { 'aria-hidden': 'true' }, L.icon), h('b', {}, L.name), h('small', {}, used[L.id] ? `${used[L.id]} lần` : 'Chưa thử')))),
+    p.mi?.scores ? [h('h3', {}, 'Cách học em thích'), radar(p.mi.scores, LENSES)] : null,
+    h('p', { style: 'margin-top:10px' }, h('a.btn.btn-ghost', { href: '#kham-pha' }, p.mi ? 'Làm lại bài khám phá →' : 'Khám phá cách học của em →')));
+}
+
+/** «Em chắc mấy phần?» against the real score. */
+function selfCheck(sessions) {
+  const c = calibration(sessions);
+  if (!c.n) return null;
+  const say = { over: 'Em thường tự tin hơn kết quả thật: trước khi nộp, thử tự kiểm tra lại từng bước.', under: 'Em làm tốt hơn em nghĩ: hãy tin vào cách giải của mình hơn.', ok: 'Em đoán khá đúng sức mình: một kĩ năng tự học rất quý.' }[c.verdict];
+  return h('section.panel', { 'aria-label': 'Tự đánh giá' }, h('h2', {}, 'Tự đánh giá so với điểm thật'),
+    h('div.board', { style: 'margin-top:10px' },
+      h('div.row', {}, h('b', {}, 'Em nghĩ'), h('span', {}, 'Độ chắc chắn trung bình trước khi chấm'), h('em', {}, `${c.conf}%`)),
+      h('div.row', {}, h('b', {}, 'Thực tế'), h('span', {}, 'Điểm trung bình quy ra phần trăm'), h('em', {}, `${c.actual}%`))),
+    h('p', { style: 'margin-top:10px' }, say), h('p.muted', { style: 'font-size:13px' }, `Tính trên ${c.n} lần có chọn «Em chắc mấy phần?».`));
+}
 
 export function hbar(name, label, max, value = label, cls = '') {
   return h(`div.hbar${cls ? `.${cls}` : ''}`, {}, h('span', {}, name), h('span.t', {}, h('i', { style: `width:${Math.max(3, (value / max) * 100)}%` })), h('em', {}, String(label)));

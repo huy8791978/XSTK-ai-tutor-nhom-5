@@ -207,3 +207,21 @@ export function galton(canvas) {
   return { stop() { running = false; cancelAnimationFrame(raf); io.disconnect(); removeEventListener('resize', onResize); } };
 }
 const binomPmf = (n, k) => binom(n, 0.5, k);
+
+/** Radar of the nine ways of learning: scores { lensId: 0..100 } around a circle, labelled with the lens names. */
+export function radar(scores, lenses) {
+  const W = 360, C = 180, R = 118, n = lenses.length;
+  const at = (i, r) => { const a = -Math.PI / 2 + (2 * Math.PI * i) / n; return [C + r * Math.cos(a), C + r * Math.sin(a)]; };
+  let g = '';
+  for (const k of [0.25, 0.5, 0.75, 1]) g += `<polygon points="${lenses.map((_, i) => at(i, R * k).join(',')).join(' ')}" fill="none" stroke="#C2C9E6" stroke-width="1"/>`;
+  lenses.forEach((L, i) => {
+    const [x, y] = at(i, R), [tx, ty] = at(i, R + 26);
+    g += `<line x1="${C}" y1="${C}" x2="${x}" y2="${y}" stroke="#E2E6F3"/><text x="${tx}" y="${ty + 4}" text-anchor="middle" style="font-size:12px"><tspan>${L.icon} </tspan><tspan>${L.mi}</tspan></text>`; // the name alone in its node: the EN/VI switch translates it
+  });
+  const pts = lenses.map((L, i) => at(i, (R * Math.max(4, Math.min(100, num(scores?.[L.id], 0)))) / 100).join(',')).join(' ');
+  g += `<polygon points="${pts}" fill="rgba(27,42,140,.2)" stroke="#1B2A8C" stroke-width="2"/>`;
+  const node = svg(W, W, g);
+  node.setAttribute('aria-label', `Biểu đồ radar: ${lenses.map((L) => `${L.mi} ${Math.round(num(scores?.[L.id], 0))}`).join(', ')}`);
+  node.style.overflow = 'visible';
+  return h('figure.viz.radar', {}, node);
+}

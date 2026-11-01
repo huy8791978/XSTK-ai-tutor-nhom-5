@@ -26,6 +26,10 @@ export const ROUTE_WORDS = {
   'thong-ke': ['thong ke loi sai', 'thong ke', 'loi sai', 'mistake statistics', 'mistakes', 'statistics'],
   'ban-do': ['ban do tu duy', 'ban do', 'tu duy', 'so do tu duy', 'mind map', 'mindmap'],
   'dien-dan': ['dien dan xstk', 'dien dan', 'forum'],
+  'kham-pha': ['kham pha cach hoc', 'kham pha', 'cach hoc', 'discover', 'learning styles'],
+  'phong-thi-nghiem': ['phong thi nghiem', 'thi nghiem', 'lab', 'simulation'],
+  'thach-dau': ['thach dau ban', 'thach dau', 'doi khang', 'challenge', 'duel'],
+  'cuoc-doi': ['xac suat va cuoc doi', 'cuoc doi', 'nghich li', 'life', 'paradoxes'],
   'ho-so': ['ho so hoc tap', 'ho so cua toi', 'ho so', 'learning profile', 'my profile', 'profile'],
 };
 const NAV_VERBS = ['chuyen sang', 'chuyen qua', 'chuyen den', 'chuyen toi', 'di toi', 'di den', 'quay ve', 've', 'mo', 'sang', 'qua', 'vao', 'toi', 'den', 'chuyen',

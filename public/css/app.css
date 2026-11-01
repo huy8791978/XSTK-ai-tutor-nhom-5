@@ -653,3 +653,34 @@ kbd.key.val { background: var(--paper); color: var(--ink); border: 1px solid var
 @media (prefers-reduced-motion: reduce) { .vc-mic.on, .vc-always.on .vc-dot { animation: none; } }
 @media (max-width: 860px) { .vc { right: 10px; bottom: calc(96px + env(safe-area-inset-bottom)); } .vc-always span:last-child { display: none; } .vc-always { width: 34px; padding: 0; justify-content: center; } }
 @media print { .vc { display: none; } }
+
+/* ---- Multiple intelligences: «Học theo cách khác», self-assessment, discover, lab, duel, life */
+.lens { margin-top: 16px; padding: 14px 16px; border: 1px dashed var(--rule-2); border-radius: var(--r); background: var(--sheet); }
+.lens-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 12px; margin-bottom: 10px; }
+.lens-head .muted { font-size: 13.5px; }
+.lens .chip { min-height: 34px; }
+.lens-out:not(:empty) { margin-top: 12px; }
+.conf { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; margin-top: 14px; font-size: 14.5px; color: var(--ink-2); }
+.conf .chip { min-height: 32px; padding: 4px 10px; }
+.disc { display: grid; gap: 14px; padding-left: 22px; }
+.disc-item p { margin-bottom: 6px; }
+.disc-result { display: grid; grid-template-columns: minmax(260px, 400px) 1fr; gap: 24px; align-items: start; margin-top: 12px; }
+.radar svg { max-width: 400px; width: 100%; height: auto; font-family: var(--body); }
+.badges { list-style: none; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(118px, 1fr)); gap: 8px; }
+.badges li { padding: 10px; border: 1px solid var(--rule); border-radius: var(--r); text-align: center; display: grid; gap: 2px; opacity: .45; filter: grayscale(1); }
+.badges li[data-lit="true"] { opacity: 1; filter: none; border-color: var(--gold); background: var(--gold-wash); }
+.badges .b-ic { font-size: 24px; } .badges b { font-size: 13.5px; } .badges small { color: var(--ink-3); font-size: 12px; }
+.lab-slider { min-width: 220px; } .lab-slider input[type=range] { width: 100%; accent-color: var(--ultra); }
+.lab-slider output { font-weight: 700; color: var(--ultra); }
+.lab .viz svg { width: 100%; height: auto; }
+.sort-list { display: grid; gap: 8px; padding-left: 26px; margin-top: 10px; }
+.sort-list li { display: flex; align-items: center; gap: 10px; padding: 8px 10px; border: 1px solid var(--rule); border-radius: var(--r); background: var(--sheet); cursor: grab; }
+.sort-list li > span:nth-child(2) { flex: 1; }
+.sort-list .grip { color: var(--ink-3); }
+.sort-btns { display: flex; gap: 4px; } .sort-btns .btn { min-height: 32px; padding: 2px 10px; }
+.doors { display: flex; gap: 12px; margin: 12px 0; }
+.door { flex: 1; max-width: 140px; min-height: 120px; border: 2px solid var(--ultra); border-radius: 10px 10px 4px 4px; background: var(--ultra-wash); display: grid; place-items: center; gap: 4px; cursor: pointer; font-size: 34px; }
+.door b { font-size: 15px; color: var(--ultra); }
+.door[aria-pressed="true"] { border-color: var(--gold); background: var(--gold-wash); }
+.door:disabled { cursor: default; }
+@media (max-width: 860px) { .disc-result { grid-template-columns: 1fr; } .sort-list { padding-left: 18px; } .sort-list li { flex-wrap: wrap; } }

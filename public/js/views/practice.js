@@ -10,6 +10,10 @@ import { chart, odometer } from '../viz.js';
 import { addSession } from '../profile.js';
 import { mistakes } from './tutor.js';
 import { TOPICS } from '../topics.js';
+import { lensBar, confidence } from '../lens.js';
+
+/** Mean confidence of the results that recorded one, else undefined. */
+export const meanConf = (rs) => { const c = rs.map((r) => r?.conf).filter(Number.isFinite); return c.length ? c.reduce((a, x) => a + x, 0) / c.length : undefined; };
 
 const KINDS = {
   essay: { title: 'Bài tập tự luận', lede: 'AI tạo ngẫu nhiên 5 bài tự luận tương tự để bạn tự luyện.\nMỗi bài đi qua đủ 4 bước giải toán, có chiến lược (không lộ đáp án), chấm bài và lời giải.', button: 'Tạo 5 bài tự luận', feature: 'practice-essay' },
@@ -64,7 +68,7 @@ function pager(kind, qs, topic) {
     if (!logged && results.every(Boolean)) {
       logged = true;
       const score = results.reduce((a, x) => a + x.score, 0) / results.length;
-      addSession({ feature: KINDS[kind].feature, topic, score, mistakes: results.flatMap((x) => x.mistakes) });
+      addSession({ feature: KINDS[kind].feature, topic, score, mistakes: results.flatMap((x) => x.mistakes), conf: meanConf(results) });
       summary.replaceChildren(h('div.panel.ticket', { style: 'margin-top:20px' },
         h('div.board', {}, h('div.row.top-tier', {}, h('b', {}, 'Tổng'), h('span', {}, `Bộ ${qs.length} câu ${kind === 'mcq' ? 'trắc nghiệm' : 'tự luận'} · ${topic}. Đã lưu vào hồ sơ.`), odometer(score)))));
     }
@@ -104,11 +108,11 @@ function problemBlock(kind, q, i, topic, onResult) {
       made += 1;
       let saved = false; // an essay can be graded again: save it to the profile once
       return problemBlock(kind, { ...next, topic: next.topic || q.topic }, `${num}.${made}`, topic, (r) => {
-        if (!saved) { saved = true; addSession({ feature: KINDS[kind].feature, topic: next.topic || q.topic || topic, score: r.score, mistakes: r.mistakes }); }
+        if (!saved) { saved = true; addSession({ feature: KINDS[kind].feature, topic: next.topic || q.topic || topic, score: r.score, mistakes: r.mistakes, conf: r.conf }); }
       });
     }, 'Đang tạo bài tương tự…');
   };
-  return h('div.q-block', {}, card, bar, more);
+  return h('div.q-block', {}, card, bar, lensBar({ text: q.prompt, topic: q.topic || topic }), more);
 }
 
 /**
@@ -165,7 +169,8 @@ export function mcq(q, i, onDone) {
   const opts = (q.options || []).slice(0, 4).map((o, k) => h('label.opt', {},
     h('input', { type: 'radio', name, value: k }), h('span.k', {}, 'ABCD'[k]), rich(String(o).replace(/^[A-D][.)]\s*/, ''), 'span')));
   const verdict = h('div');
-  const work = h('div', {}, h('div.options', { role: 'radiogroup', 'aria-label': 'Phương án' }, opts), verdict);
+  const conf = confidence();
+  const work = h('div', {}, h('div.options', { role: 'radiogroup', 'aria-label': 'Phương án' }, opts), conf.el, verdict);
   const picked = () => opts.findIndex((o) => o.querySelector('input').checked);
 
   // "Hỏi AI: vì sao?" — the student asks about the answer in their own words.
@@ -190,7 +195,7 @@ export function mcq(q, i, onDone) {
     card.mark(2);
     verdict.replaceChildren(h('div.reveal', {}, h('div.tags', {}, h(`span.tag${ok ? '.ok' : ''}`, {}, ok ? 'Chính xác · 10/10' : `Chưa đúng · đáp án ${'ABCD'[ans] ?? '?'}`)),
       h('p.muted', { style: 'margin-top:8px' }, ok ? 'Sang bước 4 để tự kiểm tra và mở rộng.' : 'Sang bước 4: xem lời giải hoặc bấm "Hỏi AI: vì sao?".')));
-    onDone({ score: ok ? 10 : 0, mistakes: ok ? [] : [{ topic: q.topic, type: 'Chọn sai đáp án trắc nghiệm', detail: String(q.prompt).slice(0, 160) }] });
+    onDone({ score: ok ? 10 : 0, conf: conf.value(), mistakes: ok ? [] : [{ topic: q.topic, type: 'Chọn sai đáp án trắc nghiệm', detail: String(q.prompt).slice(0, 160) }] });
   };
   return card.el;
 }
@@ -202,7 +207,8 @@ export function essay(q, i, onDone) {
   const up = uploader({ compact: true, title: 'Đính kèm ảnh, PDF hoặc Word bài làm', hint: 'Tối đa 3 tệp, mỗi tệp ≤ 10 MB.', label: 'Đính kèm ảnh, PDF hoặc Word bài làm', scope: () => work, pastePriority: 1 });
   const result = h('div');
   const bGrade = h('button.btn.btn-primary', { type: 'button' }, 'Chấm bài');
-  const work = h('div', {}, field, h('div.btn-row', { style: 'margin-top:10px;align-items:center' }, board.btn), board.wrap, h('div', { style: 'margin-top:10px' }, up.el), result);
+  const conf = confidence();
+  const work = h('div', {}, field, h('div.btn-row', { style: 'margin-top:10px;align-items:center' }, board.btn), board.wrap, h('div', { style: 'margin-top:10px' }, up.el), conf.el, result);
   const card = polyaCard(q, i, work, [bGrade]);
   bGrade.onclick = () => {
     const answer = field.querySelector('textarea').value.trim();
@@ -212,7 +218,7 @@ export function essay(q, i, onDone) {
     run(bGrade, result, async () => {
       const d = await ai('practiceGrade', { question: q.prompt, reference: q.solution || '', answer, docs, files: all.map(({ mimeType, data }) => ({ mimeType, data })) });
       card.mark(2);
-      onDone({ score: +d.score || 0, mistakes: d.mistakes || [] });
+      onDone({ score: +d.score || 0, mistakes: d.mistakes || [], conf: conf.value() });
       return h('div.reveal.ticket', {}, h('div.board', {}, h('div.row.top-tier', {}, h('b', {}, 'Điểm'), h('span', {}, d.summary || ''), odometer(+d.score || 0)),
         ...(d.rubric || []).map((r, k) => h('div.row', {}, h('b', {}, `Bước ${k + 1}`), h('span', {}, h('strong', {}, r.step), ' ', rich(r.comment, 'span')), h('em', {}, `${r.points ?? '—'}/${r.max ?? '—'}`)))),
         d.mistakes?.length ? [h('h3', {}, 'Lỗi sai'), mistakes(d.mistakes)] : null,

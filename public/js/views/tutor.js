@@ -6,6 +6,7 @@ import { uploader, readButton } from '../uploader.js';
 import { mathField } from '../mathinput.js';
 import { chart, odometer, galton } from '../viz.js';
 import { addSession } from '../profile.js';
+import { lensBar } from '../lens.js';
 import { boardToggle } from '../board.js';
 
 export const meta = { title: 'Gia sư chấm bài', lede: 'Nhập đề bài, bấm «Tìm hiểu đề bài» rồi đi qua 4 bước giải toán; bấm vào bước nào cũng xem lại được.\nAI gợi ý chiến lược (không lộ đáp án), chấm bài ở bước Trình bày lời giải và chỉ hiện lời giải khi bạn yêu cầu.' };
@@ -172,7 +173,8 @@ export function solveView(d) {
     ...steps.filter((s) => s[2]).map(([n, t, body]) => h('div.step', {}, h('div.step-h', {}, h('span.n', {}, n), h('h3', {}, t)), rich(body))),
     chart(d.viz),
     casio(d.casio),
-    d.similar?.length ? [h('h3', {}, 'Bài tương tự để tự luyện'), list(d.similar, true)] : null);
+    d.similar?.length ? [h('h3', {}, 'Bài tương tự để tự luyện'), list(d.similar, true)] : null,
+    lensBar({ text: [d.understand, d.solution].filter(Boolean).join('\n'), topic: d.topic }));
 }
 
 export const mistakes = (ms) => h('div', {}, ...ms.map((m) => h('div.mistake', {}, h('div.tags', {}, h('span.tag', {}, m.type || 'Lỗi'), m.topic ? h('span.tag.topic', {}, m.topic) : null), rich(m.detail))));
