@@ -268,3 +268,16 @@ test('every topic has a colour family', () => {
   assert.equal(TOPIC_COLOR.length, TOPICS.length);
   assert.ok(TOPIC_COLOR.every((c) => c >= 1 && c <= 5));
 });
+
+test('the English course map matches the Vietnamese one line for line: same structure, same formulas', async () => {
+  const { COURSE, COURSE_EN } = await import('../public/js/course-map.js');
+  const vi = COURSE.split('\n'), en = COURSE_EN.split('\n');
+  assert.equal(en.length, vi.length);
+  const shape = (l) => l.match(/^(#+ |- )/)?.[0] ?? '';
+  const math = (l) => l.match(/\$[^$]*\$/g) ?? [];
+  vi.forEach((l, i) => {
+    assert.equal(shape(en[i]), shape(l), `line ${i + 1} structure`);
+    assert.deepEqual(math(en[i]), math(l), `line ${i + 1} formulas`);
+  });
+  assert.ok(!/[ăâđêôơưạảấầẩẫậắằẳẵặẹẻẽếềểễệỉịọỏốồổỗộớờởỡợụủứừửữựỳỵỷỹ]/i.test(COURSE_EN), 'no Vietnamese left');
+});

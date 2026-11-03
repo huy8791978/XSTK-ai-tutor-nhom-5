@@ -2,7 +2,8 @@
 import { h, run, loading } from '../ui.js';
 import { ai } from '../api.js';
 import { plainMath } from '../md.js';
-import { COURSE } from '../course-map.js';
+import { COURSE, COURSE_EN } from '../course-map.js';
+import { getLang } from '../i18n.js';
 import { mindmap3d } from '../mindmap3d.js';
 
 // Safari (and every iPhone browser, all WebKit) draws KaTeX inside the map's SVG foreignObject at the wrong place:
@@ -32,7 +33,11 @@ export function render(root) {
   const m3 = mindmap3d();
   m3.el.hidden = true;
   const stage = h('section.panel.mm-wrap', { 'aria-label': 'Bản đồ tư duy tương tác' }, h('div.mm-tools', {}, b3d, bWide, bFit), svgEl, m3.el);
-  let mm, transformer, lastMd = COURSE, in3d = false, md3d = null;
+  // The map on screen in each language known so far: the course map has both; an AI map starts in the language it
+  // was drawn in and gets the other one from the AI the first time the student switches language.
+  const COURSE_MAP = { vi: COURSE, en: COURSE_EN };
+  let map = COURSE_MAP;
+  let mm, transformer, lastMd = COURSE_MAP[getLang()], in3d = false, md3d = null;
   // The 3D view is built from the same markdown, only when it is on screen.
   const sync3d = () => { if (in3d && md3d !== lastMd) { md3d = lastMd; m3.show(lastMd); } };
   b3d.onclick = () => {
@@ -58,7 +63,7 @@ export function render(root) {
   }
 
   const showSafe = (markdown) => { if (!mm) status.replaceChildren(loading('Đang tải bản đồ tư duy…')); return show(markdown).then(() => status.replaceChildren()).catch(() => status.replaceChildren(h('div.error', { role: 'alert' }, 'Không tải được thư viện bản đồ tư duy. Kiểm tra kết nối mạng rồi tải lại trang.'))); };
-  bCourse.onclick = () => { status.replaceChildren(); showSafe(COURSE); };
+  bCourse.onclick = () => { map = COURSE_MAP; status.replaceChildren(); showSafe(map[getLang()]); };
   bFit.onclick = () => (in3d ? m3.fit() : mm?.fit());
   bWide.onclick = async () => {
     if (in3d) { m3.expandAll(); return; }
@@ -72,6 +77,7 @@ export function render(root) {
     run(bMake, status, async () => {
       const d = await ai('mindmap', { topic: t });
       if (!d.markdown) throw new Error('AI chưa vẽ được bản đồ. Thử lại.');
+      map = { [getLang()]: d.markdown };
       await show(d.markdown);
       return [];
     }, 'AI đang vẽ bản đồ…');
@@ -81,5 +87,26 @@ export function render(root) {
   root.append(
     h('div.toolbar', {}, h('label.field', { for: 'mm-topic', style: 'max-width:520px;flex-basis:360px' }, h('span', {}, 'Chủ đề'), input), h('div.btn-row', {}, bMake, bCourse)),
     status, stage);
-  setTimeout(() => showSafe(COURSE)); // not rAF: a background tab would never paint the map
+  setTimeout(() => showSafe(lastMd)); // not rAF: a background tab would never paint the map
+
+  // EN/VI switch: show the map in the new language. markmap cannot lay out a hidden map, so while the student is on
+  // another page the switch waits until the map page is shown again.
+  const pane = root.closest('.pane') || root;
+  let pending = false;
+  const relang = () => {
+    if (pane.hidden) { pending = true; return; }
+    pending = false;
+    const to = getLang(), shown = map;
+    if (shown[to]) { status.replaceChildren(); showSafe(shown[to]); return; }
+    run(bMake, status, async () => {
+      const d = await ai('translate', { items: [shown.vi ?? shown.en], to });
+      const text = typeof d.items?.[0] === 'string' ? d.items[0].trim() : '';
+      if (!text) throw new Error('Chưa dịch được bản đồ. Đổi ngôn ngữ lại để thử lần nữa.');
+      shown[to] = text;
+      if (map === shown && getLang() === to) await show(text); // not replaced or switched back meanwhile
+      return [];
+    }, 'Đang dịch bản đồ tư duy…');
+  };
+  addEventListener('langchange', relang);
+  addEventListener('hashchange', () => { if (pending && !pane.hidden) relang(); });
 }
