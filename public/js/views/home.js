@@ -23,7 +23,7 @@ const roll = (n, i) => h('b', { 'aria-hidden': 'true' }, h('span.roll', { style:
 
 export function render(root) {
   const c = h('canvas.ha-rosette', { 'aria-hidden': 'true' });
-  const sec = h('section.hero.hero-a.issue', { 'aria-labelledby': 'home-title' }, c,
+  const sec = h('section.hero.hero-a', { 'aria-labelledby': 'home-title' }, c,
     h('div.ha-main', {},
       headline(),
       h('p.hero-lede', {}, 'Chụp hoặc tải bài làm lên, gia sư AI chấm theo 4 bước giải toán của Polya, chỉ ra từng lỗi sai và ghi nhớ chúng để gợi ý lộ trình ôn thi. Luôn gợi ý cách nghĩ trước, lời giải chỉ hiện khi bạn hỏi.'),
@@ -39,21 +39,29 @@ export function render(root) {
   // The headline is split into words, which the page translator cannot match: rebuild it in the new language.
   addEventListener('langchange', () => sec.querySelector('h2').replaceWith(headline()));
 
-  // The ticket is issued again every time the home page is opened.
-  addEventListener('hashchange', () => {
-    if (location.hash !== '#trang-chu') return;
+  // The ticket is issued every time the home page is opened. When the whole sequence has finished, .issue is
+  // removed so no clipped or masked layer is left behind (they made the text and stub drop out while repainting).
+  let run = 0;
+  const issue = () => {
+    const mine = ++run;
     sec.classList.remove('issue'); void sec.offsetWidth; sec.classList.add('issue');
-  });
+    Promise.all(sec.getAnimations({ subtree: true }).map((a) => a.finished))
+      .then(() => { if (mine === run) sec.classList.remove('issue'); })
+      .catch(() => { /* replayed meanwhile: the newer run cleans up */ });
+  };
+  issue();
+  addEventListener('hashchange', () => { if (location.hash === '#trang-chu') issue(); });
 
-  // Foil gloss under the pointer (fine pointers only; the CSS hides it under reduced motion).
+  // Foil gloss under the pointer on the blue part (fine pointers only; the CSS hides it under reduced motion).
+  const main = sec.querySelector('.ha-main');
   if (matchMedia('(hover: hover) and (pointer: fine)').matches) {
     let raf = 0;
-    sec.addEventListener('pointermove', (e) => {
+    main.addEventListener('pointermove', (e) => {
       cancelAnimationFrame(raf);
       raf = requestAnimationFrame(() => {
-        const r = sec.getBoundingClientRect();
-        sec.style.setProperty('--mx', `${((e.clientX - r.left) / r.width) * 100}%`);
-        sec.style.setProperty('--my', `${((e.clientY - r.top) / r.height) * 100}%`);
+        const r = main.getBoundingClientRect();
+        main.style.setProperty('--mx', `${e.clientX - r.left}px`);
+        main.style.setProperty('--my', `${e.clientY - r.top}px`);
       });
     });
   }

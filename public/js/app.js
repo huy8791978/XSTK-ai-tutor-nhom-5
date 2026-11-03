@@ -35,11 +35,11 @@ const ros = rosette(document.querySelector('.rosette'));
 function go() {
   // No page in the address: the first visit opens the home page, later visits go straight to the tutor.
   const key = ROUTES[routeKey()] ? routeKey() : firstVisit() ? 'trang-chu' : 'cham-bai';
-  document.body.dataset.route = key;
+  document.body.dataset.page = key; // not data-route: that name marks the nav links
   const mod = ROUTES[key];
   document.querySelectorAll('[data-route]').forEach((a) => (a.dataset.route === key ? a.setAttribute('aria-current', 'page') : a.removeAttribute('aria-current')));
   document.querySelector('.profile-btn').hidden = key === 'ho-so';
-  top.dataset.g = document.querySelector(`[data-route="${key}"]`).dataset.g; // header accent + picture of the menu group
+  top.dataset.g = document.querySelector(`.nav [data-route="${key}"]`)?.dataset.g || ''; // header picture of the menu group (none on home)
   title.textContent = mod.meta.title; lede.textContent = mod.meta.lede;
   document.title = `${tr(mod.meta.title)} · AI Classroom`;
   document.querySelector('.nav [aria-current]')?.scrollIntoView({ block: 'nearest', inline: 'nearest' });

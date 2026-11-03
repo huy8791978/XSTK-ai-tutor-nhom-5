@@ -809,42 +809,43 @@ dialog.consent .btn-row { justify-content: flex-end; margin-top: 16px; }
 }
 
 /* On the home page the hero is the title: hide the page title card, keep the header buttons */
-body[data-route="trang-chu"] .top h1, body[data-route="trang-chu"] .top .lede, body[data-route="trang-chu"] .top::after { display: none; }
-@media (min-width: 861px) { body[data-route="trang-chu"] .top { background: none; border: 0; padding: 0; margin-bottom: 14px; } }
+body[data-page="trang-chu"] .top h1, body[data-page="trang-chu"] .top .lede, body[data-page="trang-chu"] .top::after { display: none; }
+@media (min-width: 861px) { body[data-page="trang-chu"] .top { background: none; border: 0; padding: 0; margin-bottom: 14px; } }
 /* Logo link to the home page: the rail carries it on a computer; on a phone the rail is a bottom bar, so it sits in the top bar */
 .home-link { display: none; }
 @media (max-width: 860px) {
   .home-link { display: block; grid-row: 1; grid-column: 1; align-self: center; color: var(--gold); text-decoration: none; font: 800 17px/1 var(--display); letter-spacing: .02em; }
   .top h1 { grid-row: 2; } .top .lede { grid-row: 3; }
-  body[data-route="trang-chu"] .home-link { font-size: 22px; }
-  body[data-route="trang-chu"] .top { margin-bottom: 0; }
+  body[data-page="trang-chu"] .home-link { font-size: 22px; }
+  body[data-page="trang-chu"] .top { margin-bottom: 0; }
 }
 
-/* Home: the ticket is issued. Default state is the finished ticket (content stays visible if scripts fail);
-   the .issue class plays the sequence: print out, headline rises, stub tears in, numbers roll. */
-.hero-a h2 .w { display: inline-block; clip-path: inset(-.5em -.1em 0 -.1em); } /* clip only below: keeps Vietnamese marks */
-.hero-a h2 .w > span { display: inline-block; }
+/* Home: the ticket is issued. Default state is the finished ticket (content stays visible if scripts fail).
+   The .issue class plays the sequence once: print out, headline rises, stub tears in, numbers roll. Fill mode is
+   backwards only and home.js removes .issue when everything has finished, so no clip, mask or transform outlives
+   the sequence (lingering clipped layers made the text and stub drop out while the rosette repainted). */
+.hero-a h2 .w, .hero-a h2 .w > span { display: inline-block; }
 .hero-a h2 .gold { color: var(--gold); }
 .ha-stub .roll { display: inline-flex; flex-direction: column; height: 1em; overflow: hidden; vertical-align: top; }
-.ha-stub .roll { height: 1em; }
 .ha-stub .roll > span { display: block; height: 1em; line-height: 1; transform: translateY(calc(var(--n) * -1em)); }
-.hero-a.issue { animation: ticket-print .9s var(--ease) both; }
-.hero-a.issue h2 .w > span { animation: word-rise .75s var(--ease) both; animation-delay: calc(.25s + min(var(--i), 10) * 55ms); }
-.hero-a.issue .hero-lede, .hero-a.issue .btn-row { animation: fade-rise .7s var(--ease) both .75s; }
-.hero-a.issue .btn-row { animation-delay: .9s; }
-.hero-a.issue .ha-stub { animation: stub-tear .85s var(--ease) both .55s; transform-origin: 0 100%; }
-.hero-a.issue .ha-stub .roll > span { animation: digit-roll 1.1s var(--ease) both; animation-delay: calc(1s + var(--i) * 120ms); }
-@keyframes ticket-print { from { clip-path: inset(0 100% 0 0); } to { clip-path: inset(0 0 0 0); } }
+.hero-a.issue { animation: ticket-print .9s var(--ease) backwards; }
+.hero-a.issue h2 .w { clip-path: inset(-.5em -.1em 0 -.1em); } /* clip only below: keeps Vietnamese marks */
+.hero-a.issue h2 .w > span { animation: word-rise .75s var(--ease) backwards; animation-delay: calc(.25s + min(var(--i), 10) * 55ms); }
+.hero-a.issue .hero-lede { animation: fade-rise .7s var(--ease) backwards .75s; }
+.hero-a.issue .btn-row { animation: fade-rise .7s var(--ease) backwards .9s; }
+.hero-a.issue .ha-stub { animation: stub-tear .85s var(--ease) backwards .55s; transform-origin: 0 100%; }
+.hero-a.issue .ha-stub .roll > span { animation: digit-roll 1.1s var(--ease) backwards; animation-delay: calc(1s + var(--i) * 120ms); }
+@keyframes ticket-print { from { clip-path: inset(0 100% 0 0); } to { clip-path: inset(0); } }
 @keyframes word-rise { from { transform: translateY(160%); } } /* far enough that the tone marks above the letters stay hidden too */
 @keyframes fade-rise { from { opacity: 0; transform: translateY(10px); } }
 @keyframes stub-tear { from { opacity: 0; transform: translateX(28px) rotate(3deg); } 70% { transform: translateX(-3px) rotate(-.6deg); } }
+@keyframes stub-drop { from { opacity: 0; transform: translateY(24px) rotate(-1.5deg); } }
 @keyframes digit-roll { from { transform: translateY(0); } }
-@media (max-width: 960px) {
-  .hero-a.issue .ha-stub { transform-origin: 0 0; animation-name: stub-drop; }
-  @keyframes stub-drop { from { opacity: 0; transform: translateY(24px) rotate(-1.5deg); } }
-}
-/* Foil gloss: the hologram strip of a printed ticket, under the pointer */
-.hero-a::after { content: ""; position: absolute; inset: 0; pointer-events: none; opacity: 0; transition: opacity .4s var(--ease); mix-blend-mode: soft-light;
-  background: radial-gradient(260px circle at var(--mx, 50%) var(--my, 50%), rgba(255, 255, 255, .55), rgba(242, 183, 5, .25) 40%, transparent 70%); }
-@media (hover: hover) and (pointer: fine) { .hero-a:hover::after { opacity: 1; } }
-@media (prefers-reduced-motion: reduce) { .hero-a::after { display: none; } }
+@media (max-width: 960px) { .hero-a.issue .ha-stub { transform-origin: 0 0; animation-name: stub-drop; } }
+/* Foil gloss: the hologram strip of a printed ticket, under the pointer. A plain gradient behind the text of the blue
+   part only (no blend mode, nothing laid over the text or the stub), shown while the pointer is over it. */
+.ha-main { position: relative; }
+.ha-main::before { content: ""; position: absolute; inset: 0; z-index: -1; pointer-events: none; opacity: 0; transition: opacity .4s var(--ease);
+  background: radial-gradient(300px circle at var(--mx, 50%) var(--my, 50%), rgba(255, 255, 255, .13), rgba(242, 183, 5, .07) 45%, transparent 70%); }
+@media (hover: hover) and (pointer: fine) { .ha-main:hover::before { opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { .ha-main::before { display: none; } }
