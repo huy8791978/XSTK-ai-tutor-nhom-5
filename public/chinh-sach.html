@@ -16,7 +16,8 @@
   BẢN NHÁP do công cụ tạo từ mã nguồn ngày 03/11/2026. Cần người có chuyên môn pháp lý xem lại trước khi đăng chính thức.
   Căn cứ: Luật Bảo vệ dữ liệu cá nhân 91/2025/QH15, Nghị định 356/2025/NĐ-CP, Luật Trí tuệ nhân tạo 134/2025/QH15,
   Luật An ninh mạng 116/2025/QH15. Xác minh lại tại thuvienphapluat.vn / vbpl.vn.
-  Còn phải điền: tên nhóm/đơn vị và email ở mục 1. Còn phải kiểm tra: gói khoá Gemini (mục 4) và thời gian Cloudflare lưu nhật kí (mục 5).
+  Còn phải điền: tên nhóm/đơn vị và email (mục 1, 7, 9 và bản tiếng Anh).
+  Đã kiểm tra 03/11/2026: Gemini API gói trả phí (ai.google.dev/gemini-api/terms); Workers Logs gói Free lưu 3 ngày (developers.cloudflare.com/workers/observability/logs/workers-logs).
 -->
 <main class="policy">
   <p><a href="./">← Về AI Classroom</a> · <a href="dieu-khoan.html">Điều khoản sử dụng</a> · <a href="#en" lang="en">English</a></p>
@@ -43,14 +44,14 @@
       <tr><td>Giọng nói khi dùng nút «Nói» hoặc lệnh giọng nói</td><td>Khi bạn bấm hoặc giữ nút micro</td><td>Chuyển lời nói thành chữ, chạy lệnh điều khiển trang</td><td>Do trình duyệt của bạn xử lý. Một số trình duyệt (ví dụ Chrome) gửi âm thanh tới máy chủ nhận dạng giọng nói của hãng trình duyệt.</td></tr>
       <tr><td>Bài viết, trả lời, tên hiển thị trên Diễn đàn</td><td>Khi bạn đăng bài</td><td>Để mọi người đọc và trao đổi</td><td>Công khai, ai cũng đọc được. Lưu trên Cloudflare tới khi bạn hoặc giảng viên kiểm duyệt xoá. Tên hiển thị không bắt buộc.</td></tr>
       <tr><td>Hồ sơ học tập (điểm, lỗi sai, nhật kí), cài đặt ngôn ngữ, giọng, âm thanh</td><td>Khi bạn học</td><td>Thống kê lỗi sai, gợi ý lộ trình</td><td>Chỉ trên trình duyệt của bạn. Khi bạn bấm «AI phân tích», bảng thống kê (không có tên) được gửi tới Google Gemini.</td></tr>
-      <tr><td>Địa chỉ IP, thời điểm truy cập</td><td>Mỗi lần trang gọi máy chủ</td><td>Chống lạm dụng (giới hạn số lượt mỗi phút), xử lý lỗi</td><td>Giới hạn lượt: chỉ trong bộ nhớ, tối đa 1 phút. Nhật kí lỗi: lưu trên Cloudflare trong [KIỂM TRA: số ngày Cloudflare lưu nhật kí].</td></tr>
+      <tr><td>Địa chỉ IP, thời điểm truy cập</td><td>Mỗi lần trang gọi máy chủ</td><td>Chống lạm dụng (giới hạn số lượt mỗi phút), xử lý lỗi</td><td>Giới hạn lượt: chỉ trong bộ nhớ, tối đa 1 phút. Nhật kí lỗi: lưu trên Cloudflare 3 ngày rồi tự xoá.</td></tr>
     </tbody>
   </table></div>
   <p><strong>Lời khuyên:</strong> đừng đưa họ tên, mã số sinh viên, số điện thoại vào bài làm, ảnh chụp hay bài diễn đàn.</p>
 
   <h2>4. Bên nhận dữ liệu và việc chuyển ra nước ngoài</h2>
   <ul>
-    <li><strong>Google (Gemini API):</strong> nhận nội dung ở mục 3 để AI xử lý. Hiện trang dùng khoá Gemini API của người vận hành; nếu sau này đổi cách dùng (ví dụ để bạn nhập khoá của riêng mình), chúng tôi sẽ cập nhật trang này và hỏi lại sự đồng ý. [KIỂM TRA: nếu khoá Gemini dùng gói miễn phí, điều khoản của Google cho phép Google dùng nội dung gửi vào để cải thiện sản phẩm và có thể do người xem xét; khi đó phải nói rõ ở đây. Nếu dùng gói trả phí thì ghi: Google không dùng nội dung này để huấn luyện mô hình.]</li>
+    <li><strong>Google (Gemini API):</strong> nhận nội dung ở mục 3 để AI xử lý. Hiện trang dùng khoá Gemini API của người vận hành; nếu sau này đổi cách dùng (ví dụ để bạn nhập khoá của riêng mình), chúng tôi sẽ cập nhật trang này và hỏi lại sự đồng ý. Khoá dùng gói trả phí: theo điều khoản Gemini API, Google không dùng nội dung bạn gửi hay câu trả lời để cải thiện sản phẩm của Google. Google chỉ lưu nhật kí trong một thời gian giới hạn để phát hiện việc dùng sai mục đích, giữ an toàn dịch vụ và đáp ứng yêu cầu pháp luật. Dữ liệu có thể được lưu tạm hoặc lưu đệm ở bất kì quốc gia nào Google có máy chủ.</li>
     <li><strong>Cloudflare:</strong> nơi chạy trang web, lưu bài diễn đàn và nhật kí lỗi.</li>
     <li><strong>Google Fonts và jsDelivr:</strong> trang tải phông chữ (Google Fonts) và thư viện hiển thị công thức, bản đồ tư duy (KaTeX, MathLive, Markmap qua jsDelivr). Khi tải, trình duyệt của bạn gửi địa chỉ IP và thông tin trình duyệt tới các dịch vụ này, như khi mở mọi trang web. Không có nội dung học tập nào được gửi tới đây.</li>
   </ul>
@@ -76,7 +77,7 @@
   <p>Gợi ý, điểm, lời giải và câu trả lời trên trang do AI tạo ra và có thể sai. Hãy đối chiếu với giáo trình hoặc hỏi giảng viên. Điểm do AI chấm chỉ để tự luyện, không phải điểm chính thức.</p>
 
   <h2>9. Nội dung vi phạm trên Diễn đàn</h2>
-  <p>Giảng viên kiểm duyệt xoá được mọi bài vi phạm. Để báo một bài vi phạm, gửi email tới [ĐIỀN: email] kèm đường link bài. Chúng tôi gỡ bài vi phạm trong 24 giờ kể từ khi có yêu cầu hợp lệ. [KIỂM TRA: nhóm có bảo đảm được mốc 24 giờ (06 giờ khi khẩn cấp) không? Đây là mốc của Luật An ninh mạng 2025.]</p>
+  <p>Giảng viên kiểm duyệt xoá được mọi bài vi phạm. Để báo một bài vi phạm, gửi email tới [ĐIỀN: email] kèm đường link bài. Chúng tôi gỡ bài vi phạm trong 24 giờ kể từ khi có yêu cầu hợp lệ, và trong 6 giờ với trường hợp khẩn cấp.</p>
 
   <h2>10. Khi có sự cố</h2>
   <p>Nếu xảy ra lộ hoặc mất dữ liệu cá nhân, chúng tôi thông báo cho cơ quan chuyên trách bảo vệ dữ liệu cá nhân theo quy định.</p>
@@ -87,15 +88,15 @@
   <hr>
   <section id="en" lang="en">
     <h2>Data policy (summary in English)</h2>
-    <p>AI Classroom is a free, non-profit project made and run by [FILL IN: group / organisation]. Contact: [FILL IN: email]. No accounts, no cookies, no analytics, no ads; we do not sell personal data. Settings and your learning profile are kept in your browser (localStorage) only. Fonts and formula libraries load from Google Fonts and jsDelivr, which see your IP address like any website does.</p>
+    <p>AI Classroom is a free, non-profit project made and run by [FILL IN: group / organisation]. Contact: [FILL IN: email]. No accounts, no cookies, no analytics, no ads; we do not sell personal data. Settings and your learning profile are kept in your browser (localStorage) only. Fonts and formula libraries load from Google Fonts and jsDelivr, which see your IP address like any website does. We use the paid Gemini API: Google does not use your prompts or its answers to improve its products, and keeps logs only for a limited time for abuse monitoring, safety and legal requirements.</p>
     <ul>
       <li>What you type, upload (photos, PDF, Word), write on the board or say to the tutor is sent to Google Gemini, abroad, so the AI can answer and grade. Our server only relays it.</li>
       <li>Speech typed by the «Speak» button or voice commands is handled by your browser, which may send audio to its vendor.</li>
       <li>Forum posts and display names are public and stored on Cloudflare until you or a moderator delete them.</li>
       <li>Your learning profile and settings stay in your browser; only anonymous statistics go to Gemini when you ask for an AI analysis.</li>
-      <li>IP addresses are kept in memory for at most one minute for rate limiting; error logs stay on Cloudflare for [CHECK: days].</li>
+      <li>IP addresses are kept in memory for at most one minute for rate limiting; error logs stay on Cloudflare for 3 days.</li>
     </ul>
-    <p>You are asked before anything is sent to the AI, and can withdraw with the button in section 6. To see, correct or delete your data, or report a forum post, email us; we reply within 2 working days.</p>
+    <p>You are asked before anything is sent to the AI, and can withdraw with the button in section 6. To see, correct or delete your data, or report a forum post, email us; we reply within 2 working days and remove violating posts within 24 hours (6 hours if urgent).</p>
   </section>
 </main>
 <script>

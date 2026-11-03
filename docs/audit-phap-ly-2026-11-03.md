@@ -71,7 +71,7 @@ Chủ site xác nhận: dự án hoàn toàn phi lợi nhuận. Khoá Gemini hi�
 | 🟢 | Tiếp cận (a11y) | Sửa 2 chỗ màu chưa đủ tương phản (số bước chưa làm 1,64:1 → 6,03:1; dấu «Đã xong» 3,39:1 → 6,11:1). Ảnh đều có `alt`; hộp đồng ý dùng `<dialog>`, dùng được bằng bàn phím. |
 | 🟢 | Đánh giá giả, khẳng định không có căn cứ | Không thấy. |
 | 🔴 còn lại | DLCN-D. Hồ sơ chuyển dữ liệu ra nước ngoài | Chưa lập, cần hỏi người làm luật. |
-| 🔴 còn lại | Gói khoá Gemini | Chưa xác định miễn phí hay trả phí. |
+| 🟢 | Gói khoá Gemini | Gói trả phí: Google không dùng nội dung để cải thiện sản phẩm, chỉ lưu nhật kí có thời hạn để chống lạm dụng. Đã ghi vào chính sách. Nhật kí Cloudflare gói Free lưu 3 ngày. Mốc gỡ bài 24 giờ / 6 giờ khẩn cấp đã ghi vào chính sách và điều khoản. |
 | 🟡 còn lại | ANM-E. Báo cáo bài vi phạm | Hiện chỉ qua email; chưa có nút báo cáo. |
 
 ## Giới hạn & khuyến nghị
