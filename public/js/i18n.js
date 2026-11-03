@@ -30,6 +30,12 @@ const DICT = {
   'Đừng vội tính! Bài này giống dạng nào bạn đã gặp? Cần công thức nào?': 'Do not rush into calculating! Which kind of problem you have met does this look like? Which formula does it need?',
   'Tự trình bày từng bước, ghi công thức trước khi thay số. Sai cũng không sao: AI sẽ chỉ chỗ cần sửa.': 'Write it out step by step, the formula before the numbers. Mistakes are fine: the AI will show what to fix.',
   'So bài của bạn với lời giải mẫu. Có cách nào ngắn hơn? Kết quả có hợp lí không?': 'Compare your work with the model solution. Is there a shorter way? Does the result make sense?',
+  // consent & data policy
+  'Gửi nội dung cho AI': 'Sending your content to the AI', 'Không đồng ý': 'Do not agree', 'Đồng ý': 'Agree',
+  'Để AI trả lời, chấm bài và đọc tệp, những gì bạn gõ, ảnh/PDF/Word bạn tải lên, chữ viết trên bảng và giọng nói của bạn sẽ được gửi tới Google Gemini, có máy chủ ở nước ngoài.': 'So the AI can answer, grade and read files, what you type, the photos/PDF/Word files you upload, what you write on the board and your voice are sent to Google Gemini, whose servers are abroad.',
+  'Đừng đưa họ tên, mã số sinh viên, số điện thoại vào bài làm hay ảnh chụp.': 'Do not put your name, student ID or phone number in your work or photos.',
+  'Đọc Chính sách dữ liệu': 'Read the data policy', 'Chính sách dữ liệu': 'Data policy', 'Bài đăng công khai.': 'Posts are public.',
+  'Bạn chưa đồng ý gửi nội dung cho AI, nên chức năng này chưa chạy. Bấm lại để xem lời đề nghị.': 'You have not agreed to send content to the AI, so this feature did not run. Press again to see the request.',
   // shell & nav
   'Gia sư Xác suất Thống kê': 'Probability & Statistics Tutor', 'Bỏ qua tới nội dung': 'Skip to content',
   'Gia sư chấm bài': 'AI Tutor & grading', 'Chấm bài': 'Grade', 'Học lí thuyết': 'Learn concepts', 'Lí thuyết': 'Concepts',

@@ -1,10 +1,12 @@
 // Browser → Worker proxy. The Gemini key never exists in the browser.
 import { getLang } from './i18n.js';
+import { ensureConsent } from './consent.js';
 export class AIError extends Error {
   constructor(message, retryAfter) { super(message); this.retryAfter = retryAfter; }
 }
 
 export async function ai(task, payload = {}) {
+  await ensureConsent(); // nothing reaches Gemini before the user has agreed
   let res;
   try {
     res = await fetch('/api/ai', {

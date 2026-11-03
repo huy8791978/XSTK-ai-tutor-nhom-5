@@ -3,6 +3,7 @@
 // are written underneath. When real-time voice is unavailable the page carries on with the ordinary mode: the
 // "Nói" button on the text box below dictates a question, answered in text and read aloud.
 import { h, icon, rich, run, toast, casio, loading } from '../ui.js';
+import { ensureConsent } from '../consent.js';
 import { ai } from '../api.js';
 import { mathField } from '../mathinput.js';
 import { boardToggle } from '../board.js';
@@ -120,7 +121,7 @@ export function render(root) {
     status.textContent = LABEL.fallback;
     if (pending) send(pending, { typed: true, shown: false });
   }
-  bLive.onclick = () => (live?.active ? live.stop() : startLive());
+  bLive.onclick = () => (live?.active ? live.stop() : ensureConsent().then(startLive, (e) => toast(e.message)));
   addEventListener('langchange', () => live?.active && live.configure({ lang: getLang() }));
   addEventListener('hashchange', () => { if (!location.hash.startsWith('#giong-noi')) live?.stop(); });
 

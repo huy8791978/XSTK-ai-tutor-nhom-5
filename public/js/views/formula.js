@@ -2,6 +2,7 @@
 // PDF or photo and hear every formula in it read in full. Real-time voice (Gemini Live) when available; otherwise
 // a text model writes the formulas and their reading, and the reading is played with the TTS voice.
 import { h, icon, rich, run, toast } from '../ui.js';
+import { ensureConsent } from '../consent.js';
 import { ai } from '../api.js';
 import { mathField } from '../mathinput.js';
 import { uploader } from '../uploader.js';
@@ -89,7 +90,7 @@ export function render(root) {
     setState('idle'); status.textContent = LABEL.fallback;
     if (pending?.user) classic(pending.fromFile ? 'document' : 'spoken', pending.text || pending.user, false);
   }
-  bLive.onclick = () => (live?.active ? live.stop() : startLive());
+  bLive.onclick = () => (live?.active ? live.stop() : ensureConsent().then(startLive, (e) => toast(e.message)));
   addEventListener('hashchange', () => { if (!location.hash.startsWith('#cong-thuc')) { live?.stop(); stopReading?.(); } });
 
   /** Without real-time voice: the text model writes the formulas and their reading; the TTS reads it. */

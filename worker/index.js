@@ -65,10 +65,8 @@ export default {
         }
         return json({ data: await inLanguage(env, ctx, task, data, lang) });
       } catch (e) {
-        // Log the parser's reason and the text around the failing position, not just the start of the reply.
-        const pos = Number(/position (\d+)/.exec(e.detail || '')?.[1]);
-        const around = Number.isFinite(pos) ? (e.text || text).slice(Math.max(0, pos - 150), pos + 150) : text.slice(-300);
-        console.error('unparsable', got.model, task, cand?.finishReason, e.detail, `len=${text.length}`, `…${around}…`);
+        // Log the parser's reason only: the reply itself may quote a student's work (personal data), and logs are kept.
+        console.error('unparsable', got.model, task, cand?.finishReason, e.detail, `len=${text.length}`);
         failure = json({ error: 'AI trả về nội dung không đọc được. Bấm thử lại.' }, 502);
       }
     }

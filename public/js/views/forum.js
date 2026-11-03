@@ -84,7 +84,7 @@ export function render(root) {
 function nameField() {
   const input = h('input', { type: 'text', id: `fn-${Math.random().toString(36).slice(2, 6)}`, maxlength: 40, placeholder: 'Ẩn danh', value: store.get(NAME_KEY, '') });
   input.addEventListener('change', () => store.set(NAME_KEY, input.value.trim()));
-  return { input, el: h('label.field', { for: input.id, style: 'max-width:260px' }, h('span', {}, 'Tên hiển thị'), input) };
+  return { input, el: h('label.field', { for: input.id, style: 'max-width:260px' }, h('span', {}, 'Tên hiển thị'), input, h('small.muted', {}, 'Bài đăng công khai. ', h('a', { href: 'chinh-sach.html', target: '_blank', rel: 'noopener' }, 'Chính sách dữ liệu'))) };
 }
 
 function index(root) {

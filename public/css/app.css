@@ -760,3 +760,19 @@ kbd.key.val { background: var(--paper); color: var(--ink); border: 1px solid var
 .stamp-c.off { opacity: .4; border-style: dotted; }
 .look-back { margin-top: 16px; padding: 10px 12px; border: 1px solid var(--rule); border-radius: 6px; background: var(--paper); font-size: 14px; }
 .look-back > b { display: block; font-size: 12px; letter-spacing: .1em; text-transform: uppercase; color: var(--ultra); }
+
+/* Consent dialog and the data policy page */
+dialog.consent { max-width: min(520px, calc(100vw - 32px)); border: 1px solid var(--rule-2); border-radius: 8px; padding: 22px; color: var(--ink); box-shadow: 0 24px 60px -20px rgba(20, 24, 51, .5); }
+dialog.consent::backdrop { background: rgba(20, 24, 51, .45); }
+dialog.consent h2 { font: 800 26px/1.1 var(--display); color: var(--ultra); margin-bottom: 10px; }
+dialog.consent p { margin: 0 0 10px; }
+dialog.consent .btn-row { justify-content: flex-end; margin-top: 16px; }
+.policy { max-width: 860px; margin: 0 auto; padding: 32px 20px 64px; }
+.policy h1 { font: 800 clamp(34px, 5vw, 48px)/1.05 var(--display); color: var(--ultra); text-transform: uppercase; margin: 12px 0 4px; }
+.policy h2 { font: 800 22px/1.2 var(--display); color: var(--ultra); margin: 28px 0 8px; }
+.policy p, .policy ul { margin: 0 0 10px; } .policy ul { padding-left: 1.3em; }
+.policy .table-wrap { overflow-x: auto; }
+.policy table { width: 100%; border-collapse: collapse; font-size: 14px; background: var(--sheet); }
+.policy th, .policy td { border: 1px solid var(--rule-2); padding: 8px 10px; text-align: left; vertical-align: top; }
+.policy th { background: var(--ultra-wash); color: var(--ultra); }
+.policy hr { margin: 36px 0; border: 0; border-top: 1px solid var(--rule-2); }
