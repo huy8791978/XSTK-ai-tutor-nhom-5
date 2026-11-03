@@ -33,8 +33,8 @@ const top = document.querySelector('.top');
 const ros = rosette(document.querySelector('.rosette'));
 
 function go() {
-  // No page in the address: the first visit opens the home page, later visits go straight to the tutor.
-  const key = ROUTES[routeKey()] ? routeKey() : firstVisit() ? 'trang-chu' : 'cham-bai';
+  // No page in the address (the bare site link): always the home page.
+  const key = ROUTES[routeKey()] ? routeKey() : 'trang-chu';
   document.body.dataset.page = key; // not data-route: that name marks the nav links
   const mod = ROUTES[key];
   document.querySelectorAll('[data-route]').forEach((a) => (a.dataset.route === key ? a.setAttribute('aria-current', 'page') : a.removeAttribute('aria-current')));
@@ -61,11 +61,6 @@ function go() {
   scrollTo({ top: fresh ? 0 : scrollY[key] || 0 });
 }
 const FRESH = new Set(['dien-dan', 'thong-ke', 'ho-so']);
-const VISITED = 'xstk.visited';
-function firstVisit() {
-  try { if (localStorage.getItem(VISITED)) return false; localStorage.setItem(VISITED, '1'); } catch { /* private mode: show home each time */ }
-  return true;
-}
 const panes = {}, scrollY = {};
 let current = null;
 
