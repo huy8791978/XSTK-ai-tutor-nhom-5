@@ -696,12 +696,12 @@ kbd.key.val { background: var(--paper); color: var(--ink); border: 1px solid var
 .detents li::before, .detents.steps button::before { display: none; }
 .detents.steps li { padding: 0; }
 .detents.steps button { box-sizing: border-box; height: 100%; padding: 10px 12px 10px 18px; flex-direction: column; align-items: flex-start; gap: 2px; }
-.detents b { font-size: 22px; line-height: 1; color: var(--rule-2); }
+.detents b { font-size: 22px; line-height: 1; color: var(--ink-3); } /* ≥ 3:1, large bold text */
 .detents li[data-state="done"] { border-color: var(--green); color: var(--green-ink); }
 .detents li[data-state="done"] b { color: var(--green); }
 .detents li[data-state="current"] { border-color: var(--gold); background: var(--gold-wash); color: var(--ink); }
 .detents li[data-state="current"] b { color: var(--gold-ink); }
-.detents li[data-state="done"]::after, .detents li[data-done]::after { content: "Đã xong"; position: absolute; top: 8px; right: 10px; transform: rotate(-12deg); border: 2px solid var(--green); color: var(--green);
+.detents li[data-state="done"]::after, .detents li[data-done]::after { content: "Đã xong"; position: absolute; top: 8px; right: 10px; transform: rotate(-12deg); border: 2px solid var(--green-ink); color: var(--green-ink);
   font: 800 11px/1 var(--display); letter-spacing: .08em; text-transform: uppercase; padding: 3px 5px; border-radius: 3px; pointer-events: none; animation: stamp .45s var(--ease) both; }
 :root:lang(en) .detents li[data-state="done"]::after, :root:lang(en) .detents li[data-done]::after { content: "Done"; }
 @keyframes stamp { from { transform: rotate(-12deg) scale(1.8); opacity: 0; } }
