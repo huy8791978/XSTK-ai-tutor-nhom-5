@@ -69,7 +69,7 @@ svg.ic { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-wid
 .nav a:hover { background: rgba(255, 255, 255, .09); }
 .nav a[aria-current="page"] { background: var(--paper); color: var(--ultra); font-weight: 600; }
 .nav .short { display: none; }
-.serial { margin-top: auto; padding: 0 8px; font: 700 13px/1.4 var(--display); letter-spacing: .2em; color: var(--gold); }
+.serial { margin-top: auto; padding: 0 8px; font: 700 13px/1.4 var(--display); letter-spacing: .2em; text-transform: uppercase; color: var(--gold); }
 
 main { min-width: 0; padding: 32px clamp(20px, 3.4vw, 48px) 64px; outline: none; }
 .top { display: flex; align-items: flex-end; justify-content: space-between; gap: 20px; margin-bottom: 26px; }
@@ -768,3 +768,83 @@ dialog.consent .btn-row { justify-content: flex-end; margin-top: 16px; }
 .policy th, .policy td { border: 1px solid var(--rule-2); padding: 8px 10px; text-align: left; vertical-align: top; }
 .policy th { background: var(--ultra-wash); color: var(--ultra); }
 .policy hr { margin: 36px 0; border: 0; border-top: 1px solid var(--rule-2); }
+
+/* ---------- Home page (#trang-chu): the introduction shown on the first visit and behind the logo ---------- */
+.hero { position: relative; margin-bottom: 26px; }
+.hero h2 { font: 800 clamp(38px, 4.6vw, 64px)/1 var(--display); letter-spacing: -.005em; text-transform: uppercase; text-wrap: balance; }
+.hero-lede { max-width: 58ch; margin-top: 14px; font-size: 16.5px; line-height: 1.65; text-wrap: pretty; }
+.hero .btn-row { margin-top: 22px; }
+
+/* The hero is a lottery ticket: rosette security print, a torn-off stub with the 4 steps */
+.hero-a { display: grid; grid-template-columns: minmax(0, 1fr) 300px; background: var(--ultra); color: #fff; border: 1px solid var(--ultra); border-radius: var(--r); overflow: hidden; isolation: isolate; }
+.hero-a .ha-rosette { position: absolute; inset: 0; width: 100%; height: 100%; z-index: -1; opacity: .55; }
+.hero-a .ha-main { padding: clamp(28px, 4vw, 52px); padding-right: clamp(28px, 3vw, 40px); }
+.hero-a h2 { color: #fff; max-width: 17ch; }
+.hero-a h2 em { font-style: normal; color: var(--gold); }
+.hero-a .hero-lede { color: var(--ultra-ink); }
+.hero-a .btn-cta { background: var(--gold); border-color: var(--gold); color: var(--ink); }
+.hero-a .btn-cta:hover { background: #FFC933; border-color: #FFC933; }
+.hero-a .btn-alt { background: transparent; border-color: rgba(255, 255, 255, .55); color: #fff; }
+.hero-a .btn-alt:hover { background: rgba(255, 255, 255, .1); border-color: #fff; }
+/* The stub: paper, separated by a perforated tear line with half-punched notches top and bottom */
+.ha-stub { position: relative; background: var(--sheet); color: var(--ink); padding: 30px 26px 26px 30px; border-left: 2px dashed var(--ultra-dim);
+  -webkit-mask: radial-gradient(circle 11px at 0 0, #0000 98%, #000) top left / 100% 51% no-repeat, radial-gradient(circle 11px at 0 100%, #0000 98%, #000) bottom left / 100% 51% no-repeat;
+  mask: radial-gradient(circle 11px at 0 0, #0000 98%, #000) top left / 100% 51% no-repeat, radial-gradient(circle 11px at 0 100%, #0000 98%, #000) bottom left / 100% 51% no-repeat; }
+.ha-stub h3 { font: 700 13.5px/1.3 var(--display); letter-spacing: .14em; text-transform: uppercase; color: var(--ink-3); margin: 0 0 12px; }
+.ha-stub ol { list-style: none; padding: 0; margin: 0; display: grid; }
+.ha-stub li { display: grid; grid-template-columns: 34px 1fr; align-items: baseline; padding: 10px 0; border-bottom: 1px solid var(--row-rule, #EEF0F8); font-weight: 600; font-size: 14.5px; }
+.ha-stub li:last-child { border-bottom: 0; }
+.ha-stub li b { font: 800 26px/1 var(--display); color: var(--ultra); font-variant-numeric: tabular-nums; }
+.ha-stub p { margin-top: 14px; font-size: 13px; color: var(--ink-3); }
+@media (max-width: 960px) {
+  .hero-a { grid-template-columns: 1fr; }
+  .ha-stub { border-left: 0; border-top: 2px dashed var(--ultra-dim); padding-top: 26px;
+    -webkit-mask: radial-gradient(circle 11px at 0 0, #0000 98%, #000) top left / 51% 100% no-repeat, radial-gradient(circle 11px at 100% 0, #0000 98%, #000) top right / 51% 100% no-repeat;
+    mask: radial-gradient(circle 11px at 0 0, #0000 98%, #000) top left / 51% 100% no-repeat, radial-gradient(circle 11px at 100% 0, #0000 98%, #000) top right / 51% 100% no-repeat; }
+}
+
+@media (max-width: 860px) {
+  .hero { margin: 0 -16px 20px; border-radius: 0; border-left: 0; border-right: 0; }
+  .hero h2 { font-size: 36px; }
+}
+
+/* On the home page the hero is the title: hide the page title card, keep the header buttons */
+body[data-route="trang-chu"] .top h1, body[data-route="trang-chu"] .top .lede, body[data-route="trang-chu"] .top::after { display: none; }
+@media (min-width: 861px) { body[data-route="trang-chu"] .top { background: none; border: 0; padding: 0; margin-bottom: 14px; } }
+/* Logo link to the home page: the rail carries it on a computer; on a phone the rail is a bottom bar, so it sits in the top bar */
+.home-link { display: none; }
+@media (max-width: 860px) {
+  .home-link { display: block; grid-row: 1; grid-column: 1; align-self: center; color: var(--gold); text-decoration: none; font: 800 17px/1 var(--display); letter-spacing: .02em; }
+  .top h1 { grid-row: 2; } .top .lede { grid-row: 3; }
+  body[data-route="trang-chu"] .home-link { font-size: 22px; }
+  body[data-route="trang-chu"] .top { margin-bottom: 0; }
+}
+
+/* Home: the ticket is issued. Default state is the finished ticket (content stays visible if scripts fail);
+   the .issue class plays the sequence: print out, headline rises, stub tears in, numbers roll. */
+.hero-a h2 .w { display: inline-block; clip-path: inset(-.5em -.1em 0 -.1em); } /* clip only below: keeps Vietnamese marks */
+.hero-a h2 .w > span { display: inline-block; }
+.hero-a h2 .gold { color: var(--gold); }
+.ha-stub .roll { display: inline-flex; flex-direction: column; height: 1em; overflow: hidden; vertical-align: top; }
+.ha-stub .roll { height: 1em; }
+.ha-stub .roll > span { display: block; height: 1em; line-height: 1; transform: translateY(calc(var(--n) * -1em)); }
+.hero-a.issue { animation: ticket-print .9s var(--ease) both; }
+.hero-a.issue h2 .w > span { animation: word-rise .75s var(--ease) both; animation-delay: calc(.25s + min(var(--i), 10) * 55ms); }
+.hero-a.issue .hero-lede, .hero-a.issue .btn-row { animation: fade-rise .7s var(--ease) both .75s; }
+.hero-a.issue .btn-row { animation-delay: .9s; }
+.hero-a.issue .ha-stub { animation: stub-tear .85s var(--ease) both .55s; transform-origin: 0 100%; }
+.hero-a.issue .ha-stub .roll > span { animation: digit-roll 1.1s var(--ease) both; animation-delay: calc(1s + var(--i) * 120ms); }
+@keyframes ticket-print { from { clip-path: inset(0 100% 0 0); } to { clip-path: inset(0 0 0 0); } }
+@keyframes word-rise { from { transform: translateY(160%); } } /* far enough that the tone marks above the letters stay hidden too */
+@keyframes fade-rise { from { opacity: 0; transform: translateY(10px); } }
+@keyframes stub-tear { from { opacity: 0; transform: translateX(28px) rotate(3deg); } 70% { transform: translateX(-3px) rotate(-.6deg); } }
+@keyframes digit-roll { from { transform: translateY(0); } }
+@media (max-width: 960px) {
+  .hero-a.issue .ha-stub { transform-origin: 0 0; animation-name: stub-drop; }
+  @keyframes stub-drop { from { opacity: 0; transform: translateY(24px) rotate(-1.5deg); } }
+}
+/* Foil gloss: the hologram strip of a printed ticket, under the pointer */
+.hero-a::after { content: ""; position: absolute; inset: 0; pointer-events: none; opacity: 0; transition: opacity .4s var(--ease); mix-blend-mode: soft-light;
+  background: radial-gradient(260px circle at var(--mx, 50%) var(--my, 50%), rgba(255, 255, 255, .55), rgba(242, 183, 5, .25) 40%, transparent 70%); }
+@media (hover: hover) and (pointer: fine) { .hero-a:hover::after { opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { .hero-a::after { display: none; } }

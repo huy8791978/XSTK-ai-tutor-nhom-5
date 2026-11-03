@@ -6,7 +6,7 @@ test('navigation: with or without a verb, vi and en', () => {
   assert.deepEqual(parseCommand('Sang trắc nghiệm'), { type: 'nav', route: 'trac-nghiem', verb: true });
   assert.equal(parseCommand('mở trang bản đồ tư duy').route, 'ban-do');
   assert.equal(parseCommand('Mini game').route, 'mini-game');
-  assert.equal(parseCommand('về trang chủ').route, 'cham-bai');
+  assert.equal(parseCommand('về trang chủ').route, 'trang-chu');
   assert.equal(parseCommand('hỏi đáp công thức').route, 'cong-thuc');
   assert.equal(parseCommand('go to the forum').route, 'dien-dan');
   assert.equal(parseCommand('open mind map').route, 'ban-do');

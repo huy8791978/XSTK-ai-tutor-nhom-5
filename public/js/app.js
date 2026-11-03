@@ -15,11 +15,12 @@ import * as oral from './views/oral.js';
 import * as mindmap from './views/mindmap.js';
 import * as quiz from './views/quiz.js';
 import * as profile from './views/profile.js';
+import * as home from './views/home.js';
 import { initVoiceCommands } from './voicecmd.js';
 import { initEngage } from './engage.js';
 
 const ROUTES = {
-  'cham-bai': tutor, 'ly-thuyet': concept, 'dinh-li': theorem, 'tu-luan': essayPage, 'trac-nghiem': mcqPage, 'mini-game': quiz, 'van-dap': oral,
+  'trang-chu': home, 'cham-bai': tutor, 'ly-thuyet': concept, 'dinh-li': theorem, 'tu-luan': essayPage, 'trac-nghiem': mcqPage, 'mini-game': quiz, 'van-dap': oral,
   'giong-noi': voice, 'cong-thuc': formula, 'thong-ke': mistakes, 'ban-do': mindmap, 'dien-dan': forum, 'ho-so': profile,
 };
 const routeKey = () => location.hash.slice(1).split('?')[0];
@@ -32,7 +33,9 @@ const top = document.querySelector('.top');
 const ros = rosette(document.querySelector('.rosette'));
 
 function go() {
-  const key = ROUTES[routeKey()] ? routeKey() : 'cham-bai';
+  // No page in the address: the first visit opens the home page, later visits go straight to the tutor.
+  const key = ROUTES[routeKey()] ? routeKey() : firstVisit() ? 'trang-chu' : 'cham-bai';
+  document.body.dataset.route = key;
   const mod = ROUTES[key];
   document.querySelectorAll('[data-route]').forEach((a) => (a.dataset.route === key ? a.setAttribute('aria-current', 'page') : a.removeAttribute('aria-current')));
   document.querySelector('.profile-btn').hidden = key === 'ho-so';
@@ -58,6 +61,11 @@ function go() {
   scrollTo({ top: fresh ? 0 : scrollY[key] || 0 });
 }
 const FRESH = new Set(['dien-dan', 'thong-ke', 'ho-so']);
+const VISITED = 'xstk.visited';
+function firstVisit() {
+  try { if (localStorage.getItem(VISITED)) return false; localStorage.setItem(VISITED, '1'); } catch { /* private mode: show home each time */ }
+  return true;
+}
 const panes = {}, scrollY = {};
 let current = null;
 

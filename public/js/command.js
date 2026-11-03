@@ -14,7 +14,8 @@ const words = (s) => (norm(s) ? norm(s).split(' ') : []);
 const rawWords = (s) => String(s || '').replace(/[^\p{L}\p{N}\p{M}\s]/gu, ' ').split(/\s+/).filter(Boolean);
 
 export const ROUTE_WORDS = {
-  'cham-bai': ['gia su cham bai', 'cham bai', 'gia su', 'trang chu', 'tutor', 'grading', 'home'],
+  'trang-chu': ['trang chu', 'home page', 'home'],
+  'cham-bai': ['gia su cham bai', 'cham bai', 'gia su', 'tutor', 'grading'],
   'ly-thuyet': ['hoc ly thuyet', 'hoc li thuyet', 'ly thuyet', 'li thuyet', 'khai niem', 'learn concepts', 'concepts', 'concept', 'theory'],
   'dinh-li': ['hoc dinh li', 'hoc dinh ly', 'dinh li', 'dinh ly', 'learn theorems', 'theorems', 'theorem'],
   'tu-luan': ['bai tap tu luan', 'tu luan', 'essay problems', 'essay'],

@@ -32,6 +32,10 @@ const DICT = {
   'Đừng đưa họ tên, mã số sinh viên, số điện thoại vào bài làm hay ảnh chụp.': 'Do not put your name, student ID or phone number in your work or photos.',
   'Đọc Chính sách dữ liệu': 'Read the data policy', 'Chính sách dữ liệu': 'Data policy', 'Bài đăng công khai.': 'Posts are public.', 'Điều khoản sử dụng': 'Terms of use',
   'Bạn chưa đồng ý gửi nội dung cho AI, nên chức năng này chưa chạy. Bấm lại để xem lời đề nghị.': 'You have not agreed to send content to the AI, so this feature did not run. Press again to see the request.',
+  // home page
+  'Trang chủ': 'Home', 'Xác suất Thống kê,': 'Probability & Statistics,', 'có gia sư kèm': 'with a tutor beside you', 'từng bước': 'step by step',
+  'Chụp hoặc tải bài làm lên, gia sư AI chấm theo 4 bước giải toán của Polya, chỉ ra từng lỗi sai và ghi nhớ chúng để gợi ý lộ trình ôn thi. Luôn gợi ý cách nghĩ trước, lời giải chỉ hiện khi bạn hỏi.': 'Snap or upload your work: the AI tutor grades it through Polya’s 4 problem-solving steps, points out every mistake and remembers them to suggest a revision plan. It always hints at how to think first; the solution appears only when you ask.',
+  'Chấm bài đầu tiên': 'Grade your first problem', 'Mỗi bài đi qua 4 bước': 'Every problem goes through 4 steps', 'Bấm vào bước nào cũng xem lại được.': 'Tap any step to see it again.',
   // shell & nav
   'Gia sư Xác suất Thống kê': 'Probability & Statistics Tutor', 'Bỏ qua tới nội dung': 'Skip to content',
   'Gia sư chấm bài': 'AI Tutor & grading', 'Chấm bài': 'Grade', 'Học lí thuyết': 'Learn concepts', 'Lí thuyết': 'Concepts',

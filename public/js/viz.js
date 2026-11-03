@@ -117,6 +117,7 @@ export function rosette(canvas) {
   let seed = 3, t0 = performance.now(), raf = 0;
   const draw = (t) => {
     const dpr = Math.min(2, devicePixelRatio || 1), w = canvas.clientWidth, hh = canvas.clientHeight;
+    if (!w) return; // hidden (e.g. the home page while you are elsewhere): stop until it is shown again
     if (canvas.width !== w * dpr || canvas.height !== hh * dpr) { canvas.width = w * dpr; canvas.height = hh * dpr; }
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0); ctx.clearRect(0, 0, w, hh);
     const wide = w > hh;
@@ -141,6 +142,7 @@ export function rosette(canvas) {
   const start = () => { cancelAnimationFrame(raf); raf = requestAnimationFrame(draw); };
   document.addEventListener('visibilitychange', () => !document.hidden && start());
   addEventListener('resize', start);
+  new ResizeObserver(start).observe(canvas); // shown again after being hidden
   start();
   return { reseed(n) { seed = 3 + (n % 5); start(); } };
 }
