@@ -7,8 +7,6 @@ import { mathField } from '../mathinput.js';
 import { chart, odometer, galton } from '../viz.js';
 import { addSession } from '../profile.js';
 import { boardToggle } from '../board.js';
-import { teacher } from '../teacher.js';
-import { getGender } from '../voice.js';
 
 export const meta = { title: 'Gia sư chấm bài', lede: 'Nhập đề bài, bấm «Tìm hiểu đề bài» rồi đi qua 4 bước giải toán; bấm vào bước nào cũng xem lại được.\nAI gợi ý chiến lược (không lộ đáp án), chấm bài ở bước Trình bày lời giải và chỉ hiện lời giải khi bạn yêu cầu.' };
 
@@ -63,16 +61,6 @@ export function render(root) {
   const bGrade = h('button.btn.btn-primary', { type: 'button' }, 'Chấm điểm');
   const bSolve = h('button.btn.btn-primary', { type: 'button' }, 'Xem lời giải chi tiết');
 
-  // Robot coach: one tip per step, and shortcuts that press the page's own buttons (no AI call of its own).
-  const COACH = [
-    ['Đọc kĩ đề: tìm cái đã cho, cái phải tìm và điều kiện. Xong thì bấm «Tìm hiểu đề bài».', [['Tìm hiểu đề bài', () => bStart.click()]]],
-    ['Đừng vội tính! Bài này giống dạng nào bạn đã gặp? Cần công thức nào?', [['Xem gợi ý cách giải', () => bPlan.click()], ['Mở bản đồ tư duy', () => { location.hash = '#ban-do'; }]]],
-    ['Tự trình bày từng bước, ghi công thức trước khi thay số. Sai cũng không sao: AI sẽ chỉ chỗ cần sửa.', [['Chấm điểm', () => bGrade.click()], ['Viết trên bảng (iPad)', () => board.btn.click()]]],
-    ['So bài của bạn với lời giải mẫu. Có cách nào ngắn hơn? Kết quả có hợp lí không?', [['Xem lời giải chi tiết', () => bSolve.click()]]],
-  ];
-  const coach = (i) => h('div.coach', {}, teacher(getGender()),
-    h('div.coach-say', {}, h('p', {}, COACH[i][0]), h('div.chips', {}, ...COACH[i][1].map(([label, act]) => h('button.chip', { type: 'button', onclick: act }, label)))));
-
   out[0].append(empty());
   out[1].append(h('div.btn-row', {}, bPlan));
   const steps = [
@@ -82,7 +70,7 @@ export function render(root) {
       h('div.stack.work-box', {}, answer, upWork.el, h('div.btn-row', {}, board.btn, bBarem), board.wrap, baremBox),
       h('div.btn-row', {}, bGrade), out[2]],
     [h('p.muted', {}, 'Xem lời giải đầy đủ, cách bấm máy CASIO, ứng dụng của kết quả và bài tương tự.'), h('div.btn-row', {}, bSolve), out[3]],
-  ].map((kids, i) => h('div.step-pane', { hidden: i !== 0 }, h('h2', {}, `Bước ${i + 1}. ${POLYA[i]}`), polyaGuide(i), coach(i), ...kids, nav(i)));
+  ].map((kids, i) => h('div.step-pane', { hidden: i !== 0 }, h('h2', {}, `Bước ${i + 1}. ${POLYA[i]}`), polyaGuide(i), ...kids, nav(i)));
 
   function go(i, reveal = false) {
     cur = i;

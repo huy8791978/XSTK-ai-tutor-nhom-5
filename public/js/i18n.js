@@ -22,14 +22,10 @@ const DICT = {
   'Đã huỷ.': 'Cancelled.', '✓ Đã dừng': '✓ Stopped', '✓ Quay lại': '✓ Back', '✓ Tiến tới': '✓ Forward', '✓ Đã cuộn': '✓ Scrolled', '✓ Đang ở trang này': '✓ Already here',
   'Trình duyệt chưa cho dùng micro.': 'The browser has not allowed the microphone.', 'Micro đang bận hoặc lỗi.': 'The microphone is busy or failed.',
   'Nghe liên tục: nói «Trợ lý ơi» rồi ra lệnh.': 'Always listening: say «Assistant», then the command.', 'Đã tắt nghe liên tục.': 'Always listen is off.',
-  // ways of learning: menu groups, step medal, robot coach, profile stamps
+  // ways of learning: menu groups, step medal, profile stamps
   'Học': 'Learn', 'Luyện': 'Practice', 'Hỏi': 'Ask', 'Theo dõi': 'Track', 'Âm thanh khi xong một bước': 'Sound when a step is done',
-  'Mở bản đồ tư duy': 'Open the mind map', 'Thành tích': 'Achievements', 'phiên đã ghi': 'sessions logged', 'ngày học liên tiếp': 'days in a row',
+  'Thành tích': 'Achievements', 'phiên đã ghi': 'sessions logged', 'ngày học liên tiếp': 'days in a row',
   'chủ đề đã thạo': 'topics mastered', 'Nhìn lại': 'Looking back',
-  'Đọc kĩ đề: tìm cái đã cho, cái phải tìm và điều kiện. Xong thì bấm «Tìm hiểu đề bài».': 'Read the problem carefully: find what is given, what to find and the conditions. Then press «Understand the problem».',
-  'Đừng vội tính! Bài này giống dạng nào bạn đã gặp? Cần công thức nào?': 'Do not rush into calculating! Which kind of problem you have met does this look like? Which formula does it need?',
-  'Tự trình bày từng bước, ghi công thức trước khi thay số. Sai cũng không sao: AI sẽ chỉ chỗ cần sửa.': 'Write it out step by step, the formula before the numbers. Mistakes are fine: the AI will show what to fix.',
-  'So bài của bạn với lời giải mẫu. Có cách nào ngắn hơn? Kết quả có hợp lí không?': 'Compare your work with the model solution. Is there a shorter way? Does the result make sense?',
   // consent & data policy
   'Gửi nội dung cho AI': 'Sending your content to the AI', 'Không đồng ý': 'Do not agree', 'Đồng ý': 'Agree',
   'Để AI trả lời, chấm bài và đọc tệp, những gì bạn gõ, ảnh/PDF/Word bạn tải lên, chữ viết trên bảng và giọng nói của bạn sẽ được gửi tới Google Gemini, có máy chủ ở nước ngoài.': 'So the AI can answer, grade and read files, what you type, the photos/PDF/Word files you upload, what you write on the board and your voice are sent to Google Gemini, whose servers are abroad.',
