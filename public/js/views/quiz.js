@@ -1,7 +1,7 @@
 // Mini-game: a set of 20 multiple-choice questions (theory → exercises → real life), generated in one call before
 // play starts. Each question gives 30 seconds; the answer stays hidden until time runs out (the student may change
 // their choice meanwhile) or until they press «Hoàn thành».
-import { h, rich, run, toast } from '../ui.js';
+import { h, smooth, rich, run, toast } from '../ui.js';
 import { ai } from '../api.js';
 import { odometer } from '../viz.js';
 import { addSession } from '../profile.js';
@@ -69,7 +69,7 @@ function game(qs, level, again) {
         q.explain ? rich(q.explain) : null),
         h('div.btn-row', { style: 'margin-top:16px' }, bNext));
       bNext.focus({ preventScroll: true });
-      after.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+      after.scrollIntoView({ block: 'nearest', behavior: smooth() });
     }
 
     // The clock pauses while the page is hidden (another tab, or another feature of this app).

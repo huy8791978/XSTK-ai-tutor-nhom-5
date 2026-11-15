@@ -1,6 +1,6 @@
 // Practice: 5 essay or 5 MCQ problems, one per frame. Every problem is worked through Polya's 4 steps,
 // each step a visible button: Tìm hiểu nội dung đề bài → Tìm cách giải → Trình bày lời giải (+ chấm) → Nghiên cứu sâu lời giải.
-import { h, icon, rich, list, run, toast, casio, POLYA, polyaGuide, nodes } from '../ui.js';
+import { h, smooth, icon, rich, list, run, toast, casio, POLYA, polyaGuide, nodes } from '../ui.js';
 import { tr as t } from '../i18n.js';
 import { ai } from '../api.js';
 import { uploader } from '../uploader.js';
@@ -47,13 +47,14 @@ function make(kind) {
 export const essayPage = make('essay');
 export const mcqPage = make('mcq');
 
-function pager(kind, qs, topic) {
+/** The 5-problem set, one per frame. onComplete(score) runs once every problem is graded (spaced review uses it). */
+export function pager(kind, qs, topic, onComplete) {
   const results = new Array(qs.length).fill(null);
   let logged = false, cur = 0;
   const dots = h('div.dots', { role: 'tablist', 'aria-label': 'Chọn câu' });
   const track = h('div.track');
   const summary = h('div');
-  const go = (i) => { cur = Math.max(0, Math.min(qs.length - 1, i)); track.children[cur].scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'start' }); paintDots(); };
+  const go = (i) => { cur = Math.max(0, Math.min(qs.length - 1, i)); track.children[cur].scrollIntoView({ behavior: smooth(), block: 'nearest', inline: 'start' }); paintDots(); };
   const paintDots = () => dots.replaceChildren(...qs.map((_, i) => h('button', {
     type: 'button', role: 'tab', 'aria-current': String(i === cur), 'aria-label': `Câu ${i + 1}`,
     class: results[i] ? (results[i].score >= 5 ? 'ok' : 'bad') : '', onclick: () => go(i),
@@ -65,6 +66,7 @@ function pager(kind, qs, topic) {
       logged = true;
       const score = results.reduce((a, x) => a + x.score, 0) / results.length;
       addSession({ feature: KINDS[kind].feature, topic, score, mistakes: results.flatMap((x) => x.mistakes) });
+      onComplete?.(score);
       summary.replaceChildren(h('div.panel.ticket', { style: 'margin-top:20px' },
         h('div.board', {}, h('div.row.top-tier', {}, h('b', {}, 'Tổng'), h('span', {}, `Bộ ${qs.length} câu ${kind === 'mcq' ? 'trắc nghiệm' : 'tự luận'} · ${topic}. Đã lưu vào hồ sơ.`), odometer(score)))));
     }

@@ -1,7 +1,7 @@
 import { DurableObject } from 'cloudflare:workers';
 import { admit, settle, estimateTokens } from './limits.js';
 import { buildRequest, extractJson, wrongLanguage, LANGUAGE_RETRY, proseLeaves } from './prompts.js';
-import { validatePost, FORUM_TOPICS, signMod, verifyMod, sameText, MOD_TTL } from './forum.js';
+import { validatePost, validateReport, FORUM_TOPICS, signMod, verifyMod, sameText, MOD_TTL } from './forum.js';
 import { buildTts, ttsAudio } from './tts.js';
 import { modelList, benchFor, usable, AI_MODELS, TTS_MODELS } from './models.js';
 import { LiveRelay, orderLive, LIVE_MODELS, LIVE_URL } from './live.js';
@@ -290,7 +290,10 @@ const ttsBenched = new Map(); // model → time it may be tried again (per Worke
  *  GET  /api/forum?topic=&before=   list threads     GET  /api/forum/:id          thread + replies
  *  POST /api/forum                  new thread       POST /api/forum/:id/reply    reply
   *  POST /api/forum/delete {kind,id,token|mod}        author deletes own post; a moderator deletes any post
- *  POST /api/forum/mod {password}                    moderator login → {token, exp} */
+ *  POST /api/forum/mod {password}                    moderator login → {token, exp}
+ *  POST /api/forum/report {kind,id,reason,note}      anyone reports a post to the moderator
+ *  POST /api/forum/reports {mod}                     moderator: open reports
+ *  POST /api/forum/dismiss {id,mod}                  moderator: close a report without deleting the post */
 async function forum(request, env, url) {
   const db = env.FORUM.get(env.FORUM.idFromName('global'));
   const ip = request.headers.get('cf-connecting-ip') || 'unknown';
@@ -310,6 +313,11 @@ async function forum(request, env, url) {
       await db.loginOk(ip);
       const exp = Date.now() + MOD_TTL;
       return json({ token: await signMod(env.MODERATOR_PASSWORD, exp), exp });
+    }
+    if (id === 'report') return json(await db.report(body, ip));
+    if (id === 'reports' || id === 'dismiss') {
+      if (!(await verifyMod(env.MODERATOR_PASSWORD, body.mod))) return json({ error: 'Phiên giảng viên đã hết hạn. Hãy nhập lại mật khẩu.', modExpired: true }, 403);
+      return json(id === 'reports' ? { reports: await db.reports() } : await db.dismiss(body.id));
     }
     if (id === 'delete') {
       const mod = body.mod ? await verifyMod(env.MODERATOR_PASSWORD, body.mod) : false;
@@ -333,7 +341,8 @@ export class Forum extends DurableObject {
     this.ips = new Map();
     this.sql.exec(`CREATE TABLE IF NOT EXISTS threads (id INTEGER PRIMARY KEY AUTOINCREMENT, title TEXT, body TEXT, author TEXT, topic TEXT, created INTEGER, last INTEGER, replies INTEGER DEFAULT 0, token TEXT);
       CREATE TABLE IF NOT EXISTS replies (id INTEGER PRIMARY KEY AUTOINCREMENT, thread INTEGER, body TEXT, author TEXT, created INTEGER, token TEXT);
-      CREATE INDEX IF NOT EXISTS replies_thread ON replies(thread);`);
+      CREATE INDEX IF NOT EXISTS replies_thread ON replies(thread);
+      CREATE TABLE IF NOT EXISTS reports (id INTEGER PRIMARY KEY AUTOINCREMENT, kind TEXT, target INTEGER, thread INTEGER, reason TEXT, note TEXT, created INTEGER, who TEXT);`);
   }
 
   throttle(ip) {
@@ -376,6 +385,28 @@ export class Forum extends DurableObject {
     return { id: rid, token };
   }
 
+  /** A report on a thread or reply, kept until a moderator deletes the post or dismisses it. One per person per post. */
+  async report(p, ip) {
+    const v = validateReport(p);
+    const [row] = v.kind === 'reply'
+      ? this.sql.exec('SELECT thread FROM replies WHERE id = ?', v.id).toArray()
+      : this.sql.exec('SELECT id AS thread FROM threads WHERE id = ?', v.id).toArray();
+    if (!row) throw new Error('Bài viết không còn tồn tại.');
+    const who = await sha(`report:${ip}`);
+    if (this.sql.exec('SELECT 1 FROM reports WHERE kind = ? AND target = ? AND who = ?', v.kind, v.id, who).toArray().length) return { ok: true };
+    this.throttle(`report:${ip}`); // own budget: having just posted must not block a report
+    this.sql.exec('INSERT INTO reports (kind, target, thread, reason, note, created, who) VALUES (?, ?, ?, ?, ?, ?, ?)', v.kind, v.id, row.thread, v.reason, v.note, Date.now(), who);
+    return { ok: true };
+  }
+
+  reports() {
+    return this.sql.exec(`SELECT r.id, r.kind, r.target, r.thread, r.reason, r.note, r.created, t.title,
+      substr(CASE r.kind WHEN 'reply' THEN (SELECT body FROM replies WHERE id = r.target) ELSE t.body END, 1, 200) AS preview
+      FROM reports r JOIN threads t ON t.id = r.thread ORDER BY r.created LIMIT 200`).toArray();
+  }
+
+  dismiss(id) { this.sql.exec('DELETE FROM reports WHERE id = ?', Number(id)); return { ok: true }; }
+
   // Wrong moderator passwords: 5 tries per IP per 15 minutes, then wait (stops guessing the password).
   guardLogin(ip) {
     const now = Date.now(), tries = (this.logins?.get(ip) || []).filter((t) => now - t < 15 * 60_000);
@@ -392,8 +423,13 @@ export class Forum extends DurableObject {
     const [row] = this.sql.exec(`SELECT id, ${kind === 'reply' ? 'thread' : 'id AS thread'} FROM ${table} WHERE id = ?${mod ? '' : ' AND token = ?'}`, ...(mod ? [Number(id)] : [Number(id), hash])).toArray();
     if (!row) throw new Error(mod ? 'Bài viết không còn tồn tại.' : 'Bạn chỉ xoá được bài của chính mình.');
     this.sql.exec(`DELETE FROM ${table} WHERE id = ?`, Number(id));
-    if (kind === 'reply') this.sql.exec('UPDATE threads SET replies = replies - 1 WHERE id = ?', row.thread);
-    else this.sql.exec('DELETE FROM replies WHERE thread = ?', Number(id));
+    if (kind === 'reply') {
+      this.sql.exec('UPDATE threads SET replies = replies - 1 WHERE id = ?', row.thread);
+      this.sql.exec("DELETE FROM reports WHERE kind = 'reply' AND target = ?", Number(id));
+    } else {
+      this.sql.exec('DELETE FROM replies WHERE thread = ?', Number(id));
+      this.sql.exec('DELETE FROM reports WHERE thread = ?', Number(id));
+    }
     return { ok: true };
   }
 }

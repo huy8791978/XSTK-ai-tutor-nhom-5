@@ -38,6 +38,12 @@
         ],
         "createdAt": "2026-10-19T11:26:49.036Z",
         "reason": "Claude: decision-round sketch, not shipped UI; written before DESIGN.md existed"
+      },
+      {
+        "rule": "design-system-font",
+        "value": "consolas",
+        "createdAt": "2026-11-15T09:31:31.060Z",
+        "reason": "Claude: monospace for the LaTeX source line inside exported Word/PDF files (code, not UI text)"
       }
     ]
   }

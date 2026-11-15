@@ -2,6 +2,9 @@
 import { md, typeset } from './md.js';
 import { getLang } from './i18n.js';
 
+/** Scroll behaviour that honours «reduce motion»: CSS can turn off transitions, not a scroll started from JS. */
+export const smooth = () => (typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth');
+
 /** h('div.class', {attrs}, ...children) */
 export function h(sel, attrs = {}, ...kids) {
   const [tag, ...cls] = sel.split('.');
@@ -79,7 +82,7 @@ export async function run(btn, out, fn, loadingText) {
   const label = btn.textContent;
   btn.disabled = true; btn.setAttribute('aria-busy', 'true');
   out.replaceChildren(loading(loadingText));
-  out.scrollIntoView?.({ block: 'nearest', behavior: 'smooth' });
+  out.scrollIntoView?.({ block: 'nearest', behavior: smooth() });
   try {
     const node = await fn();
     out.replaceChildren(...nodes(node));

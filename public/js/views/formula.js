@@ -12,6 +12,8 @@ import { getLang } from '../i18n.js';
 import { liveSession, canLive } from '../live.js';
 import { liveThread } from '../livethread.js';
 import { boardToggle } from '../board.js';
+import { collectFormulas, downloadWord, printPdf } from '../export.js';
+import { tr } from '../i18n.js';
 
 export const meta = { title: 'Hỏi đáp công thức', lede: 'Đọc một công thức bằng lời, gia sư viết nó ra đầy đủ và đọc lại rõ từng kí hiệu.\nHoặc gửi file Word, PDF, ảnh có công thức để nghe đọc đầy đủ mọi công thức trong đó.' };
 
@@ -100,7 +102,7 @@ export function render(root) {
     setState('thinking');
     run(bRead, slot, async () => {
       const d = await ai('mathNotes', { kind, text: text.slice(0, MAX_TEXT) });
-      const msg = h('div.msg.ai', {}, d.math ? rich(d.math) : null, d.speech ? h('p.muted', {}, d.speech) : null);
+      const msg = h('div.msg.ai', {}, d.math ? rich(d.math) : null); // only the formula on screen; its reading is spoken
       if (d.speech) stopReading = speakAll(d.speech, { onStart: () => setState('speaking'), onEnd: () => { stopReading = null; setState('idle'); } });
       else setState('idle');
       return msg;
@@ -169,9 +171,17 @@ export function render(root) {
     }, 'Đang đọc tệp…');
   };
 
+  // Save the formulas read so far: Word (real equations) or a print page for «Save as PDF». Made in the browser.
+  const exportAs = (fn) => {
+    try { fn(collectFormulas(thread), tr('Công thức đã đọc · AI Classroom')); } catch (e) { toast(tr(e.message)); }
+  };
+  const exportBar = h('div.btn-row.export-bar', { role: 'group', 'aria-label': 'Tải công thức về máy' },
+    h('button.btn', { type: 'button', onclick: () => exportAs(downloadWord) }, icon('file'), h('span', {}, 'Tải Word (.doc)')),
+    h('button.btn', { type: 'button', onclick: () => exportAs(printPdf) }, icon('file'), h('span', {}, 'Xuất PDF')),
+    h('small.muted', {}, 'Tải về mọi công thức gia sư đã viết ở trên. PDF: chọn «Lưu thành PDF» trong hộp thoại in.'));
   const stage = h('section.panel.voice-stage', {}, genderToggle, face, status, h('div.btn-row', { style: 'justify-content:center' }, bLive, bStop));
   root.append(stage,
-    h('div', { style: 'max-width:900px;margin-top:20px' }, thread,
+    h('div', { style: 'max-width:900px;margin-top:20px' }, thread, exportBar,
       h('section.panel.compose-box', { 'aria-label': 'Công thức' }, field, h('div.btn-row', { style: 'margin-top:10px' }, bRead, board.btn), board.wrap, boardOut),
       h('section.panel.compose-box.stack', { 'aria-label': 'Tệp có công thức' }, up.el, h('div.btn-row', {}, bFile), fileOut)));
 }

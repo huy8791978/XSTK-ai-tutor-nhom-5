@@ -5,6 +5,8 @@ import { h, icon, toast, rich } from './ui.js';
 import { readFiles } from './files.js';
 import { readAloud, stopSpeaking } from './voice.js';
 import { ai } from './api.js';
+import { canCamera, captureDialog } from './camera.js';
+import { slotsLeft } from './camera-math.js';
 
 export const ACCEPT = 'image/*,application/pdf,.docx,application/vnd.openxmlformats-officedocument.wordprocessingml.document';
 
@@ -95,7 +97,11 @@ export function uploader({ title = 'Chọn ảnh, PDF hoặc Word', hint = 'Tố
     if (known) el.append(preview(known));
     return el;
   };
-  const paint = () => chips.replaceChildren(...items.map(chip));
+  const paint = () => {
+    chips.replaceChildren(...items.map(chip));
+    const full = slotsLeft(items.length) === 0;
+    cam.disabled = full; full ? cam.setAttribute('title', 'Đã đủ 3 tệp.') : cam.removeAttribute('title');
+  };
   async function add(list) {
     try {
       const next = await readFiles([...list]);
@@ -105,11 +111,36 @@ export function uploader({ title = 'Chọn ảnh, PDF hoặc Word', hint = 'Tố
       return true;
     } catch (e) { toast(e.message); return false; } finally { input.value = ''; }
   }
+  // Camera: in-page capture when possible; the phone's own camera app (hidden capture input) when the page may not use it.
+  const shot = h('input', { type: 'file', accept: 'image/*', capture: 'environment', hidden: true });
+  shot.addEventListener('change', async () => { await add(shot.files); shot.value = ''; });
+  const cam = h('button.btn.btn-outline.cam-btn', { type: 'button' }, icon('camera'), h('span', {}, 'Chụp bằng camera'));
+  let preferNative = false; // set when the page camera failed after the tap's activation expired
+  cam.onclick = async () => {
+    if (preferNative) { preferNative = false; return shot.click(); }
+    if (canCamera()) {
+      try {
+        const files = await captureDialog({ max: slotsLeft(items.length) });
+        if (files.length) add(files);
+        return;
+      } catch (e) {
+        const known = ['NotAllowedError', 'NotFoundError', 'NotReadableError'].includes(e?.name);
+        // The file picker needs a fresh tap: after a slow permission prompt the old one has expired.
+        if (navigator.userActivation && !navigator.userActivation.isActive) {
+          preferNative = true;
+          return toast('Không mở được camera trong trang. Bấm lại nút để mở ứng dụng camera của máy.');
+        }
+        if (known) toast('Không mở được camera trong trang, chuyển sang ứng dụng camera của máy.');
+      }
+    }
+    shot.click();
+  };
   input.addEventListener('change', () => add(input.files));
   drop.addEventListener('dragover', (e) => { e.preventDefault(); drop.classList.add('over'); });
   drop.addEventListener('dragleave', () => drop.classList.remove('over'));
   drop.addEventListener('drop', (e) => { e.preventDefault(); drop.classList.remove('over'); add(e.dataTransfer.files); });
-  const el = h('div', {}, drop, chips);
+  const el = h('div', {}, drop, cam, shot, chips);
+  paint();
   const me = { el, add, priority: pastePriority, scope: () => (typeof scope === 'function' ? scope() : scope) || el };
   live.add(me);
   return {

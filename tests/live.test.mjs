@@ -165,3 +165,11 @@ test('Live waits longer for the end of speech on the formula page', () => {
   assert.equal(vad('voice').silenceDurationMs, 1200);
   assert.equal(vad('formula').endOfSpeechSensitivity, 'END_SENSITIVITY_LOW');
 });
+
+test('Formula page voice reads only the full formula: no meaning, no remarks, no follow-up question', () => {
+  const sys = (lang) => liveSetup('m', { mode: 'formula', lang }).setup.systemInstruction.parts[0].text;
+  assert.ok(sys('vi').includes('CHỈ đọc') && sys('vi').includes('KHÔNG nói thêm'));
+  assert.ok(!/ý nghĩa|khi nào dùng|hỏi lại|nói rõ phần nào/.test(sys('vi')));
+  assert.ok(sys('en').includes('ONLY read') && sys('en').includes('nothing else'));
+  assert.ok(!/what it means|when to use|ask one short question|say which part/.test(sys('en')));
+});

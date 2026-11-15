@@ -1,5 +1,5 @@
 // Theory lessons: concepts and theorems, each taught Trải nghiệm → Hình thành → Củng cố → Vận dụng.
-import { h, rich, list, run, toast, detents, STAGES, nodes } from '../ui.js';
+import { h, smooth, rich, list, run, toast, detents, STAGES, nodes } from '../ui.js';
 import { ai } from '../api.js';
 import { mathField } from '../mathinput.js';
 import { chart } from '../viz.js';
@@ -90,7 +90,7 @@ function lesson(kind, K, d, topicName) {
       h('div.stage-nav', {},
         cur > 0 ? h('button.btn.btn-ghost', { type: 'button', onclick: () => go(cur - 1) }, `← ${K.stages[cur - 1]}`) : h('span'),
         cur < 3 ? h('button.btn.btn-primary', { type: 'button', onclick: () => go(cur + 1) }, `Tiếp: ${K.stages[cur + 1]} →`) : null));
-    rail.scrollIntoView?.({ block: 'nearest', behavior: 'smooth' });
+    rail.scrollIntoView?.({ block: 'nearest', behavior: smooth() });
   };
   go(0);
   return h('div', {}, h('h2', { style: 'font:800 32px/1.05 var(--display);margin-bottom:14px' }, d.name || ''), rail, stage);

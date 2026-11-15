@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Điều khoản sử dụng · AI Classroom</title>
 <meta name="theme-color" content="#1B2A8C">
+<script>/* Same theme and language as the app, set before first paint. */try{var t=localStorage.getItem('xstk.theme');document.documentElement.dataset.theme=t==='dark'||t==='light'?t:(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');if(localStorage.getItem('xstk.lang')==='en')document.documentElement.lang='en'}catch(e){}</script>
 <link rel="icon" href="favicon.svg" type="image/svg+xml">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -15,12 +16,16 @@
 <!--
   BẢN NHÁP ngày 03/11/2026. Cần người có chuyên môn pháp lý xem lại trước khi đăng chính thức.
   Căn cứ tham khảo: Luật An ninh mạng 116/2025/QH15 (Điều 7, Điều 25 khoản 2), Luật Trí tuệ nhân tạo 134/2025/QH15 (Điều 11).
-  Còn phải điền: tên nhóm/đơn vị và email ở mục 1 và 8.
+  Còn phải điền: tên nhóm/đơn vị và email ở mục 1 và 8 (cả bản tiếng Việt và tiếng Anh).
+  Bản tiếng Anh là bản dịch đầy đủ, từng mục khớp bản tiếng Việt; khi sửa một bản, sửa cả bản kia.
 -->
 <main class="policy">
-  <p><a href="./">← Về AI Classroom</a> · <a href="chinh-sach.html">Chính sách dữ liệu</a> · <a href="#en" lang="en">English</a></p>
+  <p class="doc-nav"><span data-doc="vi"><a href="./">← Về AI Classroom</a> · <a href="chinh-sach.html">Chính sách dữ liệu</a></span><span data-doc="en" lang="en" hidden><a href="./">← Back to AI Classroom</a> · <a href="chinh-sach.html">Data policy</a></span>
+    <button type="button" class="btn btn-ghost doc-lang" data-doc-lang>EN</button></p>
+
+  <div data-doc="vi">
   <h1>Điều khoản sử dụng</h1>
-  <p class="muted">Cập nhật lần cuối: 03/11/2026 · Phiên bản 1.0</p>
+  <p class="muted">Cập nhật lần cuối: 15/11/2026</p>
 
   <h2>1. Về AI Classroom</h2>
   <p>AI Classroom là gia sư AI môn Xác suất Thống kê do [ĐIỀN: tên nhóm / đơn vị] làm. Đây là dự án phi lợi nhuận: miễn phí, không thu tiền, không bán hàng, không quảng cáo. Vì không thu phí nên không có chính sách hoàn tiền.</p>
@@ -29,6 +34,7 @@
   <ul>
     <li>Gợi ý, lời giải, điểm và câu trả lời trên trang do AI tạo ra và có thể sai. Hãy đối chiếu với giáo trình hoặc hỏi giảng viên.</li>
     <li>Điểm do AI chấm chỉ để bạn tự luyện, không phải điểm chính thức của môn học.</li>
+    <li>Các công cụ tính (Bảng tra, Kiểm định, Ước lượng, Máy tính phân phối, Thống kê mô tả) tính bằng máy theo công thức trong slide bài giảng, không dùng AI. Kết quả có thể lệch ở chữ số cuối so với bảng in do cách làm tròn.</li>
     <li>AI Classroom hỗ trợ việc học, không thay thế giảng viên.</li>
   </ul>
 
@@ -44,6 +50,7 @@
     <li>Bài đăng công khai, ai cũng đọc được.</li>
     <li>Không đăng thông tin cá nhân của bạn hay của người khác (họ tên đầy đủ, mã số sinh viên, số điện thoại, địa chỉ).</li>
     <li>Không đăng nội dung bị pháp luật cấm, nội dung xúc phạm, quấy rối, quảng cáo hay lừa đảo.</li>
+    <li>Thấy bài vi phạm, bấm «Báo cáo bài vi phạm» dưới bài đó. Chỉ báo cáo khi bài thật sự vi phạm.</li>
     <li>Giảng viên kiểm duyệt có quyền xoá bài vi phạm mà không cần báo trước. Bài vi phạm được gỡ trong 24 giờ kể từ khi có yêu cầu hợp lệ, và trong 6 giờ với trường hợp khẩn cấp.</li>
     <li>Bạn giữ quyền với bài viết của mình và đồng ý cho trang hiển thị công khai bài đó cho tới khi bạn hoặc giảng viên xoá.</li>
   </ul>
@@ -58,7 +65,7 @@
     <li>Thư viện KaTeX (hiển thị công thức), MathLive (bàn phím công thức) và Markmap (bản đồ tư duy), tải qua jsDelivr, dùng giấy phép MIT.</li>
     <li>Bản đồ toàn môn tóm tắt kiến thức theo chương trình môn Xác suất Thống kê; công thức là kiến thức chung của môn học.</li>
     <li>Nội dung, lời giải và giọng đọc do AI tạo ra khi bạn sử dụng (Google Gemini hoặc giọng đọc của trình duyệt).</li>
-    <li>Ảnh, tệp và bài viết bạn đưa lên vẫn thuộc về bạn.</li>
+    <li>Ảnh, tệp và bài viết bạn đưa lên vẫn thuộc về bạn. Tệp Word, PDF công thức bạn tải về từ trang là của bạn để học tập.</li>
   </ul>
 
   <h2>7. Dữ liệu cá nhân</h2>
@@ -66,20 +73,79 @@
 
   <h2>8. Liên hệ và thay đổi</h2>
   <p>Mọi câu hỏi, góp ý hay báo lỗi gửi tới [ĐIỀN: email]. Khi thay đổi điều khoản, chúng tôi cập nhật trang này và ghi ngày cập nhật. Điều khoản này áp dụng theo pháp luật Việt Nam.</p>
+  </div>
 
-  <hr>
-  <section id="en" lang="en">
-    <h2>Terms of use (summary in English)</h2>
-    <ul>
-      <li>AI Classroom is a free, non-profit project by [FILL IN: group / organisation]. Nothing is sold, so there is no refund policy.</li>
-      <li>Hints, solutions, grades and answers are AI-generated and may be wrong. AI grades are for self-practice only, not official marks.</li>
-      <li>No images, audio or video from other sources: icons and pictures are drawn in code. Fonts (Barlow Condensed, Be Vietnam Pro) use the SIL Open Font License 1.1; KaTeX, MathLive and Markmap use the MIT license.</li>
-      <li>Use the site to learn, not to cheat in exams. Respect the per-minute AI limit. Only upload what you are allowed to share.</li>
-      <li>Forum posts are public. Do not post personal data, illegal, abusive or advertising content. Moderators may delete posts that break these rules.</li>
-      <li>The site may be slow or unavailable. Export your learning profile to keep a copy.</li>
-      <li>Contact: [FILL IN: email]. These terms are governed by Vietnamese law.</li>
-    </ul>
-  </section>
+  <div data-doc="en" lang="en" hidden>
+  <h1>Terms of use</h1>
+  <p class="muted">Last updated: 15/11/2026</p>
+
+  <h2>1. About AI Classroom</h2>
+  <p>AI Classroom is an AI tutor for Probability &amp; Statistics made by [FILL IN: group / organisation]. It is a non-profit project: free, no fees, nothing for sale, no advertising. As nothing is charged, there is no refund policy.</p>
+
+  <h2>2. The AI can be wrong</h2>
+  <ul>
+    <li>Hints, solutions, grades and answers on the site are generated by AI and may be wrong. Check them against your course materials or ask your lecturer.</li>
+    <li>AI grades are for your own practice only, not official course marks.</li>
+    <li>The calculation tools (Tables, Hypothesis testing, Interval estimation, Distribution calculator, Descriptive statistics) compute with the formulas of the lecture slides, without AI. Results may differ from printed tables in the last digit because of rounding.</li>
+    <li>AI Classroom supports your learning; it does not replace your lecturer.</li>
+  </ul>
+
+  <h2>3. Fair use</h2>
+  <ul>
+    <li>Use the site to learn. Do not use it to cheat in exams or tests.</li>
+    <li>Each user has a per-minute limit on AI requests so the site works for everyone. Do not try to get around it.</li>
+    <li>Do not upload content that is not yours or that you may not share.</li>
+  </ul>
+
+  <h2>4. Forum rules</h2>
+  <ul>
+    <li>Posts are public: anyone can read them.</li>
+    <li>Do not post your own or anyone else's personal information (full name, student ID, phone number, address).</li>
+    <li>Do not post content that is illegal, insulting, harassing, advertising or fraudulent.</li>
+    <li>If you see a violating post, press «Report this post» under it. Report only posts that really break the rules.</li>
+    <li>Moderating lecturers may delete violating posts without notice. Violating posts are removed within 24 hours of a valid request, and within 6 hours in urgent cases.</li>
+    <li>You keep the rights to your posts and allow the site to show them publicly until you or a lecturer delete them.</li>
+  </ul>
+
+  <h2>5. The site may be interrupted</h2>
+  <p>The site runs on free or low-cost services, so it may at times be slow, run out of AI quota or stop for a while. We do not guarantee that it is always available and are not responsible for losing data kept in your browser. Use the «Export profile» button to back up your learning profile.</p>
+
+  <h2>6. Resources and copyright</h2>
+  <ul>
+    <li>The site uses no images, audio or video from other sources. Icons, illustrations, the security guilloche and the charts are drawn by the team in code (SVG, canvas). Notification sounds are generated in code by the browser.</li>
+    <li>The Barlow Condensed and Be Vietnam Pro fonts come from Google Fonts under the SIL Open Font License 1.1.</li>
+    <li>The KaTeX (formula display), MathLive (formula keyboard) and Markmap (mind map) libraries, loaded through jsDelivr, are under the MIT license.</li>
+    <li>The course map summarises the Probability &amp; Statistics syllabus; the formulas are the common knowledge of the subject.</li>
+    <li>Content, solutions and spoken readings are generated by AI when you use the site (Google Gemini or your browser's voice).</li>
+    <li>Photos, files and posts you upload remain yours. Word and PDF formula files you download from the site are yours to study with.</li>
+  </ul>
+
+  <h2>7. Personal data</h2>
+  <p>How the site handles your data is set out in the <a href="chinh-sach.html">Data policy</a>.</p>
+
+  <h2>8. Contact and changes</h2>
+  <p>Send questions, feedback or bug reports to [FILL IN: email]. When we change these terms, we update this page and its date. These terms are governed by Vietnamese law.</p>
+  <p class="muted">If the two versions differ, the Vietnamese version prevails.</p>
+  </div>
 </main>
+<script>
+  // VI / EN: the same choice as the app (xstk.lang), switched in place.
+  const lang = () => { try { return localStorage.getItem('xstk.lang') === 'en' ? 'en' : 'vi'; } catch { return 'vi'; } };
+  const TITLE = { vi: 'Điều khoản sử dụng · AI Classroom', en: 'Terms of use · AI Classroom' };
+  function show(l) {
+    document.querySelectorAll('[data-doc]').forEach((el) => { el.hidden = el.dataset.doc !== l; });
+    document.documentElement.lang = l; document.title = TITLE[l];
+    const b = document.querySelector('[data-doc-lang]');
+    b.textContent = l === 'en' ? 'VI' : 'EN';
+    b.setAttribute('lang', l === 'en' ? 'vi' : 'en');
+    b.setAttribute('aria-label', l === 'en' ? 'Xem bản tiếng Việt' : 'Read in English');
+  }
+  document.querySelector('[data-doc-lang]').addEventListener('click', () => {
+    const l = lang() === 'en' ? 'vi' : 'en';
+    try { localStorage.setItem('xstk.lang', l); } catch { /* private mode: this visit only */ }
+    show(l);
+  });
+  show(lang());
+</script>
 </body>
 </html>

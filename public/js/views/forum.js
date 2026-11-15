@@ -74,6 +74,51 @@ function delButton(kind, pid, done) {
 }
 const canDelete = (kind, pid) => Boolean(tokenOf(kind, pid)) || isMod();
 
+// Reasons as the server lists them (worker/forum.js REPORT_REASONS).
+const REASONS = ['Thông tin cá nhân', 'Quấy rối, xúc phạm', 'Quảng cáo, spam', 'Nội dung sai lệch, vi phạm pháp luật', 'Lí do khác'];
+/** «Báo cáo» under a post: pick a reason, send it to the moderator. Not shown on your own posts. */
+function reportBox(kind, pid) {
+  if (tokenOf(kind, pid)) return null;
+  const sel = h('select', { id: `rp-${kind}-${pid}` }, REASONS.map((r) => h('option', {}, r)));
+  const note = h('input', { type: 'text', id: `rn-${kind}-${pid}`, maxlength: 300, placeholder: 'Ghi chú thêm (tuỳ chọn)' });
+  const msg = h('div');
+  const bSend = h('button.btn.btn-danger', { type: 'button' }, 'Gửi báo cáo');
+  const box = h('details.report', {}, h('summary', {}, 'Báo cáo bài vi phạm'),
+    h('div.report-form', {}, h('label.field', { for: sel.id }, h('span', {}, 'Lí do'), sel), h('label.field', { for: note.id }, h('span', {}, 'Ghi chú'), note), h('div.btn-row', {}, bSend)), msg);
+  bSend.onclick = () => run(bSend, msg, async () => {
+    await api('/report', { kind, id: pid, reason: sel.value, note: note.value });
+    box.open = false;
+    toast('Đã gửi báo cáo tới giảng viên kiểm duyệt. Cảm ơn bạn.');
+    return h('p.muted', { style: 'margin-top:8px' }, 'Đã gửi báo cáo.');
+  }, 'Đang gửi…');
+  return box;
+}
+
+/** Moderator only: open reports, each with «Xem bài», «Xoá bài» and «Bỏ qua». */
+function reportsPanel() {
+  const out = h('div');
+  const load = () => run(bLoad, out, async () => {
+    let d;
+    try { d = await api('/reports', { mod: modToken() }); } catch (e) { if (e.modExpired) clearMod(); throw e; }
+    if (!d.reports.length) return h('p.muted', {}, 'Không có báo cáo nào đang chờ xử lí.');
+    return h('div.board', {}, d.reports.map((r) => h('div.row.report-row', {},
+      h('b', {}, r.kind === 'reply' ? 'Trả lời' : 'Bài viết'),
+      h('span', {}, h('strong', {}, r.reason), r.note ? h('span.muted', {}, ` · ${r.note}`) : null, h('br'),
+        h('a', { href: `#dien-dan?id=${r.thread}` }, r.title), h('small.muted', {}, ` · ${when(r.created)}`),
+        h('span.report-preview', {}, r.preview || '')),
+      h('span.btn-row', {},
+        delButton(r.kind, r.target, () => load()),
+        h('button.btn.btn-ghost', { type: 'button', onclick: async () => {
+          try { await api('/dismiss', { id: r.id, mod: modToken() }); toast('Đã bỏ qua báo cáo.'); load(); } catch (e) { if (e.modExpired) clearMod(); toast(e.message); }
+        } }, 'Bỏ qua')))));
+  }, 'Đang tải báo cáo…');
+  const bLoad = h('button.btn.btn-ghost', { type: 'button', onclick: () => load() }, 'Tải lại');
+  load();
+  return h('section.panel', { style: 'margin-bottom:20px', 'aria-label': 'Báo cáo vi phạm' },
+    h('div.field-head', {}, h('h2', {}, 'Báo cáo vi phạm đang chờ'), bLoad),
+    h('p.muted', {}, 'Xử lí trong 24 giờ (6 giờ nếu khẩn cấp). Xoá bài sẽ đóng mọi báo cáo về bài đó.'), out);
+}
+
 export function render(root) {
   const id = new URLSearchParams(location.hash.split('?')[1] || '').get('id');
   const again = () => { root.replaceChildren(); render(root); };
@@ -128,7 +173,7 @@ function index(root) {
     return [];
   }, 'Đang đăng…');
 
-  root.append(h('div.toolbar', {}, h('label.field', { for: filter.id }, h('span', {}, 'Lọc theo chủ đề'), filter), h('div.btn-row', {}, bNew, bReload)), form, h('div', { style: 'margin-top:20px' }, listBox));
+  root.append(isMod() ? reportsPanel() : '', h('div.toolbar', {}, h('label.field', { for: filter.id }, h('span', {}, 'Lọc theo chủ đề'), filter), h('div.btn-row', {}, bNew, bReload)), form, h('div', { style: 'margin-top:20px' }, listBox));
   load();
 }
 
@@ -146,11 +191,11 @@ function thread(root, id) {
         h('div.tags', {}, h('span.tag.topic', {}, t.topic)),
         h('h2', { style: 'margin:10px 0 4px;font-size:30px' }, t.title),
         h('p.muted', { style: 'font-size:13.5px;margin-bottom:12px' }, `${t.author} · ${when(t.created)}`),
-        rich(t.body, 'div', true), canDelete('thread', t.id) ? h('div.btn-row', { style: 'margin-top:12px' }, del('thread', t.id)) : null),
+        rich(t.body, 'div', true), canDelete('thread', t.id) ? h('div.btn-row', { style: 'margin-top:12px' }, del('thread', t.id)) : null, reportBox('thread', t.id)),
       h('h3', {}, `${replies.length} trả lời`),
       ...replies.map((r) => h('article.panel.reply', {},
         h('p.muted', { style: 'font-size:13.5px;margin-bottom:6px' }, `${r.author} · ${when(r.created)}`), rich(r.body, 'div', true),
-        canDelete('reply', r.id) ? h('div.btn-row', { style: 'margin-top:8px' }, del('reply', r.id)) : null)));
+        canDelete('reply', r.id) ? h('div.btn-row', { style: 'margin-top:8px' }, del('reply', r.id)) : null, reportBox('reply', r.id))));
   }, 'Đang tải bài viết…');
   bReply.onclick = () => run(bReply, msg, async () => {
     store.set(NAME_KEY, name.input.value.trim());

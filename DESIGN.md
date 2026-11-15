@@ -4,6 +4,9 @@ description: Gia sư Xác suất Thống kê printed in the visual language of x
 colors:
   ultra: "#1B2A8C"
   ultra-2: "#2637A8"
+  ultra-deep: "#121D66"
+  ultra-fill: "#1B2A8C"
+  rail: "#1B2A8C"
   ultra-ink: "#EEF1FF"
   ultra-dim: "#AEB9F2"
   ultra-wash: "#E9ECFA"
@@ -19,11 +22,15 @@ colors:
   ink: "#141833"
   ink-2: "#3E4570"
   ink-3: "#5A6185"
+  ink-fill: "#141833"
+  placeholder: "#6E7598"
   paper: "#F4F6FB"
   sheet: "#FFFFFF"
   rule: "#DCE1F2"
   rule-2: "#C2C9E6"
   row-rule: "#EEF0F8"
+  drop-border: "#8E99D3"
+  drop-bg: "#FAFBFE"
 typography:
   display:
     fontFamily: "Barlow Condensed, Arial Narrow, sans-serif"
@@ -148,6 +155,25 @@ components:
   result-row-value:
     textColor: "{colors.ink}"
     typography: "{typography.numeral}"
+  stepper-key:
+    backgroundColor: "{colors.sheet}"
+    textColor: "{colors.ultra}"
+    typography: "{typography.numeral}"
+    width: "44px"
+    height: "44px"
+  stepper-value:
+    backgroundColor: "{colors.sheet}"
+    textColor: "{colors.ink}"
+    width: "64px"
+    height: "44px"
+  data-row-delete-hover:
+    backgroundColor: "{colors.red-wash}"
+    textColor: "{colors.red-ink}"
+    width: "44px"
+  lookup-cell-hit:
+    backgroundColor: "{colors.gold-wash}"
+    textColor: "{colors.gold-ink}"
+    typography: "{typography.numeral}"
 ---
 
 # Design System: XSTK·AI
@@ -192,7 +218,9 @@ Four inks on cool paper, named after what they do on a printed ticket.
 - **Sheet White** (sheet): panels, inputs, buttons.
 - **Hairline** (rule): light dividers between steps and around inset blocks.
 - **Hairline Strong** (rule-2): panel borders, input borders, detent rail rules, chart axes, Galton pegs.
-- **Row Rule** (row-rule): the faint divider between result-board rows, mistakes and plan items (hard-coded in source, not yet a custom property).
+- **Row Rule** (row-rule): the faint divider between result-board rows, mistakes and plan items.
+- **Fill tokens** (ultra-fill, rail, ink-fill): the surfaces that carry white text (primary button and chosen chip, the rail and mobile top bar, toast and bubbles). In light they equal ultra and ink; they exist so the dark theme can keep them deep while ultra and ink turn light. **Deep Ultramarine** (ultra-deep) is the shadowed edge of the rail.
+- **Field neutrals** (placeholder, drop-border, drop-bg): placeholder text, the dashed drop-zone border and its faint fill.
 
 ### Named Rules
 **The Four Inks Rule.** Every mark is ultramarine, red, gold or green on paper, plus the ink neutrals. Charts, canvases and the mind map draw from the same inks; the mind map's branch palette is exactly ultra, red, green, gold-ink, cycled.
@@ -200,6 +228,15 @@ Four inks on cool paper, named after what they do on a printed ticket.
 **The Red Is Earned Rule.** Red marks a score or a mistake, never decoration or a generic call to action. The primary action is ultramarine.
 
 **The Gold Is Focus Rule.** Gold signals where you are (focus ring, current detent, selection) and what was printed (serials). Gold text on paper always uses gold-ink, never raw gold.
+
+### Dark theme
+The same four inks on a dark ground, for studying at night. `index.html` sets `data-theme` on `<html>` before the first paint: the student's choice (header moon/sun button, stored as `xstk.theme`), else the system's. Every colour is a token, so the dark set is only token values in `app.css`:
+- **Ground and surfaces:** paper #0D1029, sheet #151A3B, rule #262D5C, rule-2 #3A4280, row-rule #20264F.
+- **Text:** ink #E7EAFA, ink-2 #C3C9E8, ink-3 #A3AAD0.
+- **Inks lifted for a dark ground:** ultra #9AA8FF (text, lines, curves), red #FF5D72 / red-ink #FF9AA8, gold-ink #F5CD4A, green #2FC48D / green-ink #6EDDB3; washes darken (ultra-wash #1F2757, red-wash #3A1522, gold-wash #3A3010, green-wash #0F3328).
+- **Fills that carry white text keep their own tokens** so they stay deep enough: ultra-fill #3346C4 (primary button, chosen chip, own message), rail #141C5E (rail, mobile top bar, home hero), ink-fill #2B3266 (toast, bubbles).
+- **Textures:** the drop-zone waves sit just above the ground (#1E2550), never light lines on dark; the select chevron and ticket band take the light ultramarine.
+- Canvases (Galton board, 3D mind map) and the 2D mind map read the inks from CSS and repaint on `themechange`. The handwriting board stays white paper in both themes.
 
 ## Typography
 
@@ -230,7 +267,7 @@ A two-column shell: a sticky ultramarine rail (248px) and a fluid main column (p
 
 Spacing rhythm steps 6, 8, 10, 14, 18, 24px; panels pad clamp(18px, 2vw, 26px); stacks gap 18px. Practice is a one-question-per-frame horizontal pager with scroll snap and square numbered dots.
 
-Responsive: at 1100px the work columns stack. At 860px the rail becomes a fixed bottom tab bar of five short-labelled items (rosette at 35% opacity), the page title moves into a sticky ultramarine top bar, ledes hide, the detent rail goes to 2 columns and row label columns narrow to 84px. Safe-area insets are respected top and bottom.
+Responsive: at 1100px the work columns stack. At 860px the rail becomes a fixed bottom tab bar of short-labelled 68px items that scrolls sideways with snap (rosette at 35% opacity; group labels hide), the page title moves into a sticky ultramarine top bar, ledes hide, the detent rail goes to 2 columns and row label columns narrow to 84px. Safe-area insets are respected top and bottom.
 
 ## Elevation & Depth
 
@@ -278,8 +315,9 @@ Printed, firm, ultramarine-outlined.
 - **Drop zone:** 176px min, dashed border, wave-line security texture; hover/drag turns ultra-wash with an ultramarine border.
 
 ### Navigation
-- **Rail:** ultramarine, 248px, sticky full height; wordmark in 800 34px condensed with an uppercase tracked subtitle; five items with 20px stroke icons (1.7 stroke), 500 15px; hover is a 9% white wash; active item inverts to paper with ultramarine 600 text; the session serial ("SERI …") sits in gold at the foot.
-- **Mobile:** fixed bottom bar, five equal columns, icon over an 11px short label; title in a sticky ultramarine top bar.
+- **Rail:** ultramarine, 248px, sticky full height, scrolls when short; wordmark in 800 34px condensed with an uppercase tracked subtitle. Items sit in four groups under 700 11px tracked uppercase rail-dim labels (Học, Luyện, Hỏi, Theo dõi); each item has a 20px stroke icon (1.7 stroke) tinted by its group, 500 15px text; hover is a 9% white wash; active item inverts to paper with ultramarine 600 text and its icon takes the group ink; the session serial ("SERI …") sits in gold at the foot.
+- **Page header actions:** EN/VI language button (800 15px condensed) and the moon/sun theme button, both 44px.
+- **Mobile:** fixed bottom bar of 68px items scrolling sideways, icon over an 11px short label; title in a sticky ultramarine top bar.
 
 ### Result Board
 The prize-tier table that presents every outcome. Rows are a three-column grid (112px tier label, content, value) on baseline alignment, 12px vertical padding, separated by row-rule. The top-tier row centers, takes a rule-2 underline and carries the red odometer as its value. Used for grades, oral summaries, profile overview and the session log.
@@ -291,10 +329,19 @@ A graded result is printed like a lottery ticket: a 10px repeating double sine b
 Each digit is a 0-9 column that rolls to its value over 1.4s on the house ease (cubic-bezier(.16, 1, .3, 1)), staggered 120ms per digit, followed by a muted "/10". Red, display type; 40px variant in rows. Settles instantly under reduced motion. The loading indicator is its sibling: three digit columns stepping continuously in ultramarine.
 
 ### Detent Rail
-Four equal cells between two rule-2 hairlines; each cell is a 13px square plus a condensed ultramarine number and 600 13.5px label. Done fills ultramarine; current fills gold with an ink border and a gold outline ring; todo is outlined.
+Four equal cells between two rule-2 hairlines; each cell is a 13px square plus a condensed ultramarine number and 600 13.5px label. Done fills ultramarine; current fills gold with an ink border and a gold outline ring; todo is outlined. On the hypothesis-test page the cells are buttons: picking a step marks it done and highlights its result-board row in gold-wash.
 
 ### Guilloche Rosette
 Five layered hypotrochoids at 0.7px, alternating gold (22%) and ultra-dim (32%), slowly counter-rotating on the rail canvas; reseeded per section. Paused when the tab is hidden or motion is reduced.
+
+### Data Rows and Stepper
+Sample data is entered one value per row, never as a comma list in one box. Each row is a grid: a 28px condensed ink-3 index, the value field, a fused − n + stepper (44px keys, 64px value, shared 1.5px borders, only the outer corners rounded) for the frequency, and a 44px delete key that turns red-wash/red-ink on hover so it never reads as part of the stepper. Enter moves to the next row; a pasted list splits into rows. A freshly filled field flashes gold-wash with a gold border once. Below 420px the stepper narrows to 40/48/40px.
+
+### Lookup Table
+Statistical tables (Φ, Student, χ², Fisher) are a hairline grid: paper header row and first column in tracked 700 13px ink-3, values in 700 17px condensed tabular numerals right-aligned. The looked-up cell is gold-wash with gold-ink text and a 1.5px inset gold outline. A looked-up value in a tool's result board is ultramarine, not prize red.
+
+### Range Field
+Sliders use the native range input in ultramarine accent (32px tall) under a label row whose live value is an 800 20px ultramarine condensed numeral.
 
 ### Charts
 SVG and canvas illustrations in the four inks: ultramarine bars and curves on rule-2 axes, red for the highlighted region or the comparison, 600 11px ink-3 labels; bars grow from the baseline in 0.9s, curves draw on in 1.2s.
@@ -308,6 +355,7 @@ SVG and canvas illustrations in the four inks: ultramarine bars and curves on ru
 - **Do** use gold for focus (2px outline, 2px offset) and gold-ink for serial text.
 - **Do** keep charts, canvases and the mind map in the four inks (ultra, red, green, gold-ink).
 - **Do** make page titles uppercase condensed 800.
+- **Do** take sample data one value per row with a stepper for frequencies, not a comma list in one field.
 - **Do** honor reduced motion: odometer settles instantly, rosette stops, entrance animations collapse.
 
 ### Don't:

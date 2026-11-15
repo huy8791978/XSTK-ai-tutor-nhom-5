@@ -1,7 +1,7 @@
 // Task-based prompts: the browser never sends a raw prompt, so the key can't be used as a general chatbot.
 
 import { TOPICS, ERROR_TYPES, QUIZ_LEVELS, QUIZ_SIZE } from '../public/js/topics.js';
-import { SPOKEN_MATH } from './spoken.js';
+import { SPOKEN_MATH, SPOKEN_MATH_ONLY } from './spoken.js';
 
 export { TOPICS, ERROR_TYPES };
 const LIMITS = { text: 8000, files: 7, fileBytes: 14_000_000, history: 24 }; // files: 3 for the problem + 3 for the work + the iPad board
@@ -78,7 +78,9 @@ Trả JSON: {"topic": "<chủ đề>", "understand": "<bước 1, markdown>", "p
   }),
   practice: (p) => ({
     text: `Tạo đúng 5 bài ${p.kind === 'mcq' ? 'TRẮC NGHIỆM 4 phương án (chỉ 1 đúng)' : 'TỰ LUẬN'} mới, khác nhau, về chủ đề "${p.topic}", mức độ ${p.level || 'trung bình'}, gắn với tình huống thực tế Việt Nam khi có thể.${p.sample ? `
-Các bài phải TƯƠNG TỰ bài mẫu sau (cùng dạng, đổi số liệu và bối cảnh): ${p.sample}` : ''}${p.files?.length || p.docs?.length ? `
+Các bài phải TƯƠNG TỰ bài mẫu sau (cùng dạng, đổi số liệu và bối cảnh): ${p.sample}` : ''}${Array.isArray(p.focus) && p.focus.length ? `
+Đây là bài ÔN TẬP NGẮT QUÃNG. Tập trung vào các lỗi sinh viên này từng mắc ở chủ đề trên; mỗi bài nhắm tới ít nhất một lỗi, phương án nhiễu (nếu có) chính là các lỗi đó:
+${p.focus.map((f) => `- ${String(f).slice(0, 300)}`).join('\n').slice(0, 1500)}` : ''}${p.files?.length || p.docs?.length ? `
 Bài mẫu nằm trong tệp đính kèm (ảnh/PDF: hãy nhận dạng chữ OCR; Word: văn bản ở cuối). Các bài phải TƯƠNG TỰ bài mẫu đó (cùng dạng, đổi số liệu và bối cảnh); nếu tệp có nhiều bài, lấy đủ các dạng. Chủ đề khi đó theo bài mẫu.` : ''}
 Trả JSON: {"questions": [{"prompt": "...", ${p.kind === 'mcq' ? '"options": ["A","B","C","D"], "answer": <chỉ số 0-3>, ' : ''}"topic": "<chủ đề>", ${POLYA_Q}, "solution": "<lời giải chi tiết 4 bước Polya, markdown>", ${CASIO}, "viz": <viz hoặc null>}]}
 Mỗi câu đi kèm đủ 4 bước giải toán Polya để sinh viên tự củng cố. Bước 1, 2 và 4 là câu hỏi dẫn dắt, TUYỆT ĐỐI không lộ đáp số.`,
@@ -106,13 +108,14 @@ Trả JSON: {"understood": true|false, "reply": "<câu trả lời hiển thị,
       : `Văn bản lấy từ tệp của sinh viên (công thức trong $...$):\n${p.text || ''}`;
     const job = kind === 'turn' ? `Viết lại ĐẦY ĐỦ ở dạng LaTeX mọi công thức được nhắc tới trong lượt trao đổi trên, mỗi công thức trọn vẹn mọi vế (không thêm công thức không được nhắc); nếu có phép tính thì thêm cách bấm CASIO. Không có công thức thì "math": "". "speech": "".
 ${SPOKEN_MATH.vi}`
-      : kind === 'spoken' ? `Hiểu đúng công thức sinh viên muốn nói (chọn cách hiểu hợp lí nhất trong môn học) và viết TOÀN BỘ công thức ở dạng LaTeX chuẩn, đủ mọi vế; nếu sinh viên chỉ đọc một phần của một công thức đã biết thì viết đủ cả công thức và ghi «(phần bổ sung)» cạnh phần thêm vào. Rồi viết "speech": đọc lại ĐẦY ĐỦ công thức bằng lời và một câu ngắn về ý nghĩa.
-${SPOKEN_MATH.vi}`
-      : 'Liệt kê theo thứ tự MỌI công thức trong văn bản ở dạng LaTeX chuẩn (sửa lỗi nhận dạng rõ ràng), rồi viết "speech": đọc ĐẦY ĐỦ từng công thức bằng lời theo thứ tự, không bỏ sót, mỗi công thức một câu, kèm tên công thức nếu có.';
+      : kind === 'spoken' ? `Hiểu đúng công thức sinh viên muốn nói (chọn cách hiểu hợp lí nhất trong môn học) và viết TOÀN BỘ công thức ở dạng LaTeX chuẩn, đủ mọi vế; nếu sinh viên chỉ đọc một phần của một công thức đã biết thì vẫn viết đủ cả công thức.
+"math": CHỈ công thức đó trong $$...$$, không tên, không chú thích, không chữ nào khác. "speech": CHỈ đọc lại ĐẦY ĐỦ công thức bằng lời, KHÔNG nói thêm gì khác (không giải thích, không nhận xét, không chào, không hỏi lại).
+${SPOKEN_MATH_ONLY.vi}`
+      : 'Liệt kê theo thứ tự MỌI công thức trong văn bản ở dạng LaTeX chuẩn (sửa lỗi nhận dạng rõ ràng). "math": mỗi công thức một dòng $$...$$, không tên, không chú thích, không chữ nào khác. "speech": CHỈ đọc ĐẦY ĐỦ từng công thức bằng lời theo thứ tự, không bỏ sót, mỗi công thức một câu, KHÔNG nói thêm gì khác (không giải thích, không nhận xét, không chào).';
     return {
       text: `${src}\n\n${job}
 Trong "speech": tiếng Việt thuần (hoặc tiếng Anh khi được yêu cầu), KHÔNG LaTeX, KHÔNG kí hiệu; đọc kí hiệu bằng lời (ví dụ «P của A hợp B», «x gạch ngang», «căn bậc hai của n», «sigma bình phương»).
-Trả JSON: {"math": "<markdown: mỗi công thức một dòng, dạng **tên** (nếu có) rồi $$...$$>", "speech": "<đọc bằng lời>", ${CASIO}, "viz": <viz hoặc null>}`,
+Trả JSON: ${kind === 'turn' ? `{"math": "<markdown: mỗi công thức một dòng, có thể ghi tên in đậm trước $$...$$>", "speech": "<đọc bằng lời>", ${CASIO}, "viz": <viz hoặc null>}` : '{"math": "<mỗi công thức một dòng $$...$$, không có chữ nào khác>", "speech": "<chỉ lời đọc các công thức>"}'}`,
     };
   },
   // Mini-game: the whole 20-question set in one call, so play never waits on the AI.

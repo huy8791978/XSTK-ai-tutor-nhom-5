@@ -2,7 +2,7 @@
 import { parseCommand, quickCommand, bestMatch, needsConfirm } from './command.js';
 import { listen, canListen, micBusy, isSpeaking, stopSpeaking } from './voice.js';
 import { getLang, setLang, tr } from './i18n.js';
-import { h, icon } from './ui.js';
+import { h, smooth, icon } from './ui.js';
 
 const Rec = typeof window !== 'undefined' && (window.SpeechRecognition || window.webkitSpeechRecognition);
 const KEY = 'xstk.cmd.always';
@@ -39,7 +39,7 @@ export function initVoiceCommands() {
     .filter((el) => !el.disabled && visible(el));
   const labelOf = (el) => (el.getAttribute('aria-label') || el.textContent || el.value || el.title || '').replace(/\s+/g, ' ').trim();
   const flash = (el) => { el.classList.add('vc-flash'); setTimeout(() => el.classList.remove('vc-flash'), 900); };
-  const press = (el) => { el.scrollIntoView({ block: 'center', behavior: 'smooth' }); flash(el); el.click(); say(`✓ ${labelOf(el)}`, 'ok'); };
+  const press = (el) => { el.scrollIntoView({ block: 'center', behavior: smooth() }); flash(el); el.click(); say(`✓ ${labelOf(el)}`, 'ok'); };
 
   function fields() {
     return [...document.querySelectorAll('main input:not([type=hidden]):not([type=file]):not([type=checkbox]):not([type=radio]), main textarea, main select')].filter(visible).map((el) => {
@@ -63,9 +63,9 @@ export function initVoiceCommands() {
       case 'back': history.back(); say('✓ Quay lại', 'ok'); return;
       case 'forward': history.forward(); say('✓ Tiến tới', 'ok'); return;
       case 'scroll':
-        if (a.to === 'top') scrollTo({ top: 0, behavior: 'smooth' });
-        else if (a.to === 'bottom') scrollTo({ top: document.documentElement.scrollHeight, behavior: 'smooth' });
-        else scrollBy({ top: a.dir * innerHeight * 0.7, behavior: 'smooth' });
+        if (a.to === 'top') scrollTo({ top: 0, behavior: smooth() });
+        else if (a.to === 'bottom') scrollTo({ top: document.documentElement.scrollHeight, behavior: smooth() });
+        else scrollBy({ top: a.dir * innerHeight * 0.7, behavior: smooth() });
         say('✓ Đã cuộn', 'ok'); return;
       case 'lang': setLang(a.lang); say(a.lang === 'en' ? '✓ English' : '✓ Tiếng Việt', 'ok'); return;
       case 'listen': setAlways(a.on); return;
@@ -82,7 +82,7 @@ export function initVoiceCommands() {
         const list = fields(), i = bestMatch(a.field, list.map((f) => f.label));
         if (i < 0) { say(`Không thấy ô «${a.field}» trên trang này.`, 'err'); return; }
         const el = list[i].el;
-        el.scrollIntoView({ block: 'center', behavior: 'smooth' }); el.focus();
+        el.scrollIntoView({ block: 'center', behavior: smooth() }); el.focus();
         if (el.tagName === 'SELECT') {
           const o = [...el.options], j = bestMatch(a.value, o.map((x) => x.textContent));
           if (j < 0) { say(`Không có lựa chọn «${a.value}».`, 'err'); return; }

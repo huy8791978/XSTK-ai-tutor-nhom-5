@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Chính sách dữ liệu · AI Classroom</title>
 <meta name="theme-color" content="#1B2A8C">
+<script>/* Same theme and language as the app, set before first paint. */try{var t=localStorage.getItem('xstk.theme');document.documentElement.dataset.theme=t==='dark'||t==='light'?t:(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');if(localStorage.getItem('xstk.lang')==='en')document.documentElement.lang='en'}catch(e){}</script>
 <link rel="icon" href="favicon.svg" type="image/svg+xml">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -16,13 +17,17 @@
   BẢN NHÁP do công cụ tạo từ mã nguồn ngày 03/11/2026. Cần người có chuyên môn pháp lý xem lại trước khi đăng chính thức.
   Căn cứ: Luật Bảo vệ dữ liệu cá nhân 91/2025/QH15, Nghị định 356/2025/NĐ-CP, Luật Trí tuệ nhân tạo 134/2025/QH15,
   Luật An ninh mạng 116/2025/QH15. Xác minh lại tại thuvienphapluat.vn / vbpl.vn.
-  Còn phải điền: tên nhóm/đơn vị và email (mục 1, 7, 9 và bản tiếng Anh).
+  Còn phải điền: tên nhóm/đơn vị và email (mục 1, 7, 9, cả bản tiếng Việt và tiếng Anh).
   Đã kiểm tra 03/11/2026: Gemini API gói trả phí (ai.google.dev/gemini-api/terms); Workers Logs gói Free lưu 3 ngày (developers.cloudflare.com/workers/observability/logs/workers-logs).
+  Bản tiếng Anh là bản dịch đầy đủ, từng mục khớp bản tiếng Việt; khi sửa một bản, sửa cả bản kia.
 -->
 <main class="policy">
-  <p><a href="./">← Về AI Classroom</a> · <a href="dieu-khoan.html">Điều khoản sử dụng</a> · <a href="#en" lang="en">English</a></p>
+  <p class="doc-nav"><span data-doc="vi"><a href="./">← Về AI Classroom</a> · <a href="dieu-khoan.html">Điều khoản sử dụng</a></span><span data-doc="en" lang="en" hidden><a href="./">← Back to AI Classroom</a> · <a href="dieu-khoan.html">Terms of use</a></span>
+    <button type="button" class="btn btn-ghost doc-lang" data-doc-lang>EN</button></p>
+
+  <div data-doc="vi">
   <h1>Chính sách dữ liệu</h1>
-  <p class="muted">Cập nhật lần cuối: 03/11/2026 · Phiên bản 1.0</p>
+  <p class="muted">Cập nhật lần cuối: 15/11/2026</p>
 
   <h2>1. Chúng tôi là ai</h2>
   <p>AI Classroom là gia sư AI môn Xác suất Thống kê do [ĐIỀN: tên nhóm / đơn vị] làm và vận hành. Đây là dự án phi lợi nhuận: miễn phí, không bán gì, không quảng cáo. Chúng tôi là bên kiểm soát dữ liệu cá nhân thu thập qua trang xstk-ai.nqhuyalt.workers.dev.</p>
@@ -39,29 +44,33 @@
   <div class="table-wrap"><table>
     <thead><tr><th>Dữ liệu</th><th>Khi nào</th><th>Để làm gì</th><th>Lưu ở đâu, bao lâu</th></tr></thead>
     <tbody>
-      <tr><td>Đề bài, bài làm, câu hỏi bạn gõ; ảnh, PDF, Word bạn tải lên; chữ viết trên bảng</td><td>Khi bạn dùng Gia sư, Bài tập, Lí thuyết, Vấn đáp, Hỏi đáp</td><td>Để AI đọc đề, gợi ý, chấm bài, trả lời</td><td>Gửi tới Google Gemini để xử lý. Máy chủ của chúng tôi chỉ chuyển tiếp, không lưu.</td></tr>
+      <tr><td>Đề bài, bài làm, câu hỏi bạn gõ; ảnh, PDF, Word bạn tải lên; ảnh chụp bằng camera; chữ viết trên bảng</td><td>Khi bạn dùng Gia sư, Bài tập, Lí thuyết, Vấn đáp, Hỏi đáp, Ôn tập</td><td>Để AI đọc đề, gợi ý, chấm bài, trả lời, soạn bài ôn</td><td>Gửi tới Google Gemini để xử lý. Máy chủ của chúng tôi chỉ chuyển tiếp, không lưu.</td></tr>
       <tr><td>Giọng nói</td><td>Khi bạn bấm «Bắt đầu trò chuyện» hoặc nút micro</td><td>Để trò chuyện bằng giọng với gia sư</td><td>Gửi tới Google Gemini Live qua máy chủ của chúng tôi, không lưu bản ghi âm.</td></tr>
       <tr><td>Giọng nói khi dùng nút «Nói» hoặc lệnh giọng nói</td><td>Khi bạn bấm hoặc giữ nút micro</td><td>Chuyển lời nói thành chữ, chạy lệnh điều khiển trang</td><td>Do trình duyệt của bạn xử lý. Một số trình duyệt (ví dụ Chrome) gửi âm thanh tới máy chủ nhận dạng giọng nói của hãng trình duyệt.</td></tr>
       <tr><td>Bài viết, trả lời, tên hiển thị trên Diễn đàn</td><td>Khi bạn đăng bài</td><td>Để mọi người đọc và trao đổi</td><td>Công khai, ai cũng đọc được. Lưu trên Cloudflare tới khi bạn hoặc giảng viên kiểm duyệt xoá. Tên hiển thị không bắt buộc.</td></tr>
-      <tr><td>Hồ sơ học tập (điểm, lỗi sai, nhật kí), cài đặt ngôn ngữ, giọng, âm thanh</td><td>Khi bạn học</td><td>Thống kê lỗi sai, gợi ý lộ trình</td><td>Chỉ trên trình duyệt của bạn. Khi bạn bấm «AI phân tích», bảng thống kê (không có tên) được gửi tới Google Gemini.</td></tr>
+      <tr><td>Báo cáo bài vi phạm: lí do, ghi chú, và một mã băm (không đảo ngược được) tạo từ địa chỉ IP</td><td>Khi bạn bấm «Báo cáo bài vi phạm»</td><td>Để giảng viên kiểm duyệt xem xét; mã băm chỉ dùng để mỗi người báo cáo một bài một lần</td><td>Lưu trên Cloudflare, chỉ giảng viên kiểm duyệt xem được, tới khi giảng viên xử lí hoặc bài bị xoá.</td></tr>
+      <tr><td>Hồ sơ học tập (điểm, lỗi sai, nhật kí), lịch ôn tập, cài đặt ngôn ngữ, giao diện sáng/tối, giọng, âm thanh</td><td>Khi bạn học</td><td>Thống kê lỗi sai, gợi ý lộ trình, nhắc ôn tập</td><td>Chỉ trên trình duyệt của bạn. Khi bạn bấm «AI phân tích», bảng thống kê (không có tên) được gửi tới Google Gemini; khi bạn ôn tập, các lỗi đã ghi của chủ đề đó được gửi để AI soạn bài ôn.</td></tr>
       <tr><td>Địa chỉ IP, thời điểm truy cập</td><td>Mỗi lần trang gọi máy chủ</td><td>Chống lạm dụng (giới hạn số lượt mỗi phút), xử lý lỗi</td><td>Giới hạn lượt: chỉ trong bộ nhớ, tối đa 1 phút. Nhật kí lỗi: lưu trên Cloudflare 3 ngày rồi tự xoá.</td></tr>
     </tbody>
   </table></div>
+  <p>Ảnh chụp bằng camera chỉ nằm trên máy bạn cho tới khi bạn bấm chấm hoặc gửi.</p>
+  <p>Các công cụ Bảng tra, Kiểm định, Ước lượng, Máy tính phân phối, Thống kê mô tả và Phòng mô phỏng tính ngay trên trình duyệt của bạn; số liệu bạn nhập ở đó không được gửi đi đâu.</p>
   <p><strong>Lời khuyên:</strong> đừng đưa họ tên, mã số sinh viên, số điện thoại vào bài làm, ảnh chụp hay bài diễn đàn.</p>
 
   <h2>4. Bên nhận dữ liệu và việc chuyển ra nước ngoài</h2>
   <ul>
     <li><strong>Google (Gemini API):</strong> nhận nội dung ở mục 3 để AI xử lý. Hiện trang dùng khoá Gemini API của người vận hành; nếu sau này đổi cách dùng (ví dụ để bạn nhập khoá của riêng mình), chúng tôi sẽ cập nhật trang này và hỏi lại sự đồng ý. Khoá dùng gói trả phí: theo điều khoản Gemini API, Google không dùng nội dung bạn gửi hay câu trả lời để cải thiện sản phẩm của Google. Google chỉ lưu nhật kí trong một thời gian giới hạn để phát hiện việc dùng sai mục đích, giữ an toàn dịch vụ và đáp ứng yêu cầu pháp luật. Dữ liệu có thể được lưu tạm hoặc lưu đệm ở bất kì quốc gia nào Google có máy chủ.</li>
-    <li><strong>Cloudflare:</strong> nơi chạy trang web, lưu bài diễn đàn và nhật kí lỗi.</li>
+    <li><strong>Cloudflare:</strong> nơi chạy trang web, lưu bài diễn đàn, báo cáo vi phạm và nhật kí lỗi.</li>
     <li><strong>Google Fonts và jsDelivr:</strong> trang tải phông chữ (Google Fonts) và thư viện hiển thị công thức, bản đồ tư duy (KaTeX, MathLive, Markmap qua jsDelivr). Khi tải, trình duyệt của bạn gửi địa chỉ IP và thông tin trình duyệt tới các dịch vụ này, như khi mở mọi trang web. Không có nội dung học tập nào được gửi tới đây.</li>
   </ul>
   <p>Máy chủ của Google và Cloudflare đặt ở nước ngoài. Đây là chuyển dữ liệu cá nhân ra nước ngoài theo Điều 20 Luật Bảo vệ dữ liệu cá nhân 2025.</p>
 
   <h2>5. Cookie và lưu trữ trên trình duyệt</h2>
-  <p>Trang không đặt cookie và không dùng công cụ theo dõi, nên không có banner cookie. Trang chỉ lưu trên trình duyệt của bạn (localStorage) những thứ cần để chạy: hồ sơ học tập, ngôn ngữ, giọng đọc, bật/tắt âm thanh, tên hiển thị và mã xoá bài diễn đàn, lựa chọn đồng ý, phiên kiểm duyệt của giảng viên. Những dữ liệu này không được gửi về máy chủ. Bạn xoá được bằng cách xoá dữ liệu trang web trong cài đặt trình duyệt.</p>
+  <p>Trang không đặt cookie và không dùng công cụ theo dõi, nên không có banner cookie. Trang chỉ lưu trên trình duyệt của bạn (localStorage) những thứ cần để chạy: hồ sơ học tập, lịch ôn tập, ngôn ngữ, giao diện sáng/tối, giọng đọc, bật/tắt âm thanh, tên hiển thị và mã xoá bài diễn đàn, lựa chọn đồng ý, phiên kiểm duyệt của giảng viên. Để trang mở được khi mất mạng, trình duyệt cũng lưu một bản các tệp của trang (bộ nhớ đệm ngoại tuyến); bản này không chứa dữ liệu của bạn. Những dữ liệu này không được gửi về máy chủ. Bạn xoá được bằng cách xoá dữ liệu trang web trong cài đặt trình duyệt.</p>
+  <p>Công thức bạn tải về từ trang Hỏi đáp công thức (tệp Word hoặc PDF) được tạo ngay trên trình duyệt và lưu vào máy của bạn; chúng tôi không nhận được bản nào.</p>
 
   <h2>6. Sự đồng ý của bạn</h2>
-  <p>Lần đầu bạn dùng một chức năng có AI, trang hỏi bạn có đồng ý gửi nội dung cho Google Gemini không. Lựa chọn và thời điểm được lưu trên trình duyệt của bạn. Nếu không đồng ý, bạn vẫn đọc được trang, dùng hồ sơ và diễn đàn, nhưng các chức năng AI không chạy.</p>
+  <p>Lần đầu bạn dùng một chức năng có AI, trang hỏi bạn có đồng ý gửi nội dung cho Google Gemini không. Lựa chọn và thời điểm được lưu trên trình duyệt của bạn. Nếu không đồng ý, bạn vẫn đọc được trang, dùng hồ sơ, diễn đàn và các công cụ tính, nhưng các chức năng AI không chạy.</p>
   <p>Bạn rút lại sự đồng ý bất cứ lúc nào: <button type="button" class="btn" data-withdraw>Rút lại sự đồng ý</button> <span class="muted" data-withdraw-msg></span></p>
 
   <h2>7. Quyền của bạn</h2>
@@ -77,34 +86,109 @@
   <p>Gợi ý, điểm, lời giải và câu trả lời trên trang do AI tạo ra và có thể sai. Hãy đối chiếu với giáo trình hoặc hỏi giảng viên. Điểm do AI chấm chỉ để tự luyện, không phải điểm chính thức.</p>
 
   <h2>9. Nội dung vi phạm trên Diễn đàn</h2>
-  <p>Giảng viên kiểm duyệt xoá được mọi bài vi phạm. Để báo một bài vi phạm, gửi email tới [ĐIỀN: email] kèm đường link bài. Chúng tôi gỡ bài vi phạm trong 24 giờ kể từ khi có yêu cầu hợp lệ, và trong 6 giờ với trường hợp khẩn cấp.</p>
+  <p>Giảng viên kiểm duyệt xoá được mọi bài vi phạm. Để báo một bài vi phạm, bấm «Báo cáo bài vi phạm» dưới bài đó, hoặc gửi email tới [ĐIỀN: email] kèm đường link bài. Chúng tôi gỡ bài vi phạm trong 24 giờ kể từ khi có yêu cầu hợp lệ, và trong 6 giờ với trường hợp khẩn cấp.</p>
 
   <h2>10. Khi có sự cố</h2>
   <p>Nếu xảy ra lộ hoặc mất dữ liệu cá nhân, chúng tôi thông báo cho cơ quan chuyên trách bảo vệ dữ liệu cá nhân theo quy định.</p>
 
   <h2>11. Thay đổi chính sách</h2>
   <p>Khi đổi mục đích hoặc loại dữ liệu xử lý, chúng tôi cập nhật trang này, tăng số phiên bản và hỏi lại sự đồng ý của bạn.</p>
+  </div>
 
-  <hr>
-  <section id="en" lang="en">
-    <h2>Data policy (summary in English)</h2>
-    <p>AI Classroom is a free, non-profit project made and run by [FILL IN: group / organisation]. Contact: [FILL IN: email]. No accounts, no cookies, no analytics, no ads; we do not sell personal data. Settings and your learning profile are kept in your browser (localStorage) only. Fonts and formula libraries load from Google Fonts and jsDelivr, which see your IP address like any website does. We use the paid Gemini API: Google does not use your prompts or its answers to improve its products, and keeps logs only for a limited time for abuse monitoring, safety and legal requirements.</p>
-    <ul>
-      <li>What you type, upload (photos, PDF, Word), write on the board or say to the tutor is sent to Google Gemini, abroad, so the AI can answer and grade. Our server only relays it.</li>
-      <li>Speech typed by the «Speak» button or voice commands is handled by your browser, which may send audio to its vendor.</li>
-      <li>Forum posts and display names are public and stored on Cloudflare until you or a moderator delete them.</li>
-      <li>Your learning profile and settings stay in your browser; only anonymous statistics go to Gemini when you ask for an AI analysis.</li>
-      <li>IP addresses are kept in memory for at most one minute for rate limiting; error logs stay on Cloudflare for 3 days.</li>
-    </ul>
-    <p>You are asked before anything is sent to the AI, and can withdraw with the button in section 6. To see, correct or delete your data, or report a forum post, email us; we reply within 2 working days and remove violating posts within 24 hours (6 hours if urgent).</p>
-  </section>
+  <div data-doc="en" lang="en" hidden>
+  <h1>Data policy</h1>
+  <p class="muted">Last updated: 15/11/2026</p>
+
+  <h2>1. Who we are</h2>
+  <p>AI Classroom is an AI tutor for Probability &amp; Statistics made and run by [FILL IN: group / organisation]. It is a non-profit project: free, nothing for sale, no advertising. We are the controller of the personal data collected through xstk-ai.nqhuyalt.workers.dev.</p>
+  <p>Email for personal data requests: [FILL IN: email]</p>
+
+  <h2>2. What we do not collect</h2>
+  <ul>
+    <li>No accounts; we never ask for your name, email or phone number.</li>
+    <li>No tracking cookies, Google Analytics, Facebook Pixel or advertising.</li>
+    <li>We do not sell your personal data.</li>
+  </ul>
+
+  <h2>3. Data processed and why</h2>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Data</th><th>When</th><th>What for</th><th>Where it is kept, and for how long</th></tr></thead>
+    <tbody>
+      <tr><td>Problems, your work and questions you type; photos, PDF and Word files you upload; photos taken with the camera; what you write on the board</td><td>When you use the Tutor, Practice, Concepts, Oral exam, Q&amp;A or Review pages</td><td>So the AI can read the problem, give hints, grade, answer and write review questions</td><td>Sent to Google Gemini for processing. Our server only relays it and does not store it.</td></tr>
+      <tr><td>Your voice</td><td>When you press «Start talking» or the microphone button</td><td>To talk with the tutor by voice</td><td>Sent to Google Gemini Live through our server; no recording is kept.</td></tr>
+      <tr><td>Your voice when you use the «Speak» button or voice commands</td><td>When you press or hold the microphone button</td><td>To turn speech into text and run page commands</td><td>Handled by your browser. Some browsers (Chrome, for example) send the audio to their vendor's speech recognition servers.</td></tr>
+      <tr><td>Forum posts, replies and display names</td><td>When you post</td><td>So everyone can read and discuss</td><td>Public: anyone can read them. Stored on Cloudflare until you or a moderating lecturer delete them. A display name is optional.</td></tr>
+      <tr><td>Reports of violating posts: the reason, a note, and a one-way hash made from your IP address</td><td>When you press «Report this post»</td><td>So a moderating lecturer can review the post; the hash is only used so each person reports a post once</td><td>Stored on Cloudflare, visible only to moderating lecturers, until a lecturer handles it or the post is deleted.</td></tr>
+      <tr><td>Learning profile (scores, mistakes, log), review schedule, language, light/dark theme, voice and sound settings</td><td>While you study</td><td>Mistake statistics, study plan suggestions, review reminders</td><td>Only in your browser. When you press «AI analysis», the statistics table (no names) is sent to Google Gemini; when you review a topic, the mistakes logged for it are sent so the AI can write the review.</td></tr>
+      <tr><td>IP address and time of access</td><td>Every time the page calls our server</td><td>Preventing abuse (a per-minute limit) and fixing errors</td><td>Rate limiting: in memory only, at most 1 minute. Error logs: kept on Cloudflare for 3 days, then deleted automatically.</td></tr>
+    </tbody>
+  </table></div>
+  <p>Photos taken with the camera stay on your device until you press grade or send.</p>
+  <p>The Tables, Hypothesis testing, Interval estimation, Distribution calculator, Descriptive statistics and Simulation lab tools compute everything in your browser; the numbers you enter there are not sent anywhere.</p>
+  <p><strong>Advice:</strong> do not put your name, student ID or phone number in your work, photos or forum posts.</p>
+
+  <h2>4. Recipients and transfer abroad</h2>
+  <ul>
+    <li><strong>Google (Gemini API):</strong> receives the content in section 3 so the AI can process it. The site currently uses the operator's Gemini API key; if that ever changes (for example, letting you enter your own key), we will update this page and ask for your consent again. The key is on the paid tier: under the Gemini API terms, Google does not use your prompts or its answers to improve Google's products. Google keeps logs only for a limited time to detect misuse, keep the service safe and meet legal requirements. Data may be stored temporarily or cached in any country where Google has servers.</li>
+    <li><strong>Cloudflare:</strong> runs the website and stores forum posts, reports and error logs.</li>
+    <li><strong>Google Fonts and jsDelivr:</strong> the page loads its fonts (Google Fonts) and the libraries that show formulas and mind maps (KaTeX, MathLive, Markmap through jsDelivr). Loading them sends your IP address and browser details to these services, as with any website. No learning content is sent to them.</li>
+  </ul>
+  <p>Google's and Cloudflare's servers are abroad. This is a transfer of personal data abroad under Article 20 of Vietnam's 2025 Personal Data Protection Law.</p>
+
+  <h2>5. Cookies and browser storage</h2>
+  <p>The site sets no cookies and uses no tracking tools, so there is no cookie banner. It only keeps in your browser (localStorage) what it needs to work: your learning profile, review schedule, language, light/dark theme, reading voice, sound on/off, forum display name and post deletion codes, your consent choice, and a lecturer's moderation session. So the site opens without a network, the browser also keeps a copy of the site's files (an offline cache); that copy holds none of your data. None of this is sent to our server. You can delete it by clearing this site's data in your browser settings.</p>
+  <p>Formulas you download from the Formula Q&amp;A page (Word or PDF file) are made in your browser and saved to your device; we never receive a copy.</p>
+
+  <h2>6. Your consent</h2>
+  <p>The first time you use a feature with AI, the site asks whether you agree to send content to Google Gemini. Your choice and its time are kept in your browser. If you do not agree, you can still read the site and use your profile, the forum and the calculation tools, but the AI features will not run.</p>
+  <p>You can withdraw consent at any time: <button type="button" class="btn" data-withdraw>Withdraw consent</button> <span class="muted" data-withdraw-msg></span></p>
+
+  <h2>7. Your rights</h2>
+  <p>You have the right to know what data of yours we process; to consent, refuse or withdraw consent; to see, correct, ask us to delete, restrict or object to processing; and to complain, report or take legal action as the law provides.</p>
+  <ul>
+    <li>Learning profile: export or delete it yourself on the «Learning profile» page.</li>
+    <li>Forum posts: delete them yourself with the «Delete» button in the browser you posted from. On another device, email us to ask for deletion.</li>
+    <li>Anything else: email [FILL IN: email].</li>
+  </ul>
+  <p>We acknowledge your request and explain the procedure within 2 working days; let you see or correct data within 10 days; handle withdrawal, restriction or objection within 15 days; and delete data within 20 days. These periods are longer when a processor or a third party has to act too (15, 20, 30 days). A complex request may be extended once, with reasons.</p>
+
+  <h2>8. AI-generated content</h2>
+  <p>Hints, grades, solutions and answers on the site are generated by AI and may be wrong. Check them against your course materials or ask your lecturer. AI grades are for self-practice only, not official marks.</p>
+
+  <h2>9. Violating content on the Forum</h2>
+  <p>Moderating lecturers can delete any violating post. To report a post, press «Report this post» under it, or email [FILL IN: email] with the link to the post. We remove violating posts within 24 hours of a valid request, and within 6 hours in urgent cases.</p>
+
+  <h2>10. Incidents</h2>
+  <p>If personal data is leaked or lost, we notify the authority in charge of personal data protection as the law requires.</p>
+
+  <h2>11. Changes to this policy</h2>
+  <p>When we change the purpose or the kind of data processed, we update this page, raise the version number and ask for your consent again.</p>
+  <p class="muted">If the two versions differ, the Vietnamese version prevails.</p>
+  </div>
 </main>
 <script>
-  // Withdraw: forget the stored consent, so the site asks again before the next AI call.
-  document.querySelector('[data-withdraw]').addEventListener('click', () => {
-    try { localStorage.removeItem('xstk.consent'); } catch { /* private mode: nothing was stored */ }
-    document.querySelector('[data-withdraw-msg]').textContent = 'Đã rút lại. Trang sẽ hỏi lại trước khi gửi nội dung cho AI.';
+  // VI / EN: the same choice as the app (xstk.lang), switched in place.
+  const lang = () => { try { return localStorage.getItem('xstk.lang') === 'en' ? 'en' : 'vi'; } catch { return 'vi'; } };
+  const TITLE = { vi: 'Chính sách dữ liệu · AI Classroom', en: 'Data policy · AI Classroom' };
+  function show(l) {
+    document.querySelectorAll('[data-doc]').forEach((el) => { el.hidden = el.dataset.doc !== l; });
+    document.documentElement.lang = l; document.title = TITLE[l];
+    const b = document.querySelector('[data-doc-lang]');
+    b.textContent = l === 'en' ? 'VI' : 'EN';
+    b.setAttribute('lang', l === 'en' ? 'vi' : 'en');
+    b.setAttribute('aria-label', l === 'en' ? 'Xem bản tiếng Việt' : 'Read in English');
+  }
+  document.querySelector('[data-doc-lang]').addEventListener('click', () => {
+    const l = lang() === 'en' ? 'vi' : 'en';
+    try { localStorage.setItem('xstk.lang', l); } catch { /* private mode: this visit only */ }
+    show(l);
   });
+  show(lang());
+  // Withdraw: forget the stored consent, so the site asks again before the next AI call.
+  document.querySelectorAll('[data-withdraw]').forEach((b) => b.addEventListener('click', () => {
+    try { localStorage.removeItem('xstk.consent'); } catch { /* private mode: nothing was stored */ }
+    document.querySelectorAll('[data-withdraw-msg]').forEach((m) => { m.textContent = lang() === 'en' ? 'Withdrawn. The site will ask again before sending anything to the AI.' : 'Đã rút lại. Trang sẽ hỏi lại trước khi gửi nội dung cho AI.'; });
+  }));
 </script>
 </body>
 </html>

@@ -1,0 +1,14 @@
+{
+  "name": "AI Classroom — Gia sư Xác suất Thống kê",
+  "short_name": "AI Classroom",
+  "description": "Gia sư AI môn Xác suất Thống kê: chấm bài, luyện tập, mô phỏng, bảng tra và kiểm định.",
+  "lang": "vi",
+  "start_url": "./#trang-chu",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#F4F6FB",
+  "theme_color": "#1B2A8C",
+  "icons": [
+    { "src": "favicon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }
+  ]
+}

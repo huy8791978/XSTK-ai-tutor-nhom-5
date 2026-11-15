@@ -19,6 +19,18 @@ export function validatePost(p = {}, { reply = false } = {}) {
   return out;
 }
 
+// ---- Reports: anyone flags a post for the moderator (Luật An ninh mạng: gỡ bài vi phạm trong 24 giờ).
+export const REPORT_REASONS = ['Thông tin cá nhân', 'Quấy rối, xúc phạm', 'Quảng cáo, spam', 'Nội dung sai lệch, vi phạm pháp luật', 'Lí do khác'];
+/** Validate a report. Returns { kind, id, reason, note } or throws an Error with a Vietnamese message. */
+export function validateReport(p = {}) {
+  if (!['thread', 'reply'].includes(p.kind)) throw new Error('Sai loại bài cần báo cáo.');
+  const id = Number(p.id);
+  if (!(Number.isInteger(id) && id > 0)) throw new Error('Không rõ bài cần báo cáo.');
+  if (!REPORT_REASONS.includes(p.reason)) throw new Error('Hãy chọn một lí do báo cáo.');
+  const note = clean(p.note);
+  if (note.length > 300) throw new Error('Ghi chú tối đa 300 kí tự.');
+  return { kind: p.kind, id, reason: p.reason, note };
+}
 
 // ---- Moderator (giảng viên kiểm duyệt). The password is the MODERATOR_PASSWORD secret; a correct password
 // returns a signed token "expiry.signature" (HMAC keyed by the password, so changing it logs every moderator out).

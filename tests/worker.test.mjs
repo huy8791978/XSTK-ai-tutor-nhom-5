@@ -325,9 +325,11 @@ test('mathNotes asks for written formulas and a full reading in words', () => {
 test('spoken formulas: the model learns letter names, grouping, N(mean, variance) and to complete a partial formula', () => {
   const t = (p) => buildRequest('mathNotes', p).body.contents[0].parts[0].text;
   const s = t({ kind: 'spoken', text: 'ép có phân phối chuẩn pê, pê quy chia nờ suy ra ép trừ pê chia căn pê quy chia nờ có phân phối chuẩn tắc không một' });
-  for (const k of ['ép/phờ = F', 'quy/cu = q', 'nờ/en nờ = n', 'PHƯƠNG SAI', 'chuẩn tắc', 'NHÓM ĐÚNG', 'MỘT PHẦN', 'phần bổ sung',
+  for (const k of ['ép/phờ = F', 'quy/cu = q', 'nờ/en nờ = n', 'PHƯƠNG SAI', 'chuẩn tắc', 'NHÓM ĐÚNG', 'MỘT PHẦN',
     String.raw`$F \sim N\left(p, \frac{pq}{n}\right) \Rightarrow \frac{F-p}{\sqrt{\frac{pq}{n}}} \sim N(0,1)$`]) assert.ok(s.includes(k), k);
   assert.ok(t({ kind: 'turn', question: 'q', reply: 'r' }).includes('NHÓM ĐÚNG'));
+  // The formula page reads the formula and nothing else; only the voice page (turn) still says which part was added.
+  assert.ok(!s.includes('phần bổ sung') && t({ kind: 'turn', question: 'q', reply: 'r' }).includes('phần bổ sung'));
 });
 
 test('a long spoken formula with «suy ra» must come back with both sides', () => {
@@ -350,4 +352,20 @@ test('profile asks for English values in English mode; proseLeaves skips topics 
   assert.equal(d.patterns[0].detail, 'EN Chi tiết');
   assert.equal(d.priorities[0], 'Phân phối thông dụng');
   assert.equal(d.mistakes[0].topic, 'Khác');
+});
+
+test('practice can target the mistakes a student made (spaced review), capped in length', () => {
+  const text = (p) => JSON.stringify(buildRequest('practice', { kind: 'mcq', topic: 'Kiểm định giả thuyết', ...p }));
+  assert.ok(text({ focus: ['Nhầm miền bác bỏ một phía', 'Quên chia căn n'] }).includes('Nhầm miền bác bỏ một phía'));
+  assert.ok(!text({}).includes('Tập trung vào'));
+  assert.ok(text({ focus: ['x'.repeat(5000)] }).length - text({}).length < 2000);
+});
+
+test('mathNotes for a spoken formula or a file shows and reads only the full formulas, nothing else', () => {
+  const text = (kind) => JSON.stringify(buildRequest('mathNotes', { kind, text: 'P A hợp B' }));
+  for (const kind of ['spoken', 'document']) {
+    assert.ok(text(kind).includes('KHÔNG nói thêm'), kind);
+    assert.ok(!/ý nghĩa|phần bổ sung|kèm tên công thức|\*\*tên\*\*/.test(text(kind)), kind);
+  }
+  assert.ok(text('turn').includes('CASIO')); // the voice page (turn) keeps its calculator steps
 });

@@ -18,7 +18,38 @@ function svg(w, hgt, inner) {
   return s;
 }
 
-function barChart(labels, values, { hl = [] } = {}) {
+/**
+ * Density curves on one axis: curves [{ pdf, cls }] ('h0' ultramarine, 'h1' ink-3 dashed), shaded regions
+ * [{ a, b, pdf, cls }] ('w' red: rejection region / α, 'beta' gold: β), vertical marks [{ x, label }] (the statistic).
+ * Static (no draw-on): it redraws on every input.
+ */
+export function densityPlot({ lo, hi, curves, shade = [], marks = [], ticks = [], label }) {
+  const W = 560, H = 210, P = 24, B = H - 30;
+  const X = (x) => P + ((x - lo) / (hi - lo)) * (W - 2 * P);
+  const xs = [...Array(201).keys()].map((i) => lo + (i / 200) * (hi - lo));
+  const top = Math.max(...curves.flatMap((c) => xs.map((x) => c.pdf(x)).filter(Number.isFinite)), 1e-9);
+  const Y = (y) => B - (Math.min(y, top * 1.05) / top) * (B - 14);
+  let g = '';
+  for (const s of shade) {
+    const a = Math.max(lo, s.a), b = Math.min(hi, s.b);
+    if (!(b > a)) continue;
+    const pts = [...Array(81).keys()].map((i) => { const x = a + (i / 80) * (b - a); return `${X(x).toFixed(1)},${Y(s.pdf(x)).toFixed(1)}`; });
+    g += `<path class="dz ${s.cls || 'w'}" d="M${X(a)},${B} L${pts.join(' L')} L${X(b)},${B} Z"/>`;
+  }
+  for (const c of curves) g += `<path class="dc ${c.cls || 'h0'}" d="M${xs.map((x) => `${X(x).toFixed(1)},${Y(c.pdf(x)).toFixed(1)}`).join(' L')}"/>`;
+  g += `<line class="axis" x1="${P}" x2="${W - P}" y1="${B}" y2="${B}"/>`;
+  for (const t of ticks) if (t.x >= lo && t.x <= hi) g += `<line class="axis" x1="${X(t.x)}" x2="${X(t.x)}" y1="${B}" y2="${B + 4}"/><text x="${X(t.x)}" y="${B + 17}" text-anchor="middle">${t.label}</text>`;
+  for (const m of marks) {
+    const x = X(Math.max(lo, Math.min(hi, m.x)));
+    g += `<line class="dm" x1="${x}" x2="${x}" y1="10" y2="${B}"/><text class="dm-t" x="${x}" y="9" text-anchor="${x > W - 80 ? 'end' : x < 80 ? 'start' : 'middle'}">${m.label}</text>`;
+  }
+  const s = svg(W, H, g);
+  s.setAttribute('aria-label', label || 'Đồ thị hàm mật độ');
+  s.classList.add('density');
+  return s;
+}
+
+export function barChart(labels, values, { hl = [] } = {}) {
   const W = 560, H = 220, P = 28, n = values.length, max = Math.max(...values, 1e-9);
   const bw = (W - P * 2) / n;
   const step = Math.ceil(n / 14);
@@ -27,7 +58,7 @@ function barChart(labels, values, { hl = [] } = {}) {
     const bh = (v / max) * (H - P * 2), x = P + i * bw;
     g += `<rect class="bar${hl.includes(i) ? ' hl' : ''}" style="animation-delay:${i * 18}ms" x="${x + bw * 0.12}" y="${H - P - bh}" width="${bw * 0.76}" height="${Math.max(bh, 0.5)}" rx="1.5"><title>${labels[i]}: ${vn(v, 4)}</title></rect>`;
     if (i % step === 0) g += `<text x="${x + bw / 2}" y="${H - P + 16}" text-anchor="middle">${labels[i]}</text>`;
-    if (n <= 12) g += `<text x="${x + bw / 2}" y="${H - P - bh - 6}" text-anchor="middle" style="fill:#141833">${vn(v, v < 1 ? 3 : 1)}</text>`;
+    if (n <= 12) g += `<text x="${x + bw / 2}" y="${H - P - bh - 6}" text-anchor="middle" class="bar-val">${vn(v, v < 1 ? 3 : 1)}</text>`;
   });
   return svg(W, H, g);
 }
@@ -71,19 +102,19 @@ export function chart(spec) {
         let ticks = '';
         for (let k = -3; k <= 3; k++) ticks += `<line class="axis" x1="${X(m + k * s)}" x2="${X(m + k * s)}" y1="${H - P}" y2="${H - P + 4}"/><text x="${X(m + k * s)}" y="${H - P + 17}" text-anchor="middle">${k === 0 ? 'μ' : `${k > 0 ? '+' : '−'}${Math.abs(k)}σ`}</text>`;
         node = svg(W, H, `${shade}<line class="axis" x1="${P}" x2="${W - P}" y1="${H - P}" y2="${H - P}"/>${ticks}
-          <path d="M${pts.map((p) => p.join(',')).join(' L')}" fill="none" stroke="#1B2A8C" stroke-width="2.4" pathLength="1" style="stroke-dasharray:1;stroke-dashoffset:${reduced() ? 0 : 1};animation:draw 1.2s cubic-bezier(.16,1,.3,1) forwards"/>
+          <path d="M${pts.map((p) => p.join(',')).join(' L')}" fill="none" class="curve" stroke-width="2.4" pathLength="1" style="stroke-dasharray:1;stroke-dashoffset:${reduced() ? 0 : 1};animation:draw 1.2s cubic-bezier(.16,1,.3,1) forwards"/>
           <style>@keyframes draw{to{stroke-dashoffset:0}}</style>`);
         alt = `Phân phối chuẩn N(${vn(m)}; ${vn(s)}²)`; break;
       }
       case 'venn': {
         const pA = num(spec.pA, 0.5), pB = num(spec.pB, 0.4), pAB = num(spec.pAB, 0.2);
-        node = svg(560, 220, `<rect x="40" y="10" width="480" height="200" rx="8" fill="#F4F6FB" stroke="#C2C9E6"/>
+        node = svg(560, 220, `<rect x="40" y="10" width="480" height="200" rx="8" class="venn-o"/>
           <text x="54" y="32">Ω</text>
-          <circle cx="235" cy="110" r="78" fill="rgba(27,42,140,.18)" stroke="#1B2A8C" stroke-width="1.6"/>
-          <circle cx="325" cy="110" r="78" fill="rgba(215,38,61,.16)" stroke="#D7263D" stroke-width="1.6"/>
-          <text x="190" y="114" text-anchor="middle" style="font-size:13px;fill:#1B2A8C">A: ${vn(pA)}</text>
-          <text x="370" y="114" text-anchor="middle" style="font-size:13px;fill:#AE1B2F">B: ${vn(pB)}</text>
-          <text x="280" y="114" text-anchor="middle" style="font-size:12px;fill:#141833">A∩B: ${vn(pAB)}</text>`);
+          <circle cx="235" cy="110" r="78" class="venn-a" stroke-width="1.6"/>
+          <circle cx="325" cy="110" r="78" class="venn-b" stroke-width="1.6"/>
+          <text x="190" y="114" text-anchor="middle" class="venn-ta" style="font-size:13px">A: ${vn(pA)}</text>
+          <text x="370" y="114" text-anchor="middle" class="venn-tb" style="font-size:13px">B: ${vn(pB)}</text>
+          <text x="280" y="114" text-anchor="middle" class="venn-tab" style="font-size:12px">A∩B: ${vn(pAB)}</text>`);
         alt = 'Biểu đồ Venn'; break;
       }
       default: return null;
@@ -159,24 +190,27 @@ export function galton(canvas) {
   const geo = () => ({ gap: W / (ROWS + 3), top: 18, rowH: (H * 0.5) / ROWS });
   const frame = () => {
     const { gap, top, rowH } = geo(), cx = W / 2;
+    // Inks read from CSS each frame, so the board follows the light / dark theme.
+    const css = getComputedStyle(canvas), ink = (v, d) => css.getPropertyValue(v).trim() || d;
+    const PEG = ink('--rule-2', '#C2C9E6'), BAR = ink('--ultra', '#1B2A8C'), RED = ink('--red', '#D7263D');
     ctx.clearRect(0, 0, W, H);
-    ctx.fillStyle = '#C2C9E6';
+    ctx.fillStyle = PEG;
     for (let r = 0; r < ROWS; r++) for (let i = 0; i <= r; i++) { ctx.beginPath(); ctx.arc(cx + (i - r / 2) * gap, top + 14 + r * rowH, 2.2, 0, 7); ctx.fill(); }
     const baseY = H - 22, maxBin = Math.max(...bins, 12), binTop = top + 20 + ROWS * rowH;
     bins.forEach((b, i) => {
       const x = cx + (i - ROWS / 2) * gap, bh = (b / maxBin) * (baseY - binTop);
-      ctx.fillStyle = '#1B2A8C'; ctx.fillRect(x - gap * 0.36, baseY - bh, gap * 0.72, bh);
+      ctx.fillStyle = BAR; ctx.fillRect(x - gap * 0.36, baseY - bh, gap * 0.72, bh);
     });
-    ctx.strokeStyle = '#D7263D'; ctx.lineWidth = 2; ctx.beginPath();
+    ctx.strokeStyle = RED; ctx.lineWidth = 2; ctx.beginPath();
     for (let i = 0; i <= 80; i++) {
       const k = (i / 80) * ROWS, y = normPdf(k, ROWS / 2, Math.sqrt(ROWS) / 2) / normPdf(ROWS / 2, ROWS / 2, Math.sqrt(ROWS) / 2);
       const X = cx + (k - ROWS / 2) * gap, Y = baseY - y * (total ? (Math.max(...bins) / maxBin) : 0.9) * (baseY - binTop);
       i ? ctx.lineTo(X, Y) : ctx.moveTo(X, Y);
     }
     ctx.stroke();
-    ctx.fillStyle = '#D7263D';
+    ctx.fillStyle = RED;
     for (const b of balls) { ctx.beginPath(); ctx.arc(cx + b.x * gap, b.y, 3.4, 0, 7); ctx.fill(); }
-    ctx.strokeStyle = '#C2C9E6'; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(8, baseY + 0.5); ctx.lineTo(W - 8, baseY + 0.5); ctx.stroke();
+    ctx.strokeStyle = PEG; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(8, baseY + 0.5); ctx.lineTo(W - 8, baseY + 0.5); ctx.stroke();
   };
   const step = () => {
     const { top, rowH } = geo();

@@ -17,3 +17,7 @@ export const SPOKEN_MATH = {
 - COMPLETE: always write the WHOLE formula; if only PART of a known course result is said, write the full result (both sides, parameters, conditions such as n large) and say which part you added.
 - Example: «F is normal p, pq over n, implies F minus p over root pq over n is standard normal 0 1» → $F \\sim N\\left(p, \\frac{pq}{n}\\right) \\Rightarrow \\frac{F-p}{\\sqrt{\\frac{pq}{n}}} \\sim N(0,1)$.`,
 };
+
+/** The same guide for the formula page, which reads the formula and nothing else: without the remark about completed parts. */
+const strip = (s, part) => { if (!s.includes(part)) throw new Error(`spoken.js: clause to strip not found: ${part}`); return s.replace(part, ''); };
+export const SPOKEN_MATH_ONLY = { vi: strip(SPOKEN_MATH.vi, ' và nói rõ phần nào là phần bổ sung'), en: strip(SPOKEN_MATH.en, ' and say which part you added') };

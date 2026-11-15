@@ -2,7 +2,7 @@
 // Asked once, the first time a feature needs the AI; the answer, its time and the policy version are kept in this
 // browser (Luật 91/2025/QH15 Điều 9: consent must be explicit and verifiable). Declining keeps the rest of the site.
 // shortcut: proof of consent lives only in this browser, upgrade to a server record if the site gets accounts.
-export const POLICY_VERSION = '1.0';
+export const POLICY_VERSION = '1.1'; // 1.1: review questions from logged mistakes, forum reports (chinh-sach.html 15/11/2026)
 const KEY = 'xstk.consent';
 
 const read = () => { try { return JSON.parse(localStorage.getItem(KEY)); } catch { return null; } };

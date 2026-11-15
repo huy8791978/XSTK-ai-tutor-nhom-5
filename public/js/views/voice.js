@@ -2,7 +2,7 @@
 // just speak, the tutor answers aloud at once and its words appear as it speaks; formulas, CASIO keys and charts
 // are written underneath. When real-time voice is unavailable the page carries on with the ordinary mode: the
 // "Nói" button on the text box below dictates a question, answered in text and read aloud.
-import { h, icon, rich, run, toast, casio, loading } from '../ui.js';
+import { h, smooth, icon, rich, run, toast, casio, loading } from '../ui.js';
 import { ensureConsent } from '../consent.js';
 import { ai } from '../api.js';
 import { mathField } from '../mathinput.js';
@@ -133,7 +133,7 @@ export function render(root) {
     say(msg);
     compose.classList.add('attention');
     ta.focus({ preventScroll: true });
-    compose.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    compose.scrollIntoView({ behavior: smooth(), block: 'center' });
   };
 
   async function send(text, { typed = false, shown = true } = {}) {

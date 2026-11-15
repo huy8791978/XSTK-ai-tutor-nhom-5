@@ -16,11 +16,19 @@ import * as mindmap from './views/mindmap.js';
 import * as quiz from './views/quiz.js';
 import * as profile from './views/profile.js';
 import * as home from './views/home.js';
+import * as sim from './views/sim.js';
+import * as tables from './views/tables.js';
+import * as hypothesis from './views/hypothesis.js';
+import * as data from './views/data.js';
+import * as spaced from './views/spaced.js';
+import * as estimate from './views/estimate.js';
+import * as dist from './views/dist.js';
+import { initTheme } from './theme.js';
 import { initVoiceCommands } from './voicecmd.js';
 import { initEngage } from './engage.js';
 
 const ROUTES = {
-  'trang-chu': home, 'cham-bai': tutor, 'ly-thuyet': concept, 'dinh-li': theorem, 'tu-luan': essayPage, 'trac-nghiem': mcqPage, 'mini-game': quiz, 'van-dap': oral,
+  'trang-chu': home, 'cham-bai': tutor, 'ly-thuyet': concept, 'dinh-li': theorem, 'mo-phong': sim, 'bang-tra': tables, 'kiem-dinh': hypothesis, 'uoc-luong': estimate, 'phan-phoi': dist, 'so-lieu': data, 'on-tap': spaced, 'tu-luan': essayPage, 'trac-nghiem': mcqPage, 'mini-game': quiz, 'van-dap': oral,
   'giong-noi': voice, 'cong-thuc': formula, 'thong-ke': mistakes, 'ban-do': mindmap, 'dien-dan': forum, 'ho-so': profile,
 };
 const routeKey = () => location.hash.slice(1).split('?')[0];
@@ -61,6 +69,8 @@ function go() {
   scrollTo({ top: fresh ? 0 : scrollY[key] || 0 });
 }
 const FRESH = new Set(['dien-dan', 'thong-ke', 'ho-so']);
+// Offline: cache the app shell so lessons, the mind map, tables and simulations open without a network.
+if ('serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('sw.js').catch(() => {});
 const panes = {}, scrollY = {};
 let current = null;
 
@@ -69,6 +79,7 @@ addEventListener('hashchange', go);
 addEventListener('profile-change', paintSerial);
 paintSerial();
 initI18n();
+initTheme();
 initEngage();
 go();
 initVoiceCommands();

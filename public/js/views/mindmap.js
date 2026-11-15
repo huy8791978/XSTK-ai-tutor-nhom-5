@@ -56,13 +56,16 @@ export function render(root) {
     transformer ??= new Transformer();
     const { root: tree } = transformer.transform(forMap(markdown));
     const opts = deriveOptions({ colorFreezeLevel: 2, initialExpandLevel: 2, maxWidth: 460, spacingVertical: 12, spacingHorizontal: 90, duration: 450, maxInitialScale: 1 });
-    opts.color = (node) => ['#1B2A8C', '#D7263D', '#0E9F6E', '#7A5A00'][(node.state?.path?.split('.')[1] ?? 0) % 4];
+    // Branch inks from the theme (ultra, red, green, gold-ink), so the map stays readable in dark mode too.
+    const css = getComputedStyle(document.documentElement), inks = ['--ultra', '--red', '--green', '--gold-ink'].map((v, i) => css.getPropertyValue(v).trim() || ['#1B2A8C', '#D7263D', '#0E9F6E', '#7A5A00'][i]);
+    opts.color = (node) => inks[(node.state?.path?.split('.')[1] ?? 0) % 4];
     // Markmap.create fits the map itself once it is laid out; fitting earlier measures nothing (NaN transform).
     if (!mm) mm = Markmap.create(svgEl, opts, tree);
     else { mm.setOptions(opts); mm.setData(tree).then(() => mm.fit()); } // d3 transitions wait on frames; do not block the caller
   }
 
   const showSafe = (markdown) => { if (!mm) status.replaceChildren(loading('Đang tải bản đồ tư duy…')); return show(markdown).then(() => status.replaceChildren()).catch(() => status.replaceChildren(h('div.error', { role: 'alert' }, 'Không tải được thư viện bản đồ tư duy. Kiểm tra kết nối mạng rồi tải lại trang.'))); };
+  addEventListener('themechange', () => { if (mm && lastMd) show(lastMd); }); // branch inks are read from the theme
   bCourse.onclick = () => { map = COURSE_MAP; status.replaceChildren(); showSafe(map[getLang()]); };
   bFit.onclick = () => (in3d ? m3.fit() : mm?.fit());
   bWide.onclick = async () => {

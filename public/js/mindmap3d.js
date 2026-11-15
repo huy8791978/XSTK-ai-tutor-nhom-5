@@ -4,7 +4,7 @@
 import { h, rich } from './ui.js';
 import { plainMath } from './md.js';
 
-const COLORS = ['#1B2A8C', '#D7263D', '#0E9F6E', '#7A5A00', '#6B3FA0', '#0B7A8F', '#B4541A'];
+const COLORS = ['#1B2A8C', '#D7263D', '#0E9F6E', '#7A5A00', '#6B3FA0', '#0B7A8F', '#B4541A']; // the first four follow the theme (size())
 const R = 190; // distance between shells
 const D = 1100; // camera distance for the perspective
 const MAX_LABEL = 38;
@@ -249,12 +249,15 @@ export function mindmap3d() {
     if (!r.width) return;
     dpr = Math.min(2, devicePixelRatio || 1); W = r.width; H = r.height;
     canvas.width = Math.round(W * dpr); canvas.height = Math.round(H * dpr);
-    ink = getComputedStyle(canvas).getPropertyValue('--ink').trim() || ink;
+    const css = getComputedStyle(canvas);
+    ink = css.getPropertyValue('--ink').trim() || ink;
+    ['--ultra', '--red', '--green', '--gold-ink'].forEach((v, i) => { COLORS[i] = css.getPropertyValue(v).trim() || COLORS[i]; });
     // Labels get a halo of the panel's own colour so they stay readable over the lines behind them.
     for (let e = canvas; e; e = e.parentElement) { const bg = getComputedStyle(e).backgroundColor; if (bg && !/rgba\(0, 0, 0, 0\)|transparent/.test(bg)) { paper = bg; break; } }
     kick();
   }
   new ResizeObserver(size).observe(canvas);
+  addEventListener('themechange', size);
 
   return {
     el,

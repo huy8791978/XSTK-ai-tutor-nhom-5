@@ -1,6 +1,6 @@
 // Text field + visual formula editor (MathLive): press a template (fraction, P(A|B), Cₙᵏ…), then just type the values into its boxes.
 import { md, typeset } from './md.js';
-import { h, icon, toast } from './ui.js';
+import { h, smooth, icon, toast } from './ui.js';
 import { listen, fallbackText } from './voice.js';
 
 const ML = 'https://cdn.jsdelivr.net/npm/mathlive@0.109.2';
@@ -87,7 +87,7 @@ export function mathField({ label, name, placeholder = '', rows = 4, value = '' 
       mf.focus(); window.mathVirtualKeyboard.show();
       setTimeout(() => { // keep the editor above the on-screen keyboard
         const over = pad.getBoundingClientRect().bottom - (innerHeight - window.mathVirtualKeyboard.boundingRect.height) + 16;
-        if (over > 0) scrollBy({ top: over, behavior: 'smooth' });
+        if (over > 0) scrollBy({ top: over, behavior: smooth() });
       }, 300);
     } catch {
       toast('Không tải được bộ soạn công thức. Kiểm tra mạng, hoặc gõ công thức giữa hai dấu $…$.');
