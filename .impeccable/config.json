@@ -44,6 +44,15 @@
         "value": "consolas",
         "createdAt": "2026-11-15T09:31:31.060Z",
         "reason": "Claude: monospace for the LaTeX source line inside exported Word/PDF files (code, not UI text)"
+      },
+      {
+        "rule": "side-tab",
+        "value": "*",
+        "files": [
+          "public/css/app.css"
+        ],
+        "createdAt": "2026-11-16T07:46:09.386Z",
+        "reason": "Claude triage: app.css L702 is .detents::after, the 6px progress bar under the step rail, not a card side border; pre-existing"
       }
     ]
   }

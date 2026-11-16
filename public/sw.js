@@ -36,6 +36,7 @@ const SHELL = [
   "js/review.js",
   "js/role.js",
   "js/statlib.js",
+  "js/steprail.js",
   "js/stats.js",
   "js/teacher.js",
   "js/topics.js",

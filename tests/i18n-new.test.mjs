@@ -5,7 +5,7 @@ import { t } from '../public/js/i18n.js';
 
 // Every Vietnamese UI string in the new tool pages must have an English version, so the EN/VI switch never
 // leaves a page half in the other language.
-const FILES = ['views/tables.js', 'views/hypothesis.js', 'views/data.js', 'views/sim.js', 'views/spaced.js', 'datarows.js', 'statlib.js', 'views/estimate.js', 'views/dist.js', 'theme.js', 'export.js', 'camera.js'];
+const FILES = ['views/tables.js', 'views/hypothesis.js', 'views/data.js', 'views/sim.js', 'views/spaced.js', 'datarows.js', 'statlib.js', 'views/estimate.js', 'views/dist.js', 'theme.js', 'export.js', 'camera.js', 'steprail.js'];
 const VI = /[àáảãạăằắẳẵặâầấẩẫậèéẻẽẹêềếểễệìíỉĩịòóỏõọôồốổỗộơờớởỡợùúủũụưừứửữựỳýỷỹỵđ]/i;
 // Not UI text: storage keys, LaTeX/notation, and messages built from a template (checked by the rules test below).
 const SKIP = (s) => !VI.test(s) || s.includes('${') || s.includes('\\') || /^xstk\./.test(s);

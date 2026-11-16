@@ -299,6 +299,8 @@ Object.assign(DICT, {
   'Hai phía (≠)': 'Two-sided (≠)', 'Lớn hơn (>)': 'Greater (>)', 'Bé hơn (<)': 'Less (<)', 'Đối thiết H₁': 'Alternative H₁', 'Mức ý nghĩa α': 'Significance level α',
   'Số liệu đề cho': 'Given data', 'Tính n, x̄, s từ số liệu thô': 'Compute n, x̄, s from raw data', 'Số liệu mẫu': 'Sample data', 'Điền vào ô': 'Fill in the fields',
   'Lập giả thiết': 'Hypotheses', 'Miền bác bỏ W': 'Rejection region W', 'Giá trị quan sát': 'Observed value', 'Kết luận': 'Conclusion', 'Bước': 'Step',
+  'Chọn công thức': 'Choose the formula', 'Thay số': 'Substitute', 'Cỡ mẫu tối thiểu': 'Minimum sample size',
+  'Xác định phân phối': 'Identify the distribution', 'Đặc trưng số': 'Moments', 'Công thức xác suất': 'Probability formula', 'Các bước tính xác suất': 'Steps of the probability',
   'với mức ý nghĩa': 'at significance level', 'Bác bỏ H₀': 'Reject H₀', 'Chấp nhận H₀': 'Accept H₀', 'Bốn bước kiểm định': 'Four steps of the test',
   'Giá trị quan sát thuộc W: bác bỏ H₀, chấp nhận H₁': 'The observed value is in W: reject H₀, accept H₁',
   'Giá trị quan sát không thuộc W: chưa đủ cơ sở bác bỏ H₀': 'The observed value is not in W: not enough evidence to reject H₀',
