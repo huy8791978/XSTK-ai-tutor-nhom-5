@@ -1,5 +1,6 @@
 // How to turn a formula said aloud (Vietnamese speech recognition writes it as it sounds: «ép», «pê», «nờ»…)
 // back into the full LaTeX formula. Shared by the text model (mathNotes) and the real-time voice (Live personas).
+import { COURSE, COURSE_EN } from '../public/js/course-map.js';
 
 export const SPOKEN_MATH = {
   vi: `CÁCH HIỂU CÔNG THỨC ĐỌC BẰNG LỜI (giọng nói được nhận dạng thành chữ theo âm đọc, có thể sai chính tả):
@@ -21,6 +22,12 @@ export const SPOKEN_MATH = {
 /** The same guide for the formula page, which reads the formula and nothing else: without the remark about completed parts. */
 const strip = (s, part) => { if (!s.includes(part)) throw new Error(`spoken.js: clause to strip not found: ${part}`); return s.replace(part, ''); };
 export const SPOKEN_MATH_ONLY = { vi: strip(SPOKEN_MATH.vi, ' và nói rõ phần nào là phần bổ sung'), en: strip(SPOKEN_MATH.en, ' and say which part you added') };
+
+/** The course map (checked against the lecturer's slides) as the reference for formulas and notation. */
+export const COURSE_NOTES = {
+  vi: `KIẾN THỨC MÔN HỌC (bản đồ toàn môn, đã đối chiếu slide bài giảng): dùng đúng các công thức, điều kiện và kí hiệu dưới đây; khi cần một công thức, lấy từ đây trước.\n${COURSE}`,
+  en: `COURSE KNOWLEDGE (the course map, checked against the lecture slides): use exactly these formulas, conditions and notation; when a formula is needed, take it from here first.\n${COURSE_EN}`,
+};
 
 /** Formula page: a formula asked for by its name comes as the whole chain of the lecture notes, each line a short lead-in plus its formula. */
 export const FORMULA_BY_NAME = {

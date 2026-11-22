@@ -362,7 +362,8 @@ test('practice can target the mistakes a student made (spaced review), capped in
 });
 
 test('mathNotes for a spoken formula or a file shows and reads only the full formulas, nothing else', () => {
-  const text = (kind) => JSON.stringify(buildRequest('mathNotes', { kind, text: 'P A hợp B' }));
+  // The instructions only: the course map is reference material («mức ý nghĩa α»).
+  const text = (kind) => JSON.stringify(buildRequest('mathNotes', { kind, text: 'P A hợp B' })).replace(/KIẾN THỨC MÔN HỌC.*?(?=Trong \\"speech\\")/, '');
   for (const kind of ['spoken', 'document']) {
     assert.ok(text(kind).includes('KHÔNG nói thêm'), kind);
     assert.ok(!/ý nghĩa|phần bổ sung|kèm tên công thức|\*\*tên\*\*/.test(text(kind)), kind);
@@ -401,4 +402,17 @@ test('mathNotes for a spoken formula follows the by-name rule: the whole chain, 
   assert.ok(s.includes('GỌI TÊN') && s.includes('KHÔNG dài dòng'));
   assert.ok(s.includes('Muốn sử dụng bảng phân phối chuẩn, ta chuẩn hoá:') && s.includes('$\\displaystyle')); // lead-in and formula on one line
   assert.ok(!buildRequest('mathNotes', { kind: 'document', text: 'x' }).body.contents[0].parts[0].text.includes('GỌI TÊN'));
+});
+
+test('mathNotes for a spoken formula writes exactly what the tutor read back, when given', () => {
+  const s = buildRequest('mathNotes', { kind: 'spoken', text: 'khoảng tin cậy trung bình', reply: 'Khoảng tin cậy là x ngang trừ z an pha trên hai' }).body.contents[0].parts[0].text;
+  assert.ok(s.includes('Khoảng tin cậy là x ngang trừ z an pha trên hai') && s.includes('ĐÚNG và ĐỦ'));
+  assert.ok(!buildRequest('mathNotes', { kind: 'spoken', text: 'x' }).body.contents[0].parts[0].text.includes('Gia sư đã đọc'));
+});
+
+test('mathNotes carries the course map as its reference', () => {
+  for (const kind of ['spoken', 'turn', 'document']) {
+    const s = buildRequest('mathNotes', { kind, text: 'x', question: 'x', reply: 'x' }).body.contents[0].parts[0].text;
+    assert.ok(s.includes('KIẾN THỨC MÔN HỌC') && s.includes('Khoảng ước lượng của tỉ lệ'), kind);
+  }
 });

@@ -62,7 +62,7 @@ export function render(root) {
     if (!t.user || !t.bubble || t.fromFile || t.notes) return;
     t.notes = true; // a turn reopened by a late continuation is not written twice
     const box = h('div'); t.bubble.append(box);
-    ai('mathNotes', { kind: 'spoken', text: t.text || t.user }).then((d) => {
+    ai('mathNotes', { kind: 'spoken', text: t.text || t.user, reply: t.ai.trim().slice(-4000) }).then((d) => {
       const lines = String(d.math || '').split('\n').filter((l) => l.trim()).length;
       if (lines <= t.math.length) return box.remove(); // what is on screen is already complete
       t.bubble.querySelectorAll(':scope > .rich').forEach((n) => n.remove()); // the voice model's partial lines

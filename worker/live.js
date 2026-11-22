@@ -3,7 +3,7 @@
 // quota or drops mid-conversation, the next one takes over silently with the conversation so far.
 // No Cloudflare APIs here: connect() is injected, so the relay is unit-tested with fake sockets.
 import { TTS_VOICES } from './tts.js';
-import { SPOKEN_MATH, SPOKEN_MATH_ONLY, FORMULA_BY_NAME } from './spoken.js';
+import { SPOKEN_MATH, SPOKEN_MATH_ONLY, FORMULA_BY_NAME, COURSE_NOTES } from './spoken.js';
 
 export const LIVE_MODELS = 'gemini-3.8-live,gemini-3.8-live-extended-thinking,gemini-3-flash-live,gemini-2.5-flash-native-audio-dialog,gemini-2.5-flash-native-audio-preview-12-2025,gemini-2.5-flash-native-audio-preview-09-2025,gemini-live-2.5-flash-preview';
 export const LIVE_URL = 'https://generativelanguage.googleapis.com/ws/google.ai.generativelanguage.v1beta.GenerativeService.BidiGenerateContent';
@@ -66,6 +66,17 @@ For a chain: call show_math ONCE, for the first line (lead-in as caption, formul
 
 const MAX_HISTORY = 10;
 /** Conversation so far, for a new model taking over mid-conversation (system instruction is accepted by all Live models). */
+/** True when the text ends with the same 1–4 word phrase said four or more times in a row. */
+export function looping(text) {
+  const words = String(text).toLowerCase().replace(/[^\p{L}\p{N}]+/gu, ' ').trim().split(' ');
+  for (let n = 1; n <= 4; n++) {
+    if (words.length < 4 * n) continue;
+    const tail = (k) => words.slice(words.length - (k + 1) * n, words.length - k * n).join(' ');
+    if ([1, 2, 3].every((k) => tail(k) === tail(0))) return true;
+  }
+  return false;
+}
+
 export function historyText(history, lang) {
   const turns = history.slice(-MAX_HISTORY).map((t) => `${lang === 'en' ? 'Student' : 'Sinh viên'}: ${t.user || '(im lặng)'}\n${lang === 'en' ? 'Teacher' : 'Gia sư'}: ${t.ai || '(chưa trả lời)'}`);
   const text = turns.join('\n').slice(-4000);
@@ -82,7 +93,7 @@ export function liveSetup(model, { mode = 'voice', gender = 'female', lang = 'vi
         responseModalities: ['AUDIO'],
         speechConfig: { voiceConfig: { prebuiltVoiceConfig: { voiceName: TTS_VOICES[gender === 'male' ? 'male' : 'female'] } } },
       },
-      systemInstruction: { parts: [{ text: persona + historyText(history, lang) }] },
+      systemInstruction: { parts: [{ text: `${persona}\n${COURSE_NOTES[lang === 'en' ? 'en' : 'vi']}${historyText(history, lang)}` }] },
       ...(tools ? { tools: [{ functionDeclarations: [SHOW_MATH] }] } : {}),
       // A formula is read with pauses: wait longer before deciding the student has finished (formula page most).
       realtimeInputConfig: { automaticActivityDetection: { endOfSpeechSensitivity: 'END_SENSITIVITY_LOW', silenceDurationMs: mode === 'formula' ? 2000 : 1200 } },
@@ -203,9 +214,15 @@ export class LiveRelay {
     if (!sc) return;
     if (sc.inputTranscription?.text) { this.newTurn(); this.turn.user += sc.inputTranscription.text; this.toClient({ t: 'in', text: sc.inputTranscription.text }); }
     for (const p of sc.modelTurn?.parts || []) {
+      if (this.turn.cut) break;
       if (p.inlineData?.data && /audio/.test(p.inlineData.mimeType || 'audio/pcm')) this.toClient({ t: 'audio', d: p.inlineData.data, rate: Number(/rate=(\d+)/.exec(p.inlineData.mimeType || '')?.[1] || 24000) });
     }
-    if (sc.outputTranscription?.text) { this.turn.ai += sc.outputTranscription.text; this.toClient({ t: 'out', text: sc.outputTranscription.text }); }
+    if (sc.outputTranscription?.text && !this.turn.cut) {
+      this.turn.ai += sc.outputTranscription.text;
+      this.toClient({ t: 'out', text: sc.outputTranscription.text });
+      // A voice stuck on a short phrase («r sao, r sao, …») is cut for the rest of this answer; the page still writes the formulas.
+      if (looping(this.turn.ai)) { console.error('live-loop', this.model); this.turn.cut = true; this.toClient({ t: 'interrupted' }); }
+    }
     if (sc.interrupted) { this.closeTurn('…'); this.toClient({ t: 'interrupted' }); }
     if (sc.turnComplete) { this.closeTurn(''); this.toClient({ t: 'turn' }); }
   }

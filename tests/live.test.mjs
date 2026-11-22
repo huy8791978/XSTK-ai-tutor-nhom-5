@@ -167,7 +167,8 @@ test('Live waits longer for the end of speech on the formula page', () => {
 });
 
 test('Formula page voice reads only the full formula: no meaning, no remarks, no follow-up question', () => {
-  const sys = (lang) => liveSetup('m', { mode: 'formula', lang }).setup.systemInstruction.parts[0].text;
+  // The instructions only: the course map after them is reference material («mức ý nghĩa α», «When to use it»).
+  const sys = (lang) => liveSetup('m', { mode: 'formula', lang }).setup.systemInstruction.parts[0].text.split(/KIẾN THỨC MÔN HỌC|COURSE KNOWLEDGE/)[0];
   assert.ok(sys('vi').includes('CHỈ đọc') && sys('vi').includes('KHÔNG nói thêm'));
   assert.ok(!/ý nghĩa|khi nào dùng|hỏi lại|nói rõ phần nào/.test(sys('vi')));
   assert.ok(sys('en').includes('ONLY read') && sys('en').includes('nothing else'));
@@ -191,4 +192,34 @@ test('Formula page: a formula asked by name comes as the whole course chain, sho
   assert.ok(sys('en').includes('\\hat{s}^2') && sys('en').includes('not asked for'));
   assert.ok(sys('en').includes('NAMES a formula') && sys('en').includes('NOT long-winded'));
   assert.ok(!liveSetup('m', { mode: 'voice', lang: 'vi' }).setup.systemInstruction.parts[0].text.includes('GỌI TÊN')); // formula page only
+});
+
+test('a voice stuck repeating a short phrase is cut off for the rest of that answer', async () => {
+  const w = world({ a: 'ok' });
+  const client = fakeSocket();
+  const r = new LiveRelay(client, { models: ['a'], benched: new Map(), connect: w.connect, mode: 'formula', gender: 'female', lang: 'vi' });
+  await r.start();
+  const up = w.ups.a[0];
+  const say = (text) => up.push({ serverContent: { modelTurn: { parts: [{ inlineData: { mimeType: 'audio/pcm;rate=24000', data: 'UUU=' } }] }, outputTranscription: { text } } });
+  const count = (t) => fromClient(client).filter((x) => x === t).length;
+  say('Khoảng tin cậy là x ngang trừ '); say('r sao, '); say('r sao, '); say('r sao, ');
+  assert.equal(count('interrupted'), 0); // three times can still be a real formula
+  say('r sao, ');
+  assert.equal(count('interrupted'), 1);
+  const audio = count('audio'), out = count('out');
+  say('r sao, '); // nothing more of this answer reaches the student
+  assert.equal(count('audio'), audio);
+  assert.equal(count('out'), out);
+  up.push({ serverContent: { turnComplete: true } });
+  say('Câu trả lời mới'); // the next answer plays again
+  assert.equal(count('audio'), audio + 1);
+  r.end();
+});
+
+test('Formula and voice personas carry the course map as their reference', () => {
+  const sys = (mode, lang) => liveSetup('m', { mode, lang }).setup.systemInstruction.parts[0].text;
+  for (const mode of ['formula', 'voice']) {
+    assert.ok(sys(mode, 'vi').includes('KIẾN THỨC MÔN HỌC') && sys(mode, 'vi').includes('Khoảng ước lượng của tỉ lệ'), mode);
+    assert.ok(sys(mode, 'en').includes('COURSE KNOWLEDGE') && sys(mode, 'en').includes('# Probability and Statistics'), mode);
+  }
 });

@@ -1,7 +1,7 @@
 // Task-based prompts: the browser never sends a raw prompt, so the key can't be used as a general chatbot.
 
 import { TOPICS, ERROR_TYPES, QUIZ_LEVELS, QUIZ_SIZE } from '../public/js/topics.js';
-import { SPOKEN_MATH, SPOKEN_MATH_ONLY, FORMULA_BY_NAME } from './spoken.js';
+import { SPOKEN_MATH, SPOKEN_MATH_ONLY, FORMULA_BY_NAME, COURSE_NOTES } from './spoken.js';
 
 export { TOPICS, ERROR_TYPES };
 const LIMITS = { text: 8000, files: 7, fileBytes: 14_000_000, history: 24 }; // files: 3 for the problem + 3 for the work + the iPad board
@@ -104,7 +104,7 @@ Trả JSON: {"understood": true|false, "reply": "<câu trả lời hiển thị,
   mathNotes: (p) => {
     const kind = ['turn', 'spoken', 'document'].includes(p.kind) ? p.kind : 'spoken';
     const src = kind === 'turn' ? `Sinh viên hỏi (giọng nói, có thể nhận dạng sai chính tả): ${p.question || '(không rõ)'}\nGia sư đã trả lời bằng lời: ${p.reply || ''}`
-      : kind === 'spoken' ? `Sinh viên đọc công thức bằng lời (nhận dạng giọng nói, có thể sai chính tả): ${p.text || ''}`
+      : kind === 'spoken' ? `Sinh viên đọc công thức bằng lời (nhận dạng giọng nói, có thể sai chính tả): ${p.text || ''}${p.reply ? `\nGia sư đã đọc lại bằng lời (nhận dạng giọng nói): ${p.reply}\nViết ĐÚNG và ĐỦ những công thức gia sư đã đọc, cùng thứ tự và câu dẫn, để chữ trên màn hình khớp với lời đọc; bỏ qua chỗ lặp vô nghĩa hay đứt đoạn trong lời đọc, và nếu lời đọc bị cắt thì viết nốt cho đủ công thức.` : ''}`
       : `Văn bản lấy từ tệp của sinh viên (công thức trong $...$):\n${p.text || ''}`;
     const job = kind === 'turn' ? `Viết lại ĐẦY ĐỦ ở dạng LaTeX mọi công thức được nhắc tới trong lượt trao đổi trên, mỗi công thức trọn vẹn mọi vế (không thêm công thức không được nhắc); nếu có phép tính thì thêm cách bấm CASIO. Không có công thức thì "math": "". "speech": "".
 ${SPOKEN_MATH.vi}`
@@ -115,6 +115,7 @@ ${FORMULA_BY_NAME.vi}`
       : 'Liệt kê theo thứ tự MỌI công thức trong văn bản ở dạng LaTeX chuẩn (sửa lỗi nhận dạng rõ ràng). "math": mỗi công thức một dòng $$...$$, không tên, không chú thích, không chữ nào khác. "speech": CHỈ đọc ĐẦY ĐỦ từng công thức bằng lời theo thứ tự, không bỏ sót, mỗi công thức một câu, KHÔNG nói thêm gì khác (không giải thích, không nhận xét, không chào).';
     return {
       text: `${src}\n\n${job}
+${COURSE_NOTES.vi}
 Trong "speech": tiếng Việt thuần (hoặc tiếng Anh khi được yêu cầu), KHÔNG LaTeX, KHÔNG kí hiệu; đọc kí hiệu bằng lời (ví dụ «P của A hợp B», «x gạch ngang», «căn bậc hai của n», «sigma bình phương»).
 Trả JSON: ${kind === 'turn' ? `{"math": "<markdown: mỗi công thức một dòng, có thể ghi tên in đậm trước $$...$$>", "speech": "<đọc bằng lời>", ${CASIO}, "viz": <viz hoặc null>}` : kind === 'spoken' ? '{"math": "<mỗi dòng: câu dẫn ngắn: $\\\\displaystyle ...$>", "speech": "<chỉ lời đọc câu dẫn và công thức>"}'
   : '{"math": "<mỗi công thức một dòng $$...$$, không có chữ nào khác>", "speech": "<chỉ lời đọc các công thức>"}'}`,
