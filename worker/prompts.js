@@ -117,7 +117,7 @@ ${FORMULA_BY_NAME.vi}`
       text: `${src}\n\n${job}
 ${COURSE_NOTES.vi}
 Trong "speech": tiếng Việt thuần (hoặc tiếng Anh khi được yêu cầu), KHÔNG LaTeX, KHÔNG kí hiệu; đọc kí hiệu bằng lời (ví dụ «P của A hợp B», «x gạch ngang», «căn bậc hai của n», «sigma bình phương»).
-Trả JSON: ${kind === 'turn' ? `{"math": "<markdown: mỗi công thức một dòng, có thể ghi tên in đậm trước $$...$$>", "speech": "<đọc bằng lời>", ${CASIO}, "viz": <viz hoặc null>}` : kind === 'spoken' ? '{"math": "<mỗi dòng: câu dẫn ngắn: $\\\\displaystyle ...$>", "speech": "<chỉ lời đọc câu dẫn và công thức>"}'
+Trả JSON: ${kind === 'turn' ? `{"math": "<markdown: mỗi công thức một dòng, có thể ghi tên in đậm trước $$...$$>", "speech": "<đọc bằng lời>", ${CASIO}, "viz": <viz hoặc null>}` : kind === 'spoken' ? '{"math": "<mỗi dòng: câu dẫn ngắn: $\\\\displaystyle ...$>", "speech": "<chỉ lời đọc câu dẫn và công thức>", "question": "<câu sinh viên nói, đã sửa lỗi nhận dạng giọng nói (chính tả, thuật ngữ XSTK, tên kí hiệu), giữ nguyên ý và cách nói, viết chữ thường như câu nói, không LaTeX>"}'
   : '{"math": "<mỗi công thức một dòng $$...$$, không có chữ nào khác>", "speech": "<chỉ lời đọc các công thức>"}'}`,
     };
   },
@@ -236,7 +236,7 @@ export function buildRequest(task, payload = {}) {
       systemInstruction: { parts: [{ text: p.lang === 'en' && !verbatim ? `${SYSTEM}
 LANGUAGE OVERRIDE: write every text value of the JSON in English (keep JSON keys as specified; use dot decimals; keep the topic and error-type values exactly as listed in Vietnamese).` : SYSTEM }] },
       contents: [{ role: 'user', parts: [{ text }, ...files.map((f) => ({ inlineData: { mimeType: f.mimeType, data: f.data } }))] }],
-      generationConfig: { responseMimeType: 'application/json', temperature: task === 'practice' || task === 'quiz' ? 0.9 : task === 'similar' ? 0.7 : verbatim ? 0 : 0.4, maxOutputTokens: 16384 },
+      generationConfig: { responseMimeType: 'application/json', temperature: task === 'practice' || task === 'quiz' ? 0.9 : task === 'similar' ? 0.7 : verbatim || task === 'mathNotes' ? 0 : 0.4, maxOutputTokens: 16384 },
     },
     promptChars: SYSTEM.length + text.length,
     fileCount: files.length,

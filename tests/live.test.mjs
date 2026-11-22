@@ -223,3 +223,9 @@ test('Formula and voice personas carry the course map as their reference', () =>
     assert.ok(sys(mode, 'en').includes('COURSE KNOWLEDGE') && sys(mode, 'en').includes('# Probability and Statistics'), mode);
   }
 });
+
+test('a result with several cases: the main chain, then one line per other case, short lead-ins', () => {
+  const sys = (lang) => liveSetup('m', { mode: 'formula', lang }).setup.systemInstruction.parts[0].text;
+  assert.ok(sys('vi').includes('NHIỀU TRƯỜNG HỢP') && sys('vi').includes('tối đa 12 từ'));
+  assert.ok(sys('en').includes('SEVERAL CASES') && sys('en').includes('12 words at most'));
+});

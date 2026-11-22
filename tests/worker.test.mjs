@@ -416,3 +416,13 @@ test('mathNotes carries the course map as its reference', () => {
     assert.ok(s.includes('KIẾN THỨC MÔN HỌC') && s.includes('Khoảng ước lượng của tỉ lệ'), kind);
   }
 });
+
+test('mathNotes for a spoken formula also returns the question with recognition errors fixed', () => {
+  const s = buildRequest('mathNotes', { kind: 'spoken', text: 'hãy đọc công thức khoản ước lượng của chung bình' }).body.contents[0].parts[0].text;
+  assert.ok(s.includes('"question"') && s.includes('sửa lỗi nhận dạng'));
+  assert.ok(!buildRequest('mathNotes', { kind: 'document', text: 'x' }).body.contents[0].parts[0].text.includes('"question"'));
+});
+
+test('the same formula question gets the same written answer: mathNotes runs at temperature 0', () => {
+  assert.equal(buildRequest('mathNotes', { kind: 'spoken', text: 'x' }).body.generationConfig.temperature, 0);
+});

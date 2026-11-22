@@ -203,6 +203,8 @@ select { appearance: none; padding-right: 40px; cursor: pointer;
 /* Formula page: «lead-in: formula» on one line, as in the lecture notes; a long formula scrolls inside its line */
 .fx-thread .msg.ai .rich p { overflow-x: auto; overflow-y: hidden; padding: 4px 0; margin: .5em 0; line-height: 2; }
 .fx-thread .msg.ai .rich p .katex { font-size: 1.18em; }
+/* A formula never breaks mid-way («(n −» / «1)»): it moves to the next line whole, and scrolls if still too wide */
+.fx-thread .msg.ai .rich p .katex { display: inline-block; max-width: 100%; overflow-x: auto; overflow-y: hidden; white-space: nowrap; vertical-align: middle; }
 .rich h4 { font: 700 17px/1.2 var(--display); letter-spacing: .03em; text-transform: uppercase; color: var(--ink-2); }
 .katex { font-size: 1.06em; }
 

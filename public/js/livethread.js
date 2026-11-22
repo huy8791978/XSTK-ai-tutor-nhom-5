@@ -4,7 +4,8 @@ import { h, rich } from './ui.js';
 
 // formulasOnly (formula page): each formula sits on one line after its lead-in (the show_math caption), and the
 // transcript of the spoken reading is hidden once formulas are on screen, so the turn reads as one written message.
-export function liveThread(thread, { onTurn, formulasOnly = false } = {}) {
+// onAnswer(t): called once per turn, as soon as the tutor starts answering a question (its bubble exists).
+export function liveThread(thread, { onTurn, onAnswer, formulasOnly = false } = {}) {
   let cur = null;
   const fresh = () => ({ user: '', ai: '', me: null, bubble: null, said: null, math: [], closed: false });
   const open = () => (cur && !cur.closed ? cur : (cur = fresh()));
@@ -13,6 +14,7 @@ export function liveThread(thread, { onTurn, formulasOnly = false } = {}) {
   const answer = () => { if (formulasOnly && cur?.closed && cur.math.length) cur.closed = false; return open(); };
   const bubble = (t) => {
     if (!t.bubble) { t.said = h('p'); t.bubble = h('div.msg.ai', {}, t.said); thread.append(t.bubble); }
+    if (t.user && !t.asked) { t.asked = true; onAnswer?.(t); }
     return t.bubble;
   };
   const meBubble = (t, node) => {
@@ -30,7 +32,11 @@ export function liveThread(thread, { onTurn, formulasOnly = false } = {}) {
     user(text) {
       // New speech after the tutor already answered starts a new turn (the student cut in).
       if (cur && !cur.closed && cur.ai) close();
-      const t = open(); t.user += text; meBubble(t, h('p', {}, t.user.trim()));
+      const t = open();
+      // Recognition may send the whole sentence again at the end: a piece that repeats what was heard replaces it.
+      const norm = (s) => s.toLowerCase().replace(/[^\p{L}\p{N}]+/gu, ' ').trim();
+      t.user = norm(t.user).length >= 8 && norm(text).includes(norm(t.user)) ? text : t.user + text;
+      t.heard = true; meBubble(t, h('p', {}, t.user.trim()));
     },
     ai(text) {
       const t = answer(); t.ai += text; bubble(t);

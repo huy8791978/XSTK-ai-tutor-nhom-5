@@ -56,20 +56,31 @@ export function render(root) {
   });
   const setState = (s) => { status.textContent = LABEL[s] || LABEL.idle; stage.dataset.state = s; face.dataset.state = s === 'connecting' ? 'thinking' : s; };
 
-  // The voice model shows at most the first line (several show_math calls mid-speech break the voice), so when it
-  // finishes, the whole chain is written for the question and replaces what it showed, in the same message.
-  const view = liveThread(thread, { formulasOnly: true, onTurn: (t) => {
-    if (!t.user || !t.bubble || t.fromFile || t.notes) return;
-    t.notes = true; // a turn reopened by a late continuation is not written twice
+  // The voice model shows at most the first line (several show_math calls mid-speech break the voice), so the whole
+  // chain is written by the text model and replaces what it showed, in the same message. It is asked as soon as the
+  // tutor starts answering (from the question), so the text usually arrives while the voice is still reading; only
+  // if that fails is it asked again at the end, with what the tutor read. The student's words come back corrected.
+  const write = (t, reply) => {
     const box = h('div'); t.bubble.append(box);
-    ai('mathNotes', { kind: 'spoken', text: t.text || t.user, reply: t.ai.trim().slice(-4000) }).then((d) => {
+    return ai('mathNotes', { kind: 'spoken', text: t.text || t.user, reply }).then((d) => {
       const lines = String(d.math || '').split('\n').filter((l) => l.trim()).length;
-      // Always the written version: the voice model may cram a whole ⇒ chain into one line after a single lead-in.
-      if (!lines) return box.remove();
+      if (!lines) { box.remove(); return false; }
       t.bubble.querySelectorAll(':scope > .rich').forEach((n) => n.remove()); // the voice model's partial lines
       box.replaceChildren(rich(d.math)); t.said.hidden = true; t.locked = true; // one written message: lead-in and formula per line
-    }).catch(() => box.remove());
-  } });
+      if (d.question && t.heard && t.me) t.me.replaceChildren(h('p', {}, String(d.question))); // speech recognition, corrected (typed text stays as typed)
+      return true;
+    }).catch(() => { box.remove(); return false; });
+  };
+  const view = liveThread(thread, { formulasOnly: true,
+    onAnswer: (t) => { if (!t.fromFile) t.notes = write(t); },
+    onTurn: (t) => {
+      if (!t.user || !t.bubble || t.fromFile || t.retried) return;
+      (t.notes || Promise.resolve(false)).then((ok) => {
+        if (ok || t.retried) return;
+        t.retried = true; // once: a turn reopened by a late continuation is not written again
+        t.notes = write(t, t.ai.trim().slice(-4000));
+      });
+    } });
 
   const bLive = h('button.btn.btn-primary', { type: 'button', hidden: !canLive() }, icon('mic'), h('span', {}, 'Nói công thức'));
   const bStop = h('button.btn.btn-ghost', { type: 'button', onclick: () => { live?.interrupt(); stopReading?.(); stopReading = null; if (!live?.active) setState('idle'); } }, 'Dừng đọc');
