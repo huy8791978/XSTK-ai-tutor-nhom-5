@@ -41,6 +41,12 @@ Muốn sử dụng bảng phân phối chuẩn, ta chuẩn hoá: $\\displaystyle
 Khi đó: $\\displaystyle Z \\sim N(0,1)$
 Với độ tin cậy $1-\\alpha$: $\\displaystyle P\\left\\{-z_{\\alpha/2} \\le \\frac{F-p}{\\sqrt{\\frac{pq}{n}}} \\le z_{\\alpha/2}\\right\\} = 1-\\alpha \\Rightarrow P\\left\\{F - z_{\\alpha/2}\\sqrt{\\frac{pq}{n}} \\le p \\le F + z_{\\alpha/2}\\sqrt{\\frac{pq}{n}}\\right\\} = 1-\\alpha$
 Xấp xỉ $p \\approx f,\\ q \\approx 1-f,\\ F \\approx f$, khoảng tin cậy là: $\\displaystyle \\left(f - z_{\\alpha/2}\\sqrt{\\frac{f(1-f)}{n}};\\ f + z_{\\alpha/2}\\sqrt{\\frac{f(1-f)}{n}}\\right)$
+Ví dụ «khoảng ước lượng của trung bình» → đúng 5 dòng:
+Theo định lí giới hạn trung tâm: $\\displaystyle \\overline{X} \\sim N\\left(\\mu, \\frac{\\sigma^2}{n}\\right)$
+Muốn sử dụng bảng phân phối chuẩn, ta chuẩn hoá: $\\displaystyle Z = \\frac{\\overline{X}-\\mu}{\\sigma/\\sqrt{n}} \\sim N(0,1)$
+Với độ tin cậy $1-\\alpha$: $\\displaystyle P\\left\\{\\overline{X} - z_{\\alpha/2}\\frac{\\sigma}{\\sqrt{n}} \\le \\mu \\le \\overline{X} + z_{\\alpha/2}\\frac{\\sigma}{\\sqrt{n}}\\right\\} = 1-\\alpha$
+Khi $n \\ge 30$ hoặc $\\sigma^2$ đã biết, khoảng tin cậy là: $\\displaystyle \\left(\\overline{x} - z_{\\alpha/2}\\frac{\\sigma}{\\sqrt{n}};\\ \\overline{x} + z_{\\alpha/2}\\frac{\\sigma}{\\sqrt{n}}\\right)$
+Khi $n < 30$ và $\\sigma^2$ chưa biết, khoảng tin cậy là: $\\displaystyle \\left(\\overline{x} - t_{\\alpha/2}(n-1)\\frac{s}{\\sqrt{n}};\\ \\overline{x} + t_{\\alpha/2}(n-1)\\frac{s}{\\sqrt{n}}\\right)$
 Chỉ đúng công thức (hoặc chuỗi) được hỏi: KHÔNG thêm công thức cùng họ không được hỏi (ví dụ hỏi phương sai mẫu cụ thể thì không thêm bản hiệu chỉnh).
 KÍ HIỆU MẪU của giáo trình (Bài 4): mẫu ngẫu nhiên $\\overline{X}_n = \\frac{X_1 + X_2 + \\dots + X_n}{n}$, $F_n$, $\\hat{S}^2 = \\frac{1}{n}\\sum_{i=1}^{n}\\left(X_i - \\overline{X}_n\\right)^2$, hiệu chỉnh $S^2 = \\frac{1}{n-1}\\sum_{i=1}^{n}\\left(X_i - \\overline{X}_n\\right)^2$; mẫu cụ thể $\\overline{x}_n$, $f_n$, Phương sai mẫu cụ thể: $\\displaystyle \\hat{s}^2 = \\frac{1}{n}\\sum_{i=1}^{n}\\left(x_i - \\overline{x}_n\\right)^2$, hiệu chỉnh $s^2 = \\frac{1}{n-1}\\sum_{i=1}^{n}\\left(x_i - \\overline{x}_n\\right)^2$.
 Lời đọc: đọc lần lượt từng dòng, câu dẫn rồi công thức, đầy đủ, không nói thêm gì khác.`,
@@ -54,6 +60,12 @@ To use the normal table, standardise: $\\displaystyle Z = \\frac{F-p}{\\sqrt{\\f
 Then: $\\displaystyle Z \\sim N(0,1)$
 At confidence level $1-\\alpha$: $\\displaystyle P\\left\\{-z_{\\alpha/2} \\le \\frac{F-p}{\\sqrt{\\frac{pq}{n}}} \\le z_{\\alpha/2}\\right\\} = 1-\\alpha \\Rightarrow P\\left\\{F - z_{\\alpha/2}\\sqrt{\\frac{pq}{n}} \\le p \\le F + z_{\\alpha/2}\\sqrt{\\frac{pq}{n}}\\right\\} = 1-\\alpha$
 With $p \\approx f,\\ q \\approx 1-f,\\ F \\approx f$, the confidence interval is: $\\displaystyle \\left(f - z_{\\alpha/2}\\sqrt{\\frac{f(1-f)}{n}};\\ f + z_{\\alpha/2}\\sqrt{\\frac{f(1-f)}{n}}\\right)$
+Example «confidence interval for the mean» → exactly 5 lines:
+By the central limit theorem: $\\displaystyle \\overline{X} \\sim N\\left(\\mu, \\frac{\\sigma^2}{n}\\right)$
+To use the normal table, standardise: $\\displaystyle Z = \\frac{\\overline{X}-\\mu}{\\sigma/\\sqrt{n}} \\sim N(0,1)$
+At confidence level $1-\\alpha$: $\\displaystyle P\\left\\{\\overline{X} - z_{\\alpha/2}\\frac{\\sigma}{\\sqrt{n}} \\le \\mu \\le \\overline{X} + z_{\\alpha/2}\\frac{\\sigma}{\\sqrt{n}}\\right\\} = 1-\\alpha$
+When $n \\ge 30$ or $\\sigma^2$ is known, the interval is: $\\displaystyle \\left(\\overline{x} - z_{\\alpha/2}\\frac{\\sigma}{\\sqrt{n}};\\ \\overline{x} + z_{\\alpha/2}\\frac{\\sigma}{\\sqrt{n}}\\right)$
+When $n < 30$ and $\\sigma^2$ is unknown, the interval is: $\\displaystyle \\left(\\overline{x} - t_{\\alpha/2}(n-1)\\frac{s}{\\sqrt{n}};\\ \\overline{x} + t_{\\alpha/2}(n-1)\\frac{s}{\\sqrt{n}}\\right)$
 Only the formula (or chain) that was asked: do NOT add related formulas that were not asked for (e.g. asked for the sample variance, do not add the corrected one).
 COURSE SAMPLE NOTATION (Lecture 4): random sample $\\overline{X}_n = \\frac{X_1 + X_2 + \\dots + X_n}{n}$, $F_n$, $\\hat{S}^2 = \\frac{1}{n}\\sum_{i=1}^{n}\\left(X_i - \\overline{X}_n\\right)^2$, corrected $S^2 = \\frac{1}{n-1}\\sum_{i=1}^{n}\\left(X_i - \\overline{X}_n\\right)^2$; observed sample $\\overline{x}_n$, $f_n$, sample variance $\\hat{s}^2 = \\frac{1}{n}\\sum_{i=1}^{n}\\left(x_i - \\overline{x}_n\\right)^2$, corrected $s^2 = \\frac{1}{n-1}\\sum_{i=1}^{n}\\left(x_i - \\overline{x}_n\\right)^2$.
 Reading aloud: read each line in turn, lead-in then formula, fully, and say nothing else.`,

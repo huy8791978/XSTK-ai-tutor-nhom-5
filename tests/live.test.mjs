@@ -229,3 +229,9 @@ test('a result with several cases: the main chain, then one line per other case,
   assert.ok(sys('vi').includes('NHIỀU TRƯỜNG HỢP') && sys('vi').includes('tối đa 12 từ'));
   assert.ok(sys('en').includes('SEVERAL CASES') && sys('en').includes('12 words at most'));
 });
+
+test('the confidence interval for the mean has a fixed model answer (consistent every time)', () => {
+  const sys = (lang) => liveSetup('m', { mode: 'formula', lang }).setup.systemInstruction.parts[0].text;
+  assert.ok(sys('vi').includes('Ví dụ «khoảng ước lượng của trung bình»') && sys('vi').includes('Khi $n < 30$ và $\\sigma^2$ chưa biết, khoảng tin cậy là:'));
+  assert.ok(sys('en').includes('Example «confidence interval for the mean»'));
+});
