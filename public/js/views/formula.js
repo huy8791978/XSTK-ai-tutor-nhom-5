@@ -66,7 +66,9 @@ export function render(root) {
       const lines = String(d.math || '').split('\n').filter((l) => l.trim()).length;
       if (!lines) { box.remove(); return false; }
       t.bubble.querySelectorAll(':scope > .rich').forEach((n) => n.remove()); // the voice model's partial lines
-      box.replaceChildren(rich(d.math)); t.said.hidden = true; t.locked = true; // one written message: lead-in and formula per line
+      // A line whose closing $ the model forgot would show raw LaTeX: close it.
+      const math = String(d.math).split('\n').map((l) => ((l.match(/(?<!\\)\$/g) || []).length % 2 ? `${l}$` : l)).join('\n');
+      box.replaceChildren(rich(math)); t.said.hidden = true; t.locked = true; // one written message: lead-in and formula per line
       if (d.question && t.heard && t.me) t.me.replaceChildren(h('p', {}, String(d.question))); // speech recognition, corrected (typed text stays as typed)
       return true;
     }).catch(() => { box.remove(); return false; });
