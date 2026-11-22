@@ -104,7 +104,8 @@ export function liveSession({ mode = 'voice', mic = true, on }) {
       else if (m.t === 'math') emit('math', { latex: m.latex, caption: m.caption });
       else if (m.t === 'turn') { muted = false; emit('turn'); }
       else if (m.t === 'interrupted') { muted = false; silence(); emit('interrupted'); }
-      else if (m.t === 'switch') { ready = false; silence(); emit('switch'); }
+      // Another model takes over: the voice stops at once, so the face must stop "speaking" too (the poll only runs when ready).
+      else if (m.t === 'switch') { ready = false; silence(); setState('thinking'); emit('switch'); }
       else if (m.t === 'unavailable') { emit('unavailable', m.reason); stop(true); }
       else if (m.t === 'idle') stop();
     };

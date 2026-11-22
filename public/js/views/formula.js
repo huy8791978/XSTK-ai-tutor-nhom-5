@@ -56,13 +56,17 @@ export function render(root) {
   });
   const setState = (s) => { status.textContent = LABEL[s] || LABEL.idle; stage.dataset.state = s; face.dataset.state = s === 'connecting' ? 'thinking' : s; };
 
-  // Written formula for a spoken one, when the model did not put it on screen itself.
+  // The voice model shows at most the first line (several show_math calls mid-speech break the voice), so when it
+  // finishes, the whole chain is written for the question and replaces what it showed, in the same message.
   const view = liveThread(thread, { formulasOnly: true, onTurn: (t) => {
-    if (t.math.length || !t.user || !t.bubble || t.fromFile) return;
+    if (!t.user || !t.bubble || t.fromFile || t.notes) return;
+    t.notes = true; // a turn reopened by a late continuation is not written twice
     const box = h('div'); t.bubble.append(box);
     ai('mathNotes', { kind: 'spoken', text: t.text || t.user }).then((d) => {
-      if (!d.math) return box.remove();
-      box.replaceChildren(rich(d.math)); t.said.hidden = true; // one written message: lead-in and formula per line
+      const lines = String(d.math || '').split('\n').filter((l) => l.trim()).length;
+      if (lines <= t.math.length) return box.remove(); // what is on screen is already complete
+      t.bubble.querySelectorAll(':scope > .rich').forEach((n) => n.remove()); // the voice model's partial lines
+      box.replaceChildren(rich(d.math)); t.said.hidden = true; t.locked = true; // one written message: lead-in and formula per line
     }).catch(() => box.remove());
   } });
 

@@ -39,7 +39,7 @@ export function liveThread(thread, { onTurn, formulasOnly = false } = {}) {
     },
     math({ latex, caption }) {
       const t = answer(), tex = String(latex).trim().replace(/^\$+|\$+$/g, '');
-      if (!tex) return;
+      if (!tex || t.locked) return; // locked: the page already wrote this answer's whole chain
       t.math.push(tex);
       if (formulasOnly) { bubble(t); t.said.hidden = true; }
       bubble(t).append(rich(formulasOnly && caption ? `${caption} $\\displaystyle ${tex}$` : `${caption ? `**${caption}**\n` : ''}$$${tex}$$`));

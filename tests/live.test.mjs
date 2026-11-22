@@ -183,6 +183,9 @@ test('Formula page: a formula asked by name comes as the whole course chain, sho
   // Lecture style: a short lead-in on the SAME line as its formula, sent as the show_math caption.
   assert.ok(sys('vi').includes('CÙNG DÒNG') && sys('vi').includes('Muốn sử dụng bảng phân phối chuẩn, ta chuẩn hoá:') && sys('vi').includes('caption'));
   assert.ok(sys('en').includes('SAME line') && sys('en').includes('lead-in'));
+  // One show_math call per answer (several calls mid-speech break the voice); the page writes the rest of the chain.
+  assert.ok(sys('vi').includes('MỘT lần') && sys('en').includes('ONCE'));
+  assert.ok(!sys('vi').includes('gọi show_math cho từng dòng'));
   // Bài 4 notation: the uncorrected sample variance has the hat; nothing that was not asked is added.
   assert.ok(sys('vi').includes('\\hat{s}^2 = \\frac{1}{n}\\sum_{i=1}^{n}\\left(x_i - \\overline{x}_n\\right)^2') && sys('vi').includes('không được hỏi'));
   assert.ok(sys('en').includes('\\hat{s}^2') && sys('en').includes('not asked for'));
