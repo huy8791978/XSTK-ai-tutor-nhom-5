@@ -369,3 +369,28 @@ test('mathNotes for a spoken formula or a file shows and reads only the full for
   }
   assert.ok(text('turn').includes('CASIO')); // the voice page (turn) keeps its calculator steps
 });
+
+test('quick tasks and similar problems ask for low thinking; grading, solutions and new exercise sets keep the default', async () => {
+  const think = (task, p) => buildRequest(task, p).think;
+  const files = [{ mimeType: 'image/png', data: 'AAAA' }];
+  assert.equal(think('strategy', { problem: 'Tung 2 đồng xu.' }), 'low');
+  assert.equal(think('ocr', { files }), 'low');
+  assert.equal(think('translate', { items: ['a'], to: 'en' }), 'low');
+  assert.equal(think('similar', { kind: 'essay', question: 'Tính P(A).' }), 'low');
+  assert.equal(think('similar', { kind: 'mcq', question: 'Tính P(A).', options: ['1', '2', '3', '4'] }), 'low');
+  assert.equal(think('practice', { kind: 'essay', topic: 'Xác suất', level: 'Trung bình' }), undefined);
+  assert.equal(think('practice', { kind: 'mcq', topic: 'Xác suất', level: 'Trung bình' }), undefined);
+  assert.equal(think('quiz', { level: 'Trung bình' }), undefined);
+  assert.equal(think('grade', { problem: 'Tung 2 đồng xu.', answer: '1/4' }), undefined);
+  assert.equal(think('solve', { problem: 'Tung 2 đồng xu.' }), undefined);
+  assert.equal(buildRequest('strategy', { problem: 'x' }).body.generationConfig.thinkingConfig, undefined); // set per model
+});
+
+test('thinkingFor speaks each model family\'s own setting', async () => {
+  const { thinkingFor } = await import('../worker/models.js');
+  assert.deepEqual(thinkingFor('gemini-3.8-flash', 'low'), { thinkingLevel: 'low' });
+  assert.deepEqual(thinkingFor('gemini-3.5-flash-lite', 'low'), { thinkingLevel: 'low' });
+  assert.deepEqual(thinkingFor('gemini-2.5-flash', 'low'), { thinkingBudget: 1024 });
+  assert.equal(thinkingFor('gemini-2.5-flash-lite', 'low'), null); // thinks only when asked: a budget would slow it down
+  assert.equal(thinkingFor('gemini-3.8-flash', undefined), null);
+});

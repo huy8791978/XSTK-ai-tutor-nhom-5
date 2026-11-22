@@ -3,7 +3,7 @@ import { admit, settle, estimateTokens } from './limits.js';
 import { buildRequest, extractJson, wrongLanguage, LANGUAGE_RETRY, proseLeaves } from './prompts.js';
 import { validatePost, validateReport, FORUM_TOPICS, signMod, verifyMod, sameText, MOD_TTL } from './forum.js';
 import { buildTts, ttsAudio } from './tts.js';
-import { modelList, benchFor, usable, AI_MODELS, TTS_MODELS } from './models.js';
+import { modelList, benchFor, usable, thinkingFor, AI_MODELS, TTS_MODELS } from './models.js';
 import { LiveRelay, orderLive, LIVE_MODELS, LIVE_URL } from './live.js';
 
 const json = (data, status = 200, headers = {}) =>
@@ -49,7 +49,7 @@ export default {
     // One automatic retry for an unreadable/cut-off reply or a reply in the wrong language.
     let failure, firstData;
     for (let attempt = 0; attempt < 2; attempt++) {
-      const got = await callModels(env, ctx, req.body, tokens);
+      const got = await callModels(env, ctx, req.body, tokens, req.think);
       if (!got.ok) { failure = got.response; break; }
       const cand = got.data.candidates?.[0];
       const text = (cand?.content?.parts || []).filter((p) => !p.thought).map((p) => p.text || '').join('');
@@ -92,7 +92,7 @@ async function inLanguage(env, ctx, task, data, lang) {
   try {
     for (const batch of batches.filter((b) => b.length)) {
       const req = buildRequest('translate', { items: batch.map((l) => l.text), to: lang, lang });
-      const got = await callModels(env, ctx, req.body, estimateTokens(req.promptChars, 0, 3000));
+      const got = await callModels(env, ctx, req.body, estimateTokens(req.promptChars, 0, 3000), req.think);
       if (!got.ok) return data;
       const text = (got.data.candidates?.[0]?.content?.parts || []).filter((p) => !p.thought).map((p) => p.text || '').join('');
       const items = extractJson(text).items;
@@ -108,7 +108,7 @@ async function inLanguage(env, ctx, task, data, lang) {
  * erroring is skipped silently and the next, weaker one answers instead; the student only sees an error when
  * every model has failed. Returns { ok, data, model } or { ok: false, response }.
  */
-async function callModels(env, ctx, body, tokens) {
+async function callModels(env, ctx, body, tokens, think) {
   let wait = Infinity, lastStatus = 0;
   for (const model of usable(modelList(env.GEMINI_MODELS, AI_MODELS), aiBenched, Date.now())) {
     const limiter = env.LIMITER.get(env.LIMITER.idFromName(`model:${model}`));
@@ -116,7 +116,10 @@ async function callModels(env, ctx, body, tokens) {
     if (!slot.ok) { wait = Math.min(wait, slot.retryAfter); continue; } // our cap for this model: try the next one
     // The call to Google goes out from a Durable Object pinned to North America: visitors in Vietnam are often
     // served from Cloudflare's Hong Kong edge, and Gemini rejects requests from there ("User location is not supported").
-    const res = await gateway(env).generate(model, body);
+    const thinking = thinkingFor(model, think);
+    let res = await gateway(env).generate(model, thinking ? { ...body, generationConfig: { ...body.generationConfig, thinkingConfig: thinking } } : body);
+    // A model that rejects the thinking setting still answers, at its default speed.
+    if (res.status === 400 && thinking) res = await gateway(env).generate(model, body);
     const actual = res.data?.usageMetadata?.totalTokenCount;
     if (actual) ctx.waitUntil(limiter.settle(slot.t, actual));
     if (res.status >= 200 && res.status < 300) return { ok: true, data: res.data, model };

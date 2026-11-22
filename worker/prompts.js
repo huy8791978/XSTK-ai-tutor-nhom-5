@@ -237,6 +237,9 @@ LANGUAGE OVERRIDE: write every text value of the JSON in English (keep JSON keys
     },
     promptChars: SYSTEM.length + text.length,
     fileCount: files.length,
+    // Quick tasks think less so they answer sooner (similar problems of both kinds included); grading, solutions and
+    // new exercise sets keep the model's default. Applied per model in callModels (each Gemini family has its own setting).
+    think: ['ocr', 'translate', 'strategy', 'similar'].includes(task) ? 'low' : undefined,
   };
 }
 

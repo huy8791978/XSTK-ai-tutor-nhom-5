@@ -17,5 +17,15 @@ export function usable(models, benched, now) {
   return ok.length ? ok : models;
 }
 
-export const AI_MODELS = 'gemini-3.8-flash,gemini-3.8-flash-lite,gemini-3.5-flash,gemini-3.5-flash-lite,gemini-2.5-flash,gemini-2.5-flash-lite';
+/**
+ * thinkingConfig for a requested level, in the model's own terms: Gemini 3.x takes thinkingLevel, 2.5 only
+ * thinkingBudget (sending both is a 400). 2.5 Flash-Lite does not think unless asked, so it gets nothing.
+ */
+export function thinkingFor(model, level) {
+  if (level !== 'low') return null;
+  if (/^gemini-2\./.test(model)) return /lite/.test(model) ? null : { thinkingBudget: 1024 };
+  return { thinkingLevel: 'low' };
+}
+
+export const AI_MODELS = 'gemini-3.8-flash,gemini-3.5-flash,gemini-3.5-flash-lite,gemini-2.5-flash,gemini-2.5-flash-lite';
 export const TTS_MODELS = 'gemini-3.8-flash-tts,gemini-3.8-flash-lite-tts,gemini-3.1-flash-tts-preview,gemini-2.5-flash-preview-tts';
