@@ -200,6 +200,9 @@ select { appearance: none; padding-right: 40px; cursor: pointer;
 .rich span.rich, .row .rich { display: inline; }
 .row .rich p { display: inline; }
 .rich .katex-display { overflow-x: auto; overflow-y: hidden; padding: 4px 0; margin: .6em 0; }
+/* Formula page: «lead-in: formula» on one line, as in the lecture notes; a long formula scrolls inside its line */
+.fx-thread .msg.ai .rich p { overflow-x: auto; overflow-y: hidden; padding: 4px 0; margin: .5em 0; line-height: 2; }
+.fx-thread .msg.ai .rich p .katex { font-size: 1.18em; }
 .rich h4 { font: 700 17px/1.2 var(--display); letter-spacing: .03em; text-transform: uppercase; color: var(--ink-2); }
 .katex { font-size: 1.06em; }
 

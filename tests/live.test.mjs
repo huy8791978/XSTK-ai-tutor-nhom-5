@@ -180,6 +180,9 @@ test('Formula page: a formula asked by name comes as the whole course chain, sho
   assert.ok(sys('vi').includes('\\left(f - z_{\\alpha/2}\\sqrt{\\frac{f(1-f)}{n}}')); // ends with the interval, as in the slides
   assert.ok(sys('vi').includes('KHÔNG dài dòng'));
   assert.ok(sys('vi').includes('LUÔN viết cả chuỗi') && sys('en').includes('ALWAYS gets that whole chain')); // «sai số chuẩn» is not a one-liner
+  // Lecture style: a short lead-in on the SAME line as its formula, sent as the show_math caption.
+  assert.ok(sys('vi').includes('CÙNG DÒNG') && sys('vi').includes('Muốn sử dụng bảng phân phối chuẩn, ta chuẩn hoá:') && sys('vi').includes('caption'));
+  assert.ok(sys('en').includes('SAME line') && sys('en').includes('lead-in'));
   assert.ok(sys('en').includes('NAMES a formula') && sys('en').includes('NOT long-winded'));
   assert.ok(!liveSetup('m', { mode: 'voice', lang: 'vi' }).setup.systemInstruction.parts[0].text.includes('GỌI TÊN')); // formula page only
 });

@@ -41,7 +41,7 @@ function speakAll(text, { onStart, onEnd } = {}) {
 
 export function render(root) {
   let live = null, stopReading = null;
-  const thread = h('div.thread', { 'aria-live': 'polite' });
+  const thread = h('div.thread.fx-thread', { 'aria-live': 'polite' });
   const status = h('p.tutor-status', { role: 'status' }, LABEL.idle);
   // The same teacher as on the voice page: listens, thinks and speaks with the conversation; Nam / Nữ switches voice and face.
   const face = teacher(getGender());
@@ -57,10 +57,13 @@ export function render(root) {
   const setState = (s) => { status.textContent = LABEL[s] || LABEL.idle; stage.dataset.state = s; face.dataset.state = s === 'connecting' ? 'thinking' : s; };
 
   // Written formula for a spoken one, when the model did not put it on screen itself.
-  const view = liveThread(thread, { onTurn: (t) => {
+  const view = liveThread(thread, { formulasOnly: true, onTurn: (t) => {
     if (t.math.length || !t.user || !t.bubble || t.fromFile) return;
     const box = h('div'); t.bubble.append(box);
-    ai('mathNotes', { kind: 'spoken', text: t.text || t.user }).then((d) => (d.math ? box.replaceChildren(rich(d.math)) : box.remove())).catch(() => box.remove());
+    ai('mathNotes', { kind: 'spoken', text: t.text || t.user }).then((d) => {
+      if (!d.math) return box.remove();
+      box.replaceChildren(rich(d.math)); t.said.hidden = true; // one written message: lead-in and formula per line
+    }).catch(() => box.remove());
   } });
 
   const bLive = h('button.btn.btn-primary', { type: 'button', hidden: !canLive() }, icon('mic'), h('span', {}, 'Nói công thức'));

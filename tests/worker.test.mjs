@@ -399,6 +399,6 @@ test('thinkingFor speaks each model family\'s own setting', async () => {
 test('mathNotes for a spoken formula follows the by-name rule: the whole chain, one line each', () => {
   const s = buildRequest('mathNotes', { kind: 'spoken', text: 'đọc công thức sai số chuẩn của tỉ lệ mẫu' }).body.contents[0].parts[0].text;
   assert.ok(s.includes('GỌI TÊN') && s.includes('KHÔNG dài dòng'));
-  assert.ok(s.includes('p \\approx f'));
+  assert.ok(s.includes('Muốn sử dụng bảng phân phối chuẩn, ta chuẩn hoá:') && s.includes('$\\displaystyle')); // lead-in and formula on one line
   assert.ok(!buildRequest('mathNotes', { kind: 'document', text: 'x' }).body.contents[0].parts[0].text.includes('GỌI TÊN'));
 });

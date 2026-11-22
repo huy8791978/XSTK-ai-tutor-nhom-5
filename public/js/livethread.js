@@ -2,7 +2,9 @@
 // formulas the tutor puts on screen (show_math). onTurn(turn) runs when a turn ends, for written extras.
 import { h, rich } from './ui.js';
 
-export function liveThread(thread, { onTurn } = {}) {
+// formulasOnly (formula page): each formula sits on one line after its lead-in (the show_math caption), and the
+// transcript of the spoken reading is hidden once formulas are on screen, so the turn reads as one written message.
+export function liveThread(thread, { onTurn, formulasOnly = false } = {}) {
   let cur = null;
   const fresh = () => ({ user: '', ai: '', me: null, bubble: null, said: null, math: [], closed: false });
   const open = () => (cur && !cur.closed ? cur : (cur = fresh()));
@@ -32,7 +34,8 @@ export function liveThread(thread, { onTurn } = {}) {
       const t = open(), tex = String(latex).trim().replace(/^\$+|\$+$/g, '');
       if (!tex) return;
       t.math.push(tex);
-      bubble(t).append(rich(`${caption ? `**${caption}**\n` : ''}$$${tex}$$`));
+      if (formulasOnly) { bubble(t); t.said.hidden = true; }
+      bubble(t).append(rich(formulasOnly && caption ? `${caption} $\\displaystyle ${tex}$` : `${caption ? `**${caption}**\n` : ''}$$${tex}$$`));
     },
     end: close,
     /** Another model takes over and answers again: drop what the old one had said in this turn. */
