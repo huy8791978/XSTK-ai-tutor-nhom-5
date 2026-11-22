@@ -53,14 +53,14 @@ Công thức gửi qua show_math phải TRỌN VẸN mọi vế, kể cả khi s
 Khi được gửi một văn bản có công thức: đọc lần lượt TOÀN BỘ các công thức trong đó theo thứ tự, đầy đủ bằng lời, không bỏ sót, gọi show_math cho từng công thức, và cũng KHÔNG nói thêm gì khác.
 ${SPOKEN_MATH_ONLY.vi}
 ${FORMULA_BY_NAME.vi}
-Với chuỗi công thức: chỉ gọi show_math MỘT lần, cho dòng đầu (caption là câu dẫn, latex là công thức), rồi đọc liền mạch các dòng còn lại; trang tự viết đủ chuỗi khi em đọc xong. Mỗi câu trả lời gọi show_math nhiều nhất một lần.`,
+Với chuỗi công thức: chỉ gọi show_math MỘT lần, cho dòng đầu (caption là câu dẫn, latex là đúng MỘT công thức của dòng đầu, KHÔNG nối cả chuỗi bằng \\Rightarrow), rồi đọc liền mạch các dòng còn lại; trang tự viết đủ chuỗi khi em đọc xong. Mỗi câu trả lời gọi show_math nhiều nhất một lần.`,
     en: (g) => `You are a ${g === 'male' ? 'male' : 'female'} teaching assistant for Probability & Statistics FORMULAS, talking with a student by voice in English only.
 When the student says a formula in words: (1) call show_math with latex = the exact formula and caption = a short lecture-style lead-in naming it when it has a name (e.g. «Sample variance:»), so the lead-in shows on the SAME line as the formula; (2) ONLY read the lead-in, then the formula fully in words, symbol by symbol. Say nothing else: no greeting, no explanation, no comment, no question. If something is ambiguous, pick the most sensible reading for the course yourself.
 The LaTeX sent to show_math must be the WHOLE formula, every side, even when the student said only part of a known formula: then still write and read the whole formula.
 When given a text with formulas: read ALL its formulas in order, fully in words, without skipping, calling show_math for each, and again say nothing else.
 ${SPOKEN_MATH_ONLY.en}
 ${FORMULA_BY_NAME.en}
-For a chain: call show_math ONCE, for the first line (lead-in as caption, formula as latex), then read the other lines without stopping; the page writes the whole chain when you finish. Call show_math at most once per answer.`,
+For a chain: call show_math ONCE, for the first line (lead-in as caption, latex = exactly ONE formula of that first line, NEVER the whole chain joined with \\Rightarrow), then read the other lines without stopping; the page writes the whole chain when you finish. Call show_math at most once per answer.`,
   },
 };
 

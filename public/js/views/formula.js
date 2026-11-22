@@ -64,7 +64,8 @@ export function render(root) {
     const box = h('div'); t.bubble.append(box);
     ai('mathNotes', { kind: 'spoken', text: t.text || t.user, reply: t.ai.trim().slice(-4000) }).then((d) => {
       const lines = String(d.math || '').split('\n').filter((l) => l.trim()).length;
-      if (lines <= t.math.length) return box.remove(); // what is on screen is already complete
+      // Always the written version: the voice model may cram a whole ⇒ chain into one line after a single lead-in.
+      if (!lines) return box.remove();
       t.bubble.querySelectorAll(':scope > .rich').forEach((n) => n.remove()); // the voice model's partial lines
       box.replaceChildren(rich(d.math)); t.said.hidden = true; t.locked = true; // one written message: lead-in and formula per line
     }).catch(() => box.remove());
