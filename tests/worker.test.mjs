@@ -376,6 +376,7 @@ test('quick tasks and similar problems ask for low thinking; grading, solutions 
   assert.equal(think('strategy', { problem: 'Tung 2 đồng xu.' }), 'low');
   assert.equal(think('ocr', { files }), 'low');
   assert.equal(think('translate', { items: ['a'], to: 'en' }), 'low');
+  assert.equal(think('mathNotes', { kind: 'spoken', text: 'đọc công thức Bernoulli' }), 'low'); // transcribing a formula
   assert.equal(think('similar', { kind: 'essay', question: 'Tính P(A).' }), 'low');
   assert.equal(think('similar', { kind: 'mcq', question: 'Tính P(A).', options: ['1', '2', '3', '4'] }), 'low');
   assert.equal(think('practice', { kind: 'essay', topic: 'Xác suất', level: 'Trung bình' }), undefined);
