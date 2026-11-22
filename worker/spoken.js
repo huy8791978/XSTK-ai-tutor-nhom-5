@@ -21,3 +21,23 @@ export const SPOKEN_MATH = {
 /** The same guide for the formula page, which reads the formula and nothing else: without the remark about completed parts. */
 const strip = (s, part) => { if (!s.includes(part)) throw new Error(`spoken.js: clause to strip not found: ${part}`); return s.replace(part, ''); };
 export const SPOKEN_MATH_ONLY = { vi: strip(SPOKEN_MATH.vi, ' và nói rõ phần nào là phần bổ sung'), en: strip(SPOKEN_MATH.en, ' and say which part you added') };
+
+/** Formula page: a formula asked for by its name comes as the whole chain of the lecture slides, formulas only. */
+export const FORMULA_BY_NAME = {
+  vi: `KHI SINH VIÊN GỌI TÊN một công thức hay kết quả (ví dụ «đọc công thức sai số chuẩn của tỉ lệ mẫu», «khoảng tin cậy cho trung bình») thay vì đọc từng kí hiệu: viết và đọc TRỌN chuỗi công thức của kết quả đó như trong bài giảng, theo thứ tự các bước giáo trình có: phân phối của thống kê mẫu ⇒ dạng chuẩn hoá; P{…} = 1 − α ⇒ dạng suy ra; phép xấp xỉ bằng số liệu mẫu; công thức kết quả cuối cùng. Chỉ lấy những bước giáo trình thật sự có cho kết quả đó, không bịa thêm bước.
+KHÔNG dài dòng: mỗi bước đúng một dòng $$...$$, thường 3–5 dòng; không lặp lại, không thêm biến thể hay trường hợp khác, không chữ nào ngoài công thức. Dùng đúng kí hiệu môn học (F, f, p, q, n, z_{\\alpha/2}, P\\left\\{…\\right\\}).
+Ví dụ «sai số chuẩn của tỉ lệ mẫu» →
+$$F \\sim N\\left(p, \\frac{pq}{n}\\right) \\Rightarrow \\frac{F-p}{\\sqrt{\\frac{pq}{n}}} \\sim N(0,1)$$
+$$P\\left\\{-z_{\\alpha/2} \\le \\frac{F-p}{\\sqrt{\\frac{pq}{n}}} \\le z_{\\alpha/2}\\right\\} = 1-\\alpha \\Rightarrow P\\left\\{F - z_{\\alpha/2}\\sqrt{\\frac{pq}{n}} \\le p \\le F + z_{\\alpha/2}\\sqrt{\\frac{pq}{n}}\\right\\} = 1-\\alpha$$
+$$p \\approx f,\\quad q \\approx 1-f,\\quad F \\approx f$$
+$$\\left(f - z_{\\alpha/2}\\sqrt{\\frac{f(1-f)}{n}};\\ f + z_{\\alpha/2}\\sqrt{\\frac{f(1-f)}{n}}\\right)$$
+Lời đọc: đọc lần lượt từng dòng, đầy đủ, không nói thêm gì khác.`,
+  en: `WHEN THE STUDENT NAMES a formula or result (e.g. «read the standard error of the sample proportion», «confidence interval for the mean») instead of saying its symbols: write and read the WHOLE chain of formulas for that result as in the lecture slides, in the course's order: distribution of the sample statistic ⇒ standardised form; P{…} = 1 − α ⇒ the derived form; the approximation by the sample values; the final result. Only the steps the course really has for that result; never invent steps.
+NOT long-winded: one $$...$$ line per step, usually 3–5 lines; no repeats, no variants or other cases, no words besides the formulas. Use the course notation (F, f, p, q, n, z_{\\alpha/2}, P\\left\\{…\\right\\}).
+Example «standard error of the sample proportion» →
+$$F \\sim N\\left(p, \\frac{pq}{n}\\right) \\Rightarrow \\frac{F-p}{\\sqrt{\\frac{pq}{n}}} \\sim N(0,1)$$
+$$P\\left\\{-z_{\\alpha/2} \\le \\frac{F-p}{\\sqrt{\\frac{pq}{n}}} \\le z_{\\alpha/2}\\right\\} = 1-\\alpha \\Rightarrow P\\left\\{F - z_{\\alpha/2}\\sqrt{\\frac{pq}{n}} \\le p \\le F + z_{\\alpha/2}\\sqrt{\\frac{pq}{n}}\\right\\} = 1-\\alpha$$
+$$p \\approx f,\\quad q \\approx 1-f,\\quad F \\approx f$$
+$$\\left(f - z_{\\alpha/2}\\sqrt{\\frac{f(1-f)}{n}};\\ f + z_{\\alpha/2}\\sqrt{\\frac{f(1-f)}{n}}\\right)$$
+Reading aloud: read each line in turn, fully, and say nothing else.`,
+};

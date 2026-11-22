@@ -173,3 +173,12 @@ test('Formula page voice reads only the full formula: no meaning, no remarks, no
   assert.ok(sys('en').includes('ONLY read') && sys('en').includes('nothing else'));
   assert.ok(!/what it means|when to use|ask one short question|say which part/.test(sys('en')));
 });
+
+test('Formula page: a formula asked by name comes as the whole course chain, short, formulas only', () => {
+  const sys = (lang) => liveSetup('m', { mode: 'formula', lang }).setup.systemInstruction.parts[0].text;
+  assert.ok(sys('vi').includes('GỌI TÊN') && sys('vi').includes('sai số chuẩn của tỉ lệ mẫu'));
+  assert.ok(sys('vi').includes('\\left(f - z_{\\alpha/2}\\sqrt{\\frac{f(1-f)}{n}}')); // ends with the interval, as in the slides
+  assert.ok(sys('vi').includes('KHÔNG dài dòng'));
+  assert.ok(sys('en').includes('NAMES a formula') && sys('en').includes('NOT long-winded'));
+  assert.ok(!liveSetup('m', { mode: 'voice', lang: 'vi' }).setup.systemInstruction.parts[0].text.includes('GỌI TÊN')); // formula page only
+});

@@ -1,7 +1,7 @@
 // Task-based prompts: the browser never sends a raw prompt, so the key can't be used as a general chatbot.
 
 import { TOPICS, ERROR_TYPES, QUIZ_LEVELS, QUIZ_SIZE } from '../public/js/topics.js';
-import { SPOKEN_MATH, SPOKEN_MATH_ONLY } from './spoken.js';
+import { SPOKEN_MATH, SPOKEN_MATH_ONLY, FORMULA_BY_NAME } from './spoken.js';
 
 export { TOPICS, ERROR_TYPES };
 const LIMITS = { text: 8000, files: 7, fileBytes: 14_000_000, history: 24 }; // files: 3 for the problem + 3 for the work + the iPad board
@@ -109,8 +109,9 @@ Trả JSON: {"understood": true|false, "reply": "<câu trả lời hiển thị,
     const job = kind === 'turn' ? `Viết lại ĐẦY ĐỦ ở dạng LaTeX mọi công thức được nhắc tới trong lượt trao đổi trên, mỗi công thức trọn vẹn mọi vế (không thêm công thức không được nhắc); nếu có phép tính thì thêm cách bấm CASIO. Không có công thức thì "math": "". "speech": "".
 ${SPOKEN_MATH.vi}`
       : kind === 'spoken' ? `Hiểu đúng công thức sinh viên muốn nói (chọn cách hiểu hợp lí nhất trong môn học) và viết TOÀN BỘ công thức ở dạng LaTeX chuẩn, đủ mọi vế; nếu sinh viên chỉ đọc một phần của một công thức đã biết thì vẫn viết đủ cả công thức.
-"math": CHỈ công thức đó trong $$...$$, không tên, không chú thích, không chữ nào khác. "speech": CHỈ đọc lại ĐẦY ĐỦ công thức bằng lời, KHÔNG nói thêm gì khác (không giải thích, không nhận xét, không chào, không hỏi lại).
-${SPOKEN_MATH_ONLY.vi}`
+"math": CHỈ (các) công thức đó, mỗi dòng một $$...$$, không tên, không chú thích, không chữ nào khác. "speech": CHỈ đọc lại ĐẦY ĐỦ công thức bằng lời, KHÔNG nói thêm gì khác (không giải thích, không nhận xét, không chào, không hỏi lại).
+${SPOKEN_MATH_ONLY.vi}
+${FORMULA_BY_NAME.vi}`
       : 'Liệt kê theo thứ tự MỌI công thức trong văn bản ở dạng LaTeX chuẩn (sửa lỗi nhận dạng rõ ràng). "math": mỗi công thức một dòng $$...$$, không tên, không chú thích, không chữ nào khác. "speech": CHỈ đọc ĐẦY ĐỦ từng công thức bằng lời theo thứ tự, không bỏ sót, mỗi công thức một câu, KHÔNG nói thêm gì khác (không giải thích, không nhận xét, không chào).';
     return {
       text: `${src}\n\n${job}

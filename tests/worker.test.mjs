@@ -394,3 +394,10 @@ test('thinkingFor speaks each model family\'s own setting', async () => {
   assert.equal(thinkingFor('gemini-2.5-flash-lite', 'low'), null); // thinks only when asked: a budget would slow it down
   assert.equal(thinkingFor('gemini-3.8-flash', undefined), null);
 });
+
+test('mathNotes for a spoken formula follows the by-name rule: the whole chain, one line each', () => {
+  const s = buildRequest('mathNotes', { kind: 'spoken', text: 'đọc công thức sai số chuẩn của tỉ lệ mẫu' }).body.contents[0].parts[0].text;
+  assert.ok(s.includes('GỌI TÊN') && s.includes('KHÔNG dài dòng'));
+  assert.ok(s.includes('p \\approx f'));
+  assert.ok(!buildRequest('mathNotes', { kind: 'document', text: 'x' }).body.contents[0].parts[0].text.includes('GỌI TÊN'));
+});
