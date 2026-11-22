@@ -284,8 +284,10 @@ body { --keyboard-accent-color: #1B2A8C; --keyboard-toolbar-text-active: #1B2A8C
 .reveal > h3:first-child { margin-top: 0; }
 
 /* Oral exam */
-.thread { display: grid; gap: 16px; }
-.msg { max-width: 760px; }
+/* minmax(0, 1fr) + min-width: 0: a long formula scrolls inside its message instead of widening it past the screen
+   (on phones that widened the whole page, so messages touched the right edge) */
+.thread { display: grid; grid-template-columns: minmax(0, 1fr); gap: 16px; }
+.msg { max-width: min(760px, 100%); min-width: 0; overflow-wrap: anywhere; }
 .msg.ai { padding: 16px 18px; border-radius: var(--r-lg); background: var(--sheet); border: 1px solid var(--rule-2); }
 .msg.me { justify-self: end; padding: 12px 16px; border-radius: var(--r-lg); background: var(--ultra-fill); color: #fff; }
 .msg.me .katex { color: #fff; }
