@@ -104,7 +104,7 @@ Trả JSON: {"understood": true|false, "reply": "<câu trả lời hiển thị,
   mathNotes: (p) => {
     const kind = ['turn', 'spoken', 'document'].includes(p.kind) ? p.kind : 'spoken';
     const src = kind === 'turn' ? `Sinh viên hỏi (giọng nói, có thể nhận dạng sai chính tả): ${p.question || '(không rõ)'}\nGia sư đã trả lời bằng lời: ${p.reply || ''}`
-      : kind === 'spoken' ? `Sinh viên đọc công thức bằng lời (nhận dạng giọng nói, có thể sai chính tả): ${p.text || ''}${p.reply ? `\nGia sư đã đọc lại bằng lời (nhận dạng giọng nói): ${p.reply}\nViết ĐÚNG và ĐỦ những công thức gia sư đã đọc, cùng thứ tự và câu dẫn, để chữ trên màn hình khớp với lời đọc; bỏ qua chỗ lặp vô nghĩa hay đứt đoạn trong lời đọc, và nếu lời đọc bị cắt thì viết nốt cho đủ công thức.` : ''}`
+      : kind === 'spoken' ? `Sinh viên đọc công thức bằng lời (nhận dạng giọng nói, có thể sai chính tả): ${p.text || ''}${p.reply ? `\nGia sư đã đọc lại bằng lời (nhận dạng giọng nói): ${p.reply}\nViết ĐÚNG và ĐỦ những công thức gia sư đã đọc, cùng thứ tự và câu dẫn, để chữ trên màn hình khớp với lời đọc; bỏ qua chỗ lặp vô nghĩa hay đứt đoạn trong lời đọc. Nếu lời đọc dừng trước khi hết chuỗi của giáo trình (bị cắt, lặp hay đứt), viết TIẾP các dòng còn thiếu cho tới công thức kết quả cuối cùng (ví dụ khoảng tin cậy).` : ''}`
       : `Văn bản lấy từ tệp của sinh viên (công thức trong $...$):\n${p.text || ''}`;
     const job = kind === 'turn' ? `Viết lại ĐẦY ĐỦ ở dạng LaTeX mọi công thức được nhắc tới trong lượt trao đổi trên, mỗi công thức trọn vẹn mọi vế (không thêm công thức không được nhắc); nếu có phép tính thì thêm cách bấm CASIO. Không có công thức thì "math": "". "speech": "".
 ${SPOKEN_MATH.vi}`
