@@ -8,6 +8,9 @@ export function liveThread(thread, { onTurn, formulasOnly = false } = {}) {
   let cur = null;
   const fresh = () => ({ user: '', ai: '', me: null, bubble: null, said: null, math: [], closed: false });
   const open = () => (cur && !cur.closed ? cur : (cur = fresh()));
+  // Formula page: after show_math the model may go on talking in a new turn with no formula of its own; that is
+  // the same answer, so it joins the turn that already shows the formulas instead of making a second message.
+  const answer = () => { if (formulasOnly && cur?.closed && cur.math.length) cur.closed = false; return open(); };
   const bubble = (t) => {
     if (!t.bubble) { t.said = h('p'); t.bubble = h('div.msg.ai', {}, t.said); thread.append(t.bubble); }
     return t.bubble;
@@ -29,9 +32,13 @@ export function liveThread(thread, { onTurn, formulasOnly = false } = {}) {
       if (cur && !cur.closed && cur.ai) close();
       const t = open(); t.user += text; meBubble(t, h('p', {}, t.user.trim()));
     },
-    ai(text) { const t = open(); t.ai += text; bubble(t); t.said.textContent = t.ai.trim(); },
+    ai(text) {
+      const t = answer(); t.ai += text; bubble(t);
+      if (formulasOnly) t.said.replaceChildren(rich(t.ai.trim())); // any $...$ it says still shows as a formula
+      else t.said.textContent = t.ai.trim();
+    },
     math({ latex, caption }) {
-      const t = open(), tex = String(latex).trim().replace(/^\$+|\$+$/g, '');
+      const t = answer(), tex = String(latex).trim().replace(/^\$+|\$+$/g, '');
       if (!tex) return;
       t.math.push(tex);
       if (formulasOnly) { bubble(t); t.said.hidden = true; }
