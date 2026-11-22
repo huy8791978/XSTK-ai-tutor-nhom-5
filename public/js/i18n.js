@@ -80,7 +80,7 @@ const DICT = {
   'Định lí giới hạn trung tâm': 'Central limit theorem', 'Định lí Moivre – Laplace': 'De Moivre–Laplace theorem',
   // Polya & stages
   'Tìm hiểu nội dung đề bài': 'Understand the problem', 'Tìm cách giải': 'Find a way to solve it', 'Đang tìm cách giải…': 'Finding a way to solve it…', 'Nghiên cứu sâu lời giải': 'Study the solution in depth',
-  'Tìm hiểu đề bài': 'Understand the problem', 'Bước này cần làm gì': 'What this step asks of you', 'Cách giải': 'Solution path', 'Xem gợi ý cách giải': 'See hints on how to solve it',
+  'Tìm hiểu đề bài': 'Understand the problem', 'Mở rộng đề bài': 'Expand the problem', 'tệp đề bài': 'problem file(s)', 'Bước này cần làm gì': 'What this step asks of you', 'Cách giải': 'Solution path', 'Xem gợi ý cách giải': 'See hints on how to solve it',
   'Phát biểu đề bài dưới những dạng thức khác nhau để hiểu rõ nội dung bài toán.': 'Restate the problem in different forms to understand it clearly.',
   'Phân biệt cái đã cho và cái phải tìm, phải chứng minh.': 'Tell apart what is given and what must be found or proved.',
   'Có thể dùng công thức, kí hiệu, hình vẽ để hỗ trợ cho việc diễn tả đề bài.': 'Use formulas, notation or drawings to help express the problem.',

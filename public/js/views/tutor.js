@@ -108,7 +108,7 @@ export function render(root) {
     }
     return solved.promise;
   };
-  bStart.onclick = () => { const p = problemPart(); if (!needProblem(p)) return; go(0); solution(p); run(bStart, out[0], async () => {
+  bStart.onclick = () => { const p = problemPart(); if (!needProblem(p)) return; fold(true); go(0); solution(p); run(bStart, out[0], async () => {
     const d = await strategy(p);
     has[0] = true; go(0);
     return understandView(d);
@@ -132,10 +132,30 @@ export function render(root) {
   }, 'Đang viết lời giải…'); };
 
   go(0);
-  const problemPanel = h('section.panel.stack', { 'aria-label': 'Đề bài' }, problem, upProblem.el, bStart);
-  root.append(tabs, h('div.work.tutor', {},
+  // Once «Tìm hiểu đề bài» is pressed the problem folds into a small card and the steps get the room;
+  // only the «Mở rộng đề bài» button brings the full form back (its values are kept while folded).
+  const full = h('div.stack.prob-full', {}, problem, upProblem.el, bStart);
+  const bOpen = h('button.btn.btn-block', { type: 'button', 'aria-expanded': 'false', 'aria-controls': 'prob-full', onclick: () => fold(false) }, 'Mở rộng đề bài');
+  const mini = h('div.stack.prob-mini', { hidden: true });
+  full.id = 'prob-full';
+  const work = h('div.work.tutor', {});
+  function fold(on) {
+    if (on) {
+      const text = problem.querySelector('textarea').value.trim(), n = upProblem.count();
+      mini.replaceChildren(...[h('h2', {}, 'Đề bài'),
+        text ? rich(text, 'div.prob-text', true) : null,
+        n ? h('p.muted', {}, String(n), ' ', 'tệp đề bài') : null, bOpen].filter(Boolean));
+    }
+    work.classList.toggle('folded', on);
+    full.hidden = on; mini.hidden = !on;
+    bOpen.setAttribute('aria-expanded', String(!on));
+    (on ? bOpen : problem.querySelector('textarea')).focus({ preventScroll: true });
+  }
+  const problemPanel = h('section.panel.stack', { 'aria-label': 'Đề bài' }, full, mini);
+  root.append(tabs, work);
+  work.append(
     problemPanel,
-    h('section.panel.sticky-col', { 'aria-label': 'Bước đang xem' }, ...steps)));
+    h('section.panel.sticky-col', { 'aria-label': 'Bước đang xem' }, ...steps));
 }
 
 function empty() {
